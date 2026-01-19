@@ -297,9 +297,9 @@ app.post("/api/admin/stores", requireAdmin, async (req, res) => {
   }
 });
 
-const handleAdminResetPassword = async (req, res) => {
+app.post("/api/admin/reset-password", requireAdmin, async (req, res) => {
   try {
-    const storeId = req.body.storeId || req.body.store_id;
+    const { storeId } = req.body;
     if (!storeId) {
       return res.status(400).json({ ok: false, error: "storeId required" });
     }
@@ -311,10 +311,7 @@ const handleAdminResetPassword = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-};
-
-app.post("/api/admin/reset-password", requireAdmin, handleAdminResetPassword);
-app.post("/api/admin/reset-passcode", requireAdmin, handleAdminResetPassword);
+});
 
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   try {
@@ -325,17 +322,14 @@ app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   }
 });
 
-const handleAdminSummary = async (req, res) => {
+app.get("/api/admin/stores/summary", requireAdmin, async (req, res) => {
   try {
     const summary = await supabase.getSummary(req.query.month);
     return res.json({ ok: true, summary });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-};
-
-app.get("/api/admin/stores/summary", requireAdmin, handleAdminSummary);
-app.get("/api/admin/summary", requireAdmin, handleAdminSummary);
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
