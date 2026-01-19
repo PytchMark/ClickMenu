@@ -393,6 +393,21 @@ body.merchant-body {
 .panel-section {
   display: grid;
   gap: 24px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.panel-section.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.panel-section.is-leaving {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .panel {
@@ -448,6 +463,115 @@ body.merchant-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
+}
+
+.chart-wrapper {
+  display: grid;
+  gap: 16px;
+}
+
+.bar-chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+  gap: 12px;
+  min-height: 160px;
+  padding: 16px 10px 6px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+}
+
+.bar-chart .bar {
+  display: grid;
+  align-items: end;
+  gap: 8px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.bar-chart .bar span {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  min-height: 8px;
+  background: linear-gradient(180deg, rgba(255, 59, 48, 0.9), rgba(255, 107, 74, 0.45));
+  box-shadow: 0 8px 16px rgba(255, 59, 48, 0.2);
+}
+
+.bar-chart .bar em {
+  font-style: normal;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.chart-legend div {
+  display: grid;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.chart-legend strong {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.stacked-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.stacked-bar {
+  display: flex;
+  width: 100%;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.stacked-bar span {
+  display: block;
+  height: 100%;
+}
+
+.stacked-bar .pickup {
+  background: rgba(255, 59, 48, 0.85);
+}
+
+.stacked-bar .delivery {
+  background: rgba(255, 107, 74, 0.75);
+}
+
+.stacked-bar .other {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.legend-swatch.pickup {
+  background: rgba(255, 59, 48, 0.85);
+}
+
+.legend-swatch.delivery {
+  background: rgba(255, 107, 74, 0.75);
+}
+
+.legend-swatch.other {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .attention-list {

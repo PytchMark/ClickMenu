@@ -14,6 +14,10 @@ const attentionList = document.getElementById("attentionList");
 const storefrontPreview = document.getElementById("storefrontPreview");
 const ordersPulse = document.getElementById("ordersPulse");
 const viewStorefrontBtn = document.getElementById("viewStorefrontBtn");
+const ordersTrendChart = document.getElementById("ordersTrendChart");
+const ordersTrendLegend = document.getElementById("ordersTrendLegend");
+const fulfillmentMixChart = document.getElementById("fulfillmentMixChart");
+const fulfillmentMixLegend = document.getElementById("fulfillmentMixLegend");
 
 const dashboardPanel = document.getElementById("dashboardPanel");
 const menuPanel = document.getElementById("menuPanel");
@@ -55,6 +59,8 @@ const state = {
   requestCounts: {},
   activeOrder: null,
   scrollPositions: {},
+  activeSection: "dashboard",
+  sectionTimeouts: {},
 };
 
 menuSort.dataset.auto = "true";
@@ -106,7 +112,18 @@ const getLoginErrorMessage = (error) => {
   return error.message || "Login failed";
 };
 
+const panelMap = {
+  dashboard: dashboardPanel,
+  menu: menuPanel,
+  orders: ordersPanel,
+  profile: profilePanel,
+  settings: settingsPanel,
+};
+
+const SWITCH_DELAY = 180;
+
 const setActiveSection = (section) => {
+  if (!panelMap[section]) return;
   const currentSection = document.querySelector(".sidebar-link.active")?.dataset.section;
   if (currentSection) {
     state.scrollPositions[currentSection] = window.scrollY;
@@ -116,11 +133,31 @@ const setActiveSection = (section) => {
     .forEach((btn) => btn.classList.remove("active"));
   const nextLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
   if (nextLink) nextLink.classList.add("active");
-  dashboardPanel.hidden = section !== "dashboard";
-  menuPanel.hidden = section !== "menu";
-  ordersPanel.hidden = section !== "orders";
-  profilePanel.hidden = section !== "profile";
-  settingsPanel.hidden = section !== "settings";
+  const nextPanel = panelMap[section];
+  const currentPanel = panelMap[state.activeSection];
+  if (currentPanel && currentPanel !== nextPanel) {
+    if (state.sectionTimeouts[state.activeSection]) {
+      clearTimeout(state.sectionTimeouts[state.activeSection]);
+    }
+    currentPanel.classList.remove("is-active");
+    currentPanel.classList.add("is-leaving");
+    state.sectionTimeouts[state.activeSection] = window.setTimeout(() => {
+      currentPanel.hidden = true;
+      currentPanel.classList.remove("is-leaving");
+    }, SWITCH_DELAY);
+  }
+  if (currentPanel === nextPanel) {
+    currentPanel.classList.add("is-active");
+  }
+  if (state.sectionTimeouts[section]) {
+    clearTimeout(state.sectionTimeouts[section]);
+  }
+  nextPanel.hidden = false;
+  nextPanel.classList.remove("is-leaving");
+  requestAnimationFrame(() => {
+    nextPanel.classList.add("is-active");
+  });
+  state.activeSection = section;
   const nextScroll = state.scrollPositions[section] || 0;
   window.scrollTo({ top: nextScroll, behavior: "smooth" });
 };
@@ -281,6 +318,78 @@ const renderStorefrontPreview = () => {
 
   storefrontPreview.innerHTML = previewHtml;
   profilePreview.innerHTML = previewHtml;
+};
+
+const getLastSevenDays = () => {
+  const days = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - i);
+    days.push(date);
+  }
+  return days;
+};
+
+const renderOrdersTrend = () => {
+  if (!ordersTrendChart || !ordersTrendLegend) return;
+  const days = getLastSevenDays();
+  const counts = days.map((date) => {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+    return state.orders.filter((order) => {
+      const created = new Date(order.created_at);
+      return created >= start && created < end;
+    }).length;
+  });
+  const max = Math.max(1, ...counts);
+  ordersTrendChart.innerHTML = counts
+    .map((count, index) => {
+      const height = Math.round((count / max) * 100);
+      const label = days[index].toLocaleDateString(undefined, { weekday: "short" });
+      return `
+        <div class="bar">
+          <span style="height:${height}%"></span>
+          <em>${label}</em>
+        </div>
+      `;
+    })
+    .join("");
+  ordersTrendLegend.innerHTML = `
+    <div><strong>${counts.reduce((sum, val) => sum + val, 0)}</strong><span>Total</span></div>
+    <div><strong>${Math.max(...counts)}</strong><span>Peak day</span></div>
+  `;
+};
+
+const renderFulfillmentMix = () => {
+  if (!fulfillmentMixChart || !fulfillmentMixLegend) return;
+  const totals = state.orders.reduce(
+    (acc, order) => {
+      const type = order.fulfillment_type || "pickup";
+      if (type === "delivery") acc.delivery += 1;
+      else if (type === "pickup") acc.pickup += 1;
+      else acc.other += 1;
+      return acc;
+    },
+    { pickup: 0, delivery: 0, other: 0 }
+  );
+  const totalCount = totals.pickup + totals.delivery + totals.other || 1;
+  const pickupPct = Math.round((totals.pickup / totalCount) * 100);
+  const deliveryPct = Math.round((totals.delivery / totalCount) * 100);
+  const otherPct = Math.max(0, 100 - pickupPct - deliveryPct);
+  fulfillmentMixChart.innerHTML = `
+    <div class="stacked-bar">
+      <span class="pickup" style="width:${pickupPct}%"></span>
+      <span class="delivery" style="width:${deliveryPct}%"></span>
+      <span class="other" style="width:${otherPct}%"></span>
+    </div>
+  `;
+  fulfillmentMixLegend.innerHTML = `
+    <div><i class="legend-swatch pickup"></i><strong>${pickupPct}%</strong><span>Pickup</span></div>
+    <div><i class="legend-swatch delivery"></i><strong>${deliveryPct}%</strong><span>Delivery</span></div>
+    <div><i class="legend-swatch other"></i><strong>${otherPct}%</strong><span>Other</span></div>
+  `;
 };
 
 const formatPrice = (value) => Formatters.money(value || 0);
@@ -650,6 +759,8 @@ const loadDashboard = async () => {
   renderKpis();
   renderAttention();
   renderStorefrontPreview();
+  renderOrdersTrend();
+  renderFulfillmentMix();
   renderItemsList();
   renderOrders();
   setProfileForm();
