@@ -166,3 +166,36 @@ curl -X POST http://localhost:8080/api/admin/login \
 - Set `NODE_ENV=production` and ensure `JWT_SECRET` is configured.
 - Provide Supabase env vars to switch from mock mode to persistent storage.
 - Host on any Node-compatible platform (Cloud Run, Render, Railway, Fly.io, etc.).
+
+## Cloud Run (Docker) Deployment
+
+Required environment variables (see `.env.example`):
+
+- `PORT` (Cloud Run sets this automatically; default is `8080`)
+- `NODE_ENV`
+- `CORS_ORIGINS`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `JWT_SECRET`
+- `ADMIN_USERNAME`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `ADMIN_API_KEY`
+- `DEFAULT_HERO_VIDEO_URL`
+- `BRAND_NAME`
+
+Build and test locally:
+
+```bash
+docker build -t clickmenu .
+docker run -p 8080:8080 --env-file .env clickmenu
+```
+
+Deploy to Cloud Run (high level):
+
+```bash
+gcloud run deploy clickmenu \
+  --source . \
+  --region YOUR_REGION \
+  --allow-unauthenticated
+```
