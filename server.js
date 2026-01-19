@@ -346,8 +346,51 @@ app.post("/api/admin/login", async (req, res) => {
 
 app.get("/api/admin/stores", requireAdmin, async (req, res) => {
   try {
-    const stores = await supabase.getAdminStores();
-    return res.json({ ok: true, stores });
+    const result = await supabase.getAdminStores({
+      q: req.query.q,
+      status: req.query.status,
+      parish: req.query.parish,
+      cuisine: req.query.cuisine,
+      limit: req.query.limit,
+      offset: req.query.offset,
+      sort: req.query.sort,
+    });
+    return res.json({ ok: true, stores: result.stores, total: result.total });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/admin/stores/:storeId", requireAdmin, async (req, res) => {
+  try {
+    const store = await supabase.getAdminStoreDetail(req.params.storeId);
+    if (!store) {
+      return res.status(404).json({ ok: false, error: "Store not found" });
+    }
+    const menuItems = await supabase.getAdminMenuItems({ storeId: req.params.storeId, limit: 10 });
+    const orders = await supabase.getAdminOrders({ storeId: req.params.storeId, limit: 10 });
+    const analyticsOrders = await supabase.getMerchantOrders(req.params.storeId);
+    const analyticsItems = await supabase.getMerchantItems(req.params.storeId);
+    const analytics = buildMerchantAnalytics(analyticsOrders, analyticsItems);
+    return res.json({
+      ok: true,
+      store,
+      menuItems: menuItems.items || menuItems,
+      orders: orders.orders || orders,
+      analytics,
+    });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.patch("/api/admin/stores/:storeId", requireAdmin, async (req, res) => {
+  try {
+    const updated = await supabase.updateMerchantProfile(req.params.storeId, req.body);
+    if (!updated) {
+      return res.status(404).json({ ok: false, error: "Store not found" });
+    }
+    return res.json({ ok: true, store: updated });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -361,6 +404,35 @@ app.post("/api/admin/stores", requireAdmin, async (req, res) => {
     }
     const store = await supabase.createStore(payload);
     return res.json({ ok: true, store });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/admin/stores/bulk-update", requireAdmin, async (req, res) => {
+  try {
+    const { store_ids: storeIds, action } = req.body;
+    if (!Array.isArray(storeIds) || storeIds.length === 0) {
+      return res.status(400).json({ ok: false, error: "store_ids required" });
+    }
+    if (!["pause", "activate"].includes(action)) {
+      return res.status(400).json({ ok: false, error: "action must be pause or activate" });
+    }
+    const updated = await supabase.bulkUpdateStores(storeIds, action);
+    return res.json({ ok: true, stores: updated });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/admin/stores/bulk-reset-passcodes", requireAdmin, async (req, res) => {
+  try {
+    const { store_ids: storeIds } = req.body;
+    if (!Array.isArray(storeIds) || storeIds.length === 0) {
+      return res.status(400).json({ ok: false, error: "store_ids required" });
+    }
+    const resets = await supabase.bulkResetPasscodes(storeIds);
+    return res.json({ ok: true, resets });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -387,11 +459,107 @@ app.post("/api/admin/reset-passcode", requireAdmin, resetAdminPasscode);
 
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   try {
-    const orders = await supabase.getAdminOrders(req.query.storeId);
-    const filtered = req.query.status
-      ? orders.filter((order) => order.status === req.query.status)
-      : orders;
-    return res.json({ ok: true, orders: filtered });
+    const result = await supabase.getAdminOrders({
+      storeId: req.query.storeId,
+      q: req.query.q,
+      status: req.query.status,
+      limit: req.query.limit,
+      offset: req.query.offset,
+      from: req.query.from,
+      to: req.query.to,
+    });
+    return res.json({
+      ok: true,
+      orders: result.orders || result,
+      total: result.total ?? result.length,
+    });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/admin/orders/:requestId/status", requireAdmin, async (req, res) => {
+  try {
+    if (!req.body.status) {
+      return res.status(400).json({ ok: false, error: "status required" });
+    }
+    const order = await supabase.updateOrderStatusAdmin(req.params.requestId, req.body.status);
+    if (!order) {
+      return res.status(404).json({ ok: false, error: "Order not found" });
+    }
+    return res.json({ ok: true, order });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/admin/menu-items", requireAdmin, async (req, res) => {
+  try {
+    const result = await supabase.getAdminMenuItems({
+      storeId: req.query.storeId,
+      q: req.query.q,
+      category: req.query.category,
+      status: req.query.status,
+      featured: req.query.featured,
+      missingMedia: req.query.missingMedia === "true",
+      limit: req.query.limit,
+      offset: req.query.offset,
+    });
+    return res.json({ ok: true, items: result.items, total: result.total });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/admin/menu", requireAdmin, async (req, res) => {
+  try {
+    const result = await supabase.getAdminMenuItems({
+      storeId: req.query.storeId,
+      limit: req.query.limit,
+      offset: req.query.offset,
+    });
+    return res.json({ ok: true, items: result.items, total: result.total });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.patch("/api/admin/menu-items/:itemId", requireAdmin, async (req, res) => {
+  try {
+    const { store_id: storeId } = req.body;
+    if (!storeId) {
+      return res.status(400).json({ ok: false, error: "store_id required" });
+    }
+    const item = await supabase.updateMenuItem(storeId, req.params.itemId, req.body);
+    if (!item) {
+      return res.status(404).json({ ok: false, error: "Item not found" });
+    }
+    return res.json({ ok: true, item });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/admin/menu/:itemId", requireAdmin, async (req, res) => {
+  try {
+    const { store_id: storeId } = req.body;
+    if (!storeId) {
+      return res.status(400).json({ ok: false, error: "store_id required" });
+    }
+    const item = await supabase.updateMenuItem(storeId, req.params.itemId, req.body);
+    if (!item) {
+      return res.status(404).json({ ok: false, error: "Item not found" });
+    }
+    return res.json({ ok: true, item });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/admin/analytics", requireAdmin, async (req, res) => {
+  try {
+    const analytics = await supabase.getAdminAnalytics();
+    return res.json({ ok: true, analytics });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }

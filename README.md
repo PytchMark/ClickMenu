@@ -42,6 +42,7 @@ Admin auth:
 
 - `ADMIN_USERNAME` or `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
+- `JWT_SECRET`
 - `ADMIN_API_KEY` (optional, for service-to-service admin calls)
 
 Media (Cloudinary):
@@ -61,6 +62,10 @@ Optional:
 
 If `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` is missing, the server runs in mock mode with sample data.
 If `JWT_SECRET` is missing in production, the server exits with an error so tokens are never issued without a secret.
+
+## Admin Portal CSP Notes
+
+The admin portal avoids inline scripts/styles and loads its controller from `/public/assets/js/admin.js` with a dedicated stylesheet in `/public/assets/css/admin.css`. This keeps Helmet CSP defaults compatible without needing `unsafe-inline`. 
 
 ## Cloudinary Media Uploads
 
