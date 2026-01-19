@@ -167,10 +167,6 @@ curl -X POST http://localhost:8080/api/admin/login \
 - Provide Supabase env vars to switch from mock mode to persistent storage.
 - Host on any Node-compatible platform (Cloud Run, Render, Railway, Fly.io, etc.).
 
-## Storefront Media
-
-- Replace `/public/assets/video/hero.mp4` with your production hero video (keep the same path so the storefront background video loads).
-
 ## Cloud Run (Docker) Deployment
 
 Required environment variables (see `.env.example`):
