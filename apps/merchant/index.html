@@ -54,32 +54,51 @@
       </section>
 
       <section class="dashboard-view" id="dashboardView" hidden>
-        <header class="merchant-header">
-          <div class="store-identity">
-            <div class="store-avatar">
-              <img id="storeLogo" src="" alt="Store logo" />
+        <div class="merchant-layout">
+          <aside class="merchant-sidebar">
+            <div class="sidebar-brand">
+              <span class="sidebar-logo">CM</span>
+              <span>ClickMenu</span>
             </div>
-            <div>
-              <p class="overline">Merchant Portal</p>
-              <h2 id="storeName">Store Name</h2>
-              <div class="status-pill" id="storeStatus"></div>
+            <nav class="sidebar-nav">
+              <button class="sidebar-link active" data-section="dashboard">Dashboard</button>
+              <button class="sidebar-link" data-section="menu">Menu Manager</button>
+              <button class="sidebar-link" data-section="orders">Orders Inbox</button>
+              <button class="sidebar-link" data-section="profile">Profile</button>
+              <button class="sidebar-link" data-section="settings">Settings</button>
+            </nav>
+            <div class="sidebar-footer">
+              <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
             </div>
-          </div>
-          <div class="header-actions">
-            <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
-            <a class="btn btn-secondary" id="viewStorefrontBtn" href="/storefront" target="_blank" rel="noreferrer">View Storefront</a>
-            <button class="btn btn-secondary" id="logoutBtn">Log out</button>
-          </div>
-        </header>
+          </aside>
 
-        <nav class="merchant-tabs">
-          <button class="tab active" data-tab="dashboard">Dashboard</button>
-          <button class="tab" data-tab="menu">Menu Manager</button>
-          <button class="tab" data-tab="orders">Orders Inbox</button>
-          <button class="tab" data-tab="profile">Profile</button>
-        </nav>
+          <div class="merchant-main">
+            <header class="merchant-header">
+              <div class="store-identity">
+                <div class="store-avatar">
+                  <img id="storeLogo" src="" alt="Store logo" />
+                </div>
+                <div>
+                  <p class="overline">Merchant Portal</p>
+                  <h2 id="storeName">Store Name</h2>
+                  <div class="status-pill" id="storeStatus"></div>
+                </div>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+                <a
+                  class="btn btn-secondary"
+                  id="viewStorefrontBtn"
+                  href="/storefront"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View Storefront
+                </a>
+              </div>
+            </header>
 
-        <section class="panel-section" id="dashboardPanel">
+            <section class="panel-section" id="dashboardPanel">
           <div class="panel glass-card">
             <div class="panel-header">
               <div>
@@ -379,6 +398,24 @@
             </div>
           </div>
         </section>
+        <section class="panel-section" id="settingsPanel" hidden>
+          <div class="panel glass-card">
+            <div class="panel-header">
+              <h3>Settings</h3>
+              <p class="muted">Keep your portal access and preferences safe.</p>
+            </div>
+            <div class="button-row">
+              <button class="btn btn-secondary" id="settingsRefreshBtn" type="button">
+                Refresh data
+              </button>
+              <button class="btn btn-secondary" id="settingsLogoutBtn" type="button">
+                Log out
+              </button>
+            </div>
+          </div>
+        </section>
+          </div>
+        </div>
       </section>
     </main>
     <div class="drawer-backdrop" id="orderBackdrop"></div>
