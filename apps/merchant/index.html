@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClickMenu Merchant</title>
+    <link rel="stylesheet" href="/public/assets/css/shared.css" />
+    <script src="/public/assets/js/api.js"></script>
+    <script src="/public/assets/js/ui.js"></script>
+    <script src="/public/assets/js/formatters.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background: #060606;
+        color: #f5f5f5;
+        font-family: "Inter", "Segoe UI", sans-serif;
+      }
+
+      .background {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent 40%),
+          repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 16px);
+        opacity: 0.2;
+        pointer-events: none;
+      }
+
+      .login {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card {
+        background: rgba(14, 14, 14, 0.92);
+        padding: 32px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        width: min(380px, 90vw);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      .card h2 {
+        margin-top: 0;
+      }
+
+      .card input {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(5, 5, 5, 0.8);
+        color: #fff;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(120deg, #ff3b30, #ff6b4a);
+        color: #fff;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        inset: -40% 0;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+        transform: translateX(-120%);
+        animation: gloss 3.6s ease-in-out infinite;
+      }
+
+      @keyframes gloss {
+        0% {
+          transform: translateX(-120%);
+        }
+        60% {
+          transform: translateX(120%);
+        }
+        100% {
+          transform: translateX(120%);
+        }
+      }
+
+      .dashboard {
+        padding: 32px 6vw 60px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+
+      .header img {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        object-fit: cover;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .tab {
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+      }
+
+      .tab.active {
+        background: rgba(255, 59, 48, 0.2);
+        border-color: rgba(255, 59, 48, 0.4);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+
+      .panel {
+        background: rgba(12, 12, 12, 0.9);
+        padding: 20px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .panel input,
+      .panel textarea,
+      .panel select {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(5, 5, 5, 0.7);
+        color: #fff;
+      }
+
+      .items-list {
+        margin-top: 16px;
+      }
+
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .gallery {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .gallery img {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+      }
+
+      .order-card {
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(12, 12, 12, 0.9);
+        margin-bottom: 16px;
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .kpi {
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background"></div>
+    <div class="login" id="loginView">
+      <div class="card">
+        <h2>Merchant Login</h2>
+        <input id="loginId" placeholder="Store ID or Email" />
+        <input id="loginPass" type="password" placeholder="Passcode" />
+        <button class="btn" id="loginBtn">Access Portal</button>
+      </div>
+    </div>
+
+    <div class="dashboard" id="dashboardView" style="display:none;">
+      <div class="header">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <img id="storeLogo" src="" alt="logo" />
+          <div>
+            <h2 id="storeName"></h2>
+            <div id="storeStatus"></div>
+          </div>
+        </div>
+        <button class="btn" id="logoutBtn">Log out</button>
+      </div>
+
+      <div class="kpis" id="kpiRow"></div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="menu">Menu Manager</button>
+        <button class="tab" data-tab="orders">Orders Inbox</button>
+      </div>
+
+      <div id="menuPanel" class="panel">
+        <h3>Menu Item</h3>
+        <input id="itemId" placeholder="Item ID (FOOD-001)" />
+        <input id="itemTitle" placeholder="Title" />
+        <textarea id="itemDescription" rows="3" placeholder="Description"></textarea>
+        <input id="itemCategory" placeholder="Category" />
+        <input id="itemPrice" type="number" placeholder="Price" />
+        <select id="itemStatus">
+          <option value="available">Available</option>
+          <option value="limited">Limited</option>
+          <option value="sold_out">Sold out</option>
+          <option value="hidden">Hidden</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <input type="checkbox" id="itemFeatured" /> Featured
+        </label>
+        <textarea id="itemImages" rows="3" placeholder="Image URLs (one per line)"></textarea>
+        <input id="uploadInput" type="file" multiple />
+        <div class="gallery" id="imageGallery"></div>
+        <button class="btn" id="saveItemBtn">Save Item</button>
+
+        <div class="items-list" id="itemsList"></div>
+      </div>
+
+      <div id="ordersPanel" style="display:none;"></div>
+    </div>
+
+    <script>
+      const loginView = document.getElementById("loginView");
+      const dashboardView = document.getElementById("dashboardView");
+      const storeName = document.getElementById("storeName");
+      const storeStatus = document.getElementById("storeStatus");
+      const storeLogo = document.getElementById("storeLogo");
+      const itemsList = document.getElementById("itemsList");
+      const ordersPanel = document.getElementById("ordersPanel");
+      const kpiRow = document.getElementById("kpiRow");
+
+      const state = {
+        profile: null,
+        items: [],
+        orders: [],
+      };
+
+      const renderKpis = () => {
+        const totalOrders = state.orders.length;
+        const newOrders = state.orders.filter((order) => order.status === "new").length;
+        const activeItems = state.items.filter((item) => item.status === "available").length;
+        kpiRow.innerHTML = `
+          <div class="kpi"><strong>${totalOrders}</strong><div>Total Requests</div></div>
+          <div class="kpi"><strong>${newOrders}</strong><div>New Orders</div></div>
+          <div class="kpi"><strong>${activeItems}</strong><div>Active Items</div></div>
+        `;
+      };
+
+      const renderItemsList = () => {
+        itemsList.innerHTML = state.items
+          .map(
+            (item) => `
+          <div class="item-row">
+            <div>
+              <strong>${item.title}</strong>
+              <div>${item.item_id} · ${item.status}</div>
+            </div>
+            <button class="btn" data-edit="${item.item_id}">Edit</button>
+          </div>
+        `
+          )
+          .join("");
+      };
+
+      const renderOrders = () => {
+        ordersPanel.innerHTML = state.orders
+          .map(
+            (order) => `
+          <div class="order-card">
+            <strong>${order.request_id}</strong> · ${order.customer_name}
+            <div>${Formatters.dateTime(order.created_at)}</div>
+            <div>${order.customer_phone}</div>
+            <div>Status: ${order.status}</div>
+            <select data-status="${order.request_id}">
+              <option value="new">New</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
+        `
+          )
+          .join("");
+        ordersPanel.querySelectorAll("select").forEach((select) => {
+          const order = state.orders.find((o) => o.request_id === select.dataset.status);
+          if (order) select.value = order.status;
+        });
+      };
+
+      const loadDashboard = async () => {
+        const profileData = await Api.merchant.me();
+        state.profile = profileData.profile;
+        storeName.textContent = state.profile.name;
+        storeStatus.textContent = `Status: ${state.profile.status}`;
+        storeLogo.src = state.profile.logo_url || "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=160&q=80";
+        const itemsData = await Api.merchant.items();
+        state.items = itemsData.items || [];
+        const ordersData = await Api.merchant.orders();
+        state.orders = ordersData.orders || [];
+        renderItemsList();
+        renderOrders();
+        renderKpis();
+      };
+
+      document.getElementById("loginBtn").addEventListener("click", async () => {
+        try {
+          const data = await Api.merchant.login({
+            storeIdOrEmail: document.getElementById("loginId").value.trim(),
+            password: document.getElementById("loginPass").value.trim(),
+          });
+          localStorage.setItem("merchant_token", data.token);
+          loginView.style.display = "none";
+          dashboardView.style.display = "block";
+          await loadDashboard();
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("merchant_token");
+        location.reload();
+      });
+
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach((btn) => btn.classList.remove("active"));
+          tab.classList.add("active");
+          const target = tab.dataset.tab;
+          document.getElementById("menuPanel").style.display = target === "menu" ? "block" : "none";
+          ordersPanel.style.display = target === "orders" ? "block" : "none";
+        });
+      });
+
+      itemsList.addEventListener("click", (event) => {
+        const itemId = event.target.dataset.edit;
+        if (!itemId) return;
+        const item = state.items.find((entry) => entry.item_id === itemId);
+        if (!item) return;
+        document.getElementById("itemId").value = item.item_id;
+        document.getElementById("itemTitle").value = item.title;
+        document.getElementById("itemDescription").value = item.description || "";
+        document.getElementById("itemCategory").value = item.category || "";
+        document.getElementById("itemPrice").value = item.price || "";
+        document.getElementById("itemStatus").value = item.status || "available";
+        document.getElementById("itemFeatured").checked = !!item.is_featured;
+        document.getElementById("itemImages").value = item.image_urls || "";
+        renderGallery(item.image_urls);
+      });
+
+      const renderGallery = (value) => {
+        const urls = value
+          ? value.split(/\n|,/).map((item) => item.trim()).filter(Boolean)
+          : [];
+        document.getElementById("imageGallery").innerHTML = urls
+          .map((url) => `<img src="${url}" alt="preview" />`)
+          .join("");
+      };
+
+      document.getElementById("itemImages").addEventListener("input", (event) => {
+        renderGallery(event.target.value);
+      });
+
+      document.getElementById("saveItemBtn").addEventListener("click", async () => {
+        const payload = {
+          item_id: document.getElementById("itemId").value.trim(),
+          title: document.getElementById("itemTitle").value.trim(),
+          description: document.getElementById("itemDescription").value.trim(),
+          category: document.getElementById("itemCategory").value.trim(),
+          price: Number(document.getElementById("itemPrice").value),
+          status: document.getElementById("itemStatus").value,
+          is_featured: document.getElementById("itemFeatured").checked,
+          image_urls: document.getElementById("itemImages").value.trim(),
+        };
+        try {
+          const data = await Api.merchant.saveItem(payload);
+          const existingIndex = state.items.findIndex((item) => item.item_id === data.item.item_id);
+          if (existingIndex >= 0) {
+            state.items[existingIndex] = data.item;
+          } else {
+            state.items.unshift(data.item);
+          }
+          renderItemsList();
+          UI.toast("Saved", "success");
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+      });
+
+      document.getElementById("uploadInput").addEventListener("change", async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        const itemId = document.getElementById("itemId").value.trim() || "general";
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+        formData.append("itemId", itemId);
+        try {
+          const data = await Api.merchant.uploadMedia(formData);
+          const existing = document.getElementById("itemImages").value.trim();
+          const combined = [existing, ...(data.urls || [])].filter(Boolean).join("\n");
+          document.getElementById("itemImages").value = combined;
+          renderGallery(combined);
+          UI.toast("Images uploaded", "success");
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+      });
+
+      ordersPanel.addEventListener("change", async (event) => {
+        if (!event.target.dataset.status) return;
+        try {
+          const data = await Api.merchant.updateOrderStatus(event.target.dataset.status, {
+            status: event.target.value,
+          });
+          const orderIndex = state.orders.findIndex(
+            (order) => order.request_id === data.order.request_id
+          );
+          if (orderIndex >= 0) {
+            state.orders[orderIndex] = data.order;
+          }
+          UI.toast("Status updated", "success");
+          renderKpis();
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+      });
+
+      const boot = async () => {
+        if (localStorage.getItem("merchant_token")) {
+          loginView.style.display = "none";
+          dashboardView.style.display = "block";
+          try {
+            await loadDashboard();
+          } catch (error) {
+            localStorage.removeItem("merchant_token");
+            location.reload();
+          }
+        }
+      };
+
+      boot();
+    </script>
+  </body>
+</html>
