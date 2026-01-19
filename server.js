@@ -397,65 +397,6 @@ app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   }
 });
 
-app.post("/api/admin/orders/:requestId/status", requireAdmin, async (req, res) => {
-  try {
-    const { status } = req.body;
-    if (!status) {
-      return res.status(400).json({ ok: false, error: "status required" });
-    }
-    const order = await supabase.updateOrderStatusAdmin(req.params.requestId, status);
-    if (!order) {
-      return res.status(404).json({ ok: false, error: "Order not found" });
-    }
-    return res.json({ ok: true, order });
-  } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message });
-  }
-});
-
-app.get("/api/admin/menu", requireAdmin, async (req, res) => {
-  try {
-    const items = await supabase.getAdminMenu(req.query.storeId);
-    return res.json({ ok: true, items });
-  } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message });
-  }
-});
-
-app.post("/api/admin/menu/:itemId", requireAdmin, async (req, res) => {
-  try {
-    const { storeId } = req.body;
-    if (!storeId) {
-      return res.status(400).json({ ok: false, error: "storeId required" });
-    }
-    const item = await supabase.updateMenuItem(storeId, req.params.itemId, req.body);
-    if (!item) {
-      return res.status(404).json({ ok: false, error: "Item not found" });
-    }
-    return res.json({ ok: true, item });
-  } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message });
-  }
-});
-
-app.post("/api/admin/menu/:itemId/delete", requireAdmin, async (req, res) => {
-  try {
-    const { storeId } = req.body;
-    if (!storeId) {
-      return res.status(400).json({ ok: false, error: "storeId required" });
-    }
-    const item = await supabase.updateMenuItem(storeId, req.params.itemId, {
-      status: "hidden",
-    });
-    if (!item) {
-      return res.status(404).json({ ok: false, error: "Item not found" });
-    }
-    return res.json({ ok: true, item });
-  } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message });
-  }
-});
-
 const sendAdminSummary = async (req, res) => {
   try {
     const summary = await supabase.getSummary(req.query.month);
