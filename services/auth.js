@@ -1,15 +1,18 @@
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const TOKEN_TTL = "12h";
+let fallbackSecret = null;
 
 const getJwtSecret = () => {
-  if (!process.env.JWT_SECRET) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET is required in production");
-    }
-    return "dev-secret-change-me";
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
   }
-  return process.env.JWT_SECRET;
+  if (!fallbackSecret) {
+    fallbackSecret = crypto.randomBytes(32).toString("hex");
+    console.warn("JWT_SECRET not set. Generated a temporary secret for this instance.");
+  }
+  return fallbackSecret;
 };
 
 const signToken = (payload) => {

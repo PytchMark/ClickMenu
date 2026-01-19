@@ -120,12 +120,12 @@ const Api = (() => {
         ),
       menu: () =>
         request(
-          "/api/merchant/menu",
+          "/api/merchant/items",
           withAuth(getToken("merchant_token"))({ method: "GET" })
         ),
       saveItem: (payload) =>
         request(
-          "/api/merchant/menu",
+          "/api/merchant/items",
           withAuth(getToken("merchant_token"))({
             method: "POST",
             body: JSON.stringify(payload),
@@ -133,7 +133,7 @@ const Api = (() => {
         ),
       hideItem: (itemId) =>
         request(
-          `/api/merchant/menu/${itemId}/hide`,
+          `/api/merchant/items/${itemId}/archive`,
           withAuth(getToken("merchant_token"))({ method: "POST" })
         ),
       updateItem: (itemId, payload) =>

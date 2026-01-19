@@ -205,19 +205,28 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
 
 app.post("/api/merchant/login", async (req, res) => {
   try {
-    const { storeIdOrEmail, password, passcode } = req.body;
-    const credential = password || passcode;
-    if (!storeIdOrEmail || !credential) {
+    const { identifier, storeIdOrEmail, password, passcode } = req.body;
+    const lookup = identifier || storeIdOrEmail;
+    const credential = passcode || password;
+    if (!lookup || !credential) {
       return res.status(400).json({ ok: false, error: "Missing credentials" });
     }
+    console.info("Merchant login attempt", { identifier: lookup });
     const profile = await supabase.merchantLogin({
-      storeIdOrEmail,
-      password: credential,
+      identifier: lookup,
+      passcode: credential,
     });
     if (!profile) {
+      console.warn("Merchant login failed - profile not found or invalid", { identifier: lookup });
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
+    console.info("Merchant profile found", { storeId: profile.store_id });
+    if (profile.status === "paused") {
+      console.warn("Merchant login blocked - status paused", { identifier: lookup });
+      return res.status(403).json({ ok: false, error: "Store is paused" });
+    }
     const token = signToken({ role: "merchant", storeId: profile.store_id });
+    console.info("Merchant token issued", { storeId: profile.store_id });
     const merchant = {
       store_id: profile.store_id,
       name: profile.name,
@@ -257,10 +266,17 @@ const saveMerchantMenu = async (req, res) => {
       image_url: req.body.image_url || req.body.imageUrl || null,
       video_url: req.body.video_url || req.body.videoUrl || null,
     };
-    if (!payload.item_id || !payload.title || !payload.category) {
+    if (
+      !payload.item_id ||
+      !payload.title ||
+      !payload.category ||
+      payload.price === undefined ||
+      payload.price === null ||
+      Number.isNaN(Number(payload.price))
+    ) {
       return res
         .status(400)
-        .json({ ok: false, error: "item_id, title, category required" });
+        .json({ ok: false, error: "item_id, title, category, price required" });
     }
     const item = await supabase.upsertMenuItem(req.user.storeId, payload);
     return res.json({ ok: true, item });
@@ -276,6 +292,21 @@ app.post("/api/merchant/menu/:itemId/hide", requireMerchant, async (req, res) =>
   try {
     const item = await supabase.updateMenuItem(req.user.storeId, req.params.itemId, {
       status: "hidden",
+    });
+    if (!item) {
+      return res.status(404).json({ ok: false, error: "Item not found" });
+    }
+    return res.json({ ok: true, item });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/merchant/items/:itemId/archive", requireMerchant, async (req, res) => {
+  try {
+    const item = await supabase.updateMenuItem(req.user.storeId, req.params.itemId, {
+      status: "hidden",
+      archived: true,
     });
     if (!item) {
       return res.status(404).json({ ok: false, error: "Item not found" });
@@ -345,10 +376,18 @@ app.post("/api/merchant/profile", requireMerchant, async (req, res) => {
 
 app.post("/api/media/upload", requireMerchant, upload.array("files", 5), async (req, res) => {
   try {
+    const files = req.files || [];
+    const imageFiles = files.filter((file) => file.mimetype?.startsWith("image/"));
+    const videoFiles = files.filter((file) => file.mimetype?.startsWith("video/"));
+    if (imageFiles.length > 1 || videoFiles.length > 1 || files.length > 2) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Max one image and one video allowed per item." });
+    }
     const urls = await supabase.uploadMedia({
       storeId: req.user.storeId,
       itemId: req.body.itemId,
-      files: req.files,
+      files,
     });
     return res.json({ ok: true, urls });
   } catch (error) {
@@ -626,9 +665,6 @@ app.listen(PORT, () => {
     console.error(
       "JWT_SECRET is not set. Provide a strong JWT_SECRET in Cloud Run environment variables."
     );
-    if (process.env.NODE_ENV === "production") {
-      process.exit(1);
-    }
   }
   if (!supabase.hasSupabase()) {
     console.warn("Supabase credentials missing. Running in mock mode.");

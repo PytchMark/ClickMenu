@@ -272,24 +272,26 @@ const createOrderRequest = async (storeId, payload) => {
   return data;
 };
 
-const merchantLogin = async ({ storeIdOrEmail, password }) => {
+const merchantLogin = async ({ identifier, storeIdOrEmail, passcode, password }) => {
+  const lookup = identifier || storeIdOrEmail;
+  const credential = passcode || password;
+  if (!lookup || !credential) return null;
+  const isEmail = lookup.includes("@");
   if (!hasSupabase()) {
-    const profile = mockState.profiles.find(
-      (item) =>
-        item.store_id === storeIdOrEmail || item.profile_email === storeIdOrEmail
+    const profile = mockState.profiles.find((item) =>
+      isEmail ? item.profile_email === lookup : item.store_id === lookup
     );
-    if (!profile || profile.password !== password || profile.status === "paused") {
+    if (!profile || profile.password !== credential || profile.status === "paused") {
       return null;
     }
     return profile;
   }
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .or(`store_id.eq.${storeIdOrEmail},profile_email.eq.${storeIdOrEmail}`)
-    .maybeSingle();
+  const query = supabase.from("profiles").select("*");
+  const { data, error } = isEmail
+    ? await query.eq("profile_email", lookup).maybeSingle()
+    : await query.eq("store_id", lookup).maybeSingle();
   if (error) throw error;
-  if (!data || data.password !== password || data.status === "paused") {
+  if (!data || data.password !== credential || data.status === "paused") {
     return null;
   }
   return data;
@@ -326,6 +328,7 @@ const upsertMenuItem = async (storeId, payload) => {
     labels,
     image_url: payload.image_url || null,
     video_url: payload.video_url || null,
+    archived: payload.archived ?? false,
     updated_at: new Date().toISOString(),
   };
 

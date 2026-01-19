@@ -1,1 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClickMenu Merchant Portal</title>
+    <link rel="stylesheet" href="/public/assets/css/merchant.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="merchant-body">
+    <div class="background-texture"></div>
 
+    <main class="merchant-shell">
+      <section id="loginView" class="login-view">
+        <div class="glass-card login-card">
+          <div class="login-brand">Merchant Access</div>
+          <h1>Welcome back</h1>
+          <p class="helper">
+            Sign in with your store ID or email + passcode to access your dashboard.
+          </p>
+          <label class="field">
+            Store ID or email
+            <input id="loginId" type="text" placeholder="TACOS01 or hello@store.com" />
+          </label>
+          <label class="field">
+            Passcode
+            <input id="loginPass" type="password" placeholder="••••••" />
+          </label>
+          <div id="loginError" class="inline-message"></div>
+          <button id="loginBtn" class="btn btn-primary">Login</button>
+
+          <details id="loginDebug" class="login-debug" hidden>
+            <summary>Diagnostics</summary>
+            <div class="debug-grid">
+              <div>
+                <div class="helper">Endpoint</div>
+                <code id="loginDebugEndpoint">—</code>
+              </div>
+              <div>
+                <div class="helper">Status</div>
+                <code id="loginDebugStatus">—</code>
+              </div>
+              <div class="debug-full">
+                <div class="helper">Response snippet</div>
+                <code id="loginDebugSnippet">—</code>
+              </div>
+              <div class="debug-full">
+                <div class="helper">Hint</div>
+                <code id="loginDebugHint">—</code>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section id="dashboardView" hidden>
+        <div class="merchant-layout">
+          <aside class="merchant-sidebar">
+            <div class="sidebar-brand">
+              <div class="sidebar-logo">CM</div>
+              <div>ClickMenu Merchant</div>
+            </div>
+            <nav class="sidebar-nav">
+              <button class="sidebar-link" data-section="dashboard">Dashboard</button>
+              <button class="sidebar-link" data-section="menu">Menu Manager</button>
+              <button class="sidebar-link" data-section="orders">Orders Inbox</button>
+              <button class="sidebar-link" data-section="profile">Profile</button>
+              <button class="sidebar-link" data-section="settings">Settings</button>
+            </nav>
+            <div class="sidebar-footer">
+              <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+            </div>
+          </aside>
+
+          <div class="merchant-main">
+            <header class="glass-card merchant-header">
+              <div>
+                <div class="muted">Store</div>
+                <div class="merchant-title" id="storeName">Store</div>
+              </div>
+              <div class="merchant-meta">
+                <span id="storeStatus" class="pill">active</span>
+                <img id="storeLogo" alt="Store logo" />
+              </div>
+            </header>
+
+            <section id="dashboardPanel" class="panel-section glass-card">
+              <div class="panel-header">
+                <div>
+                  <h2>Dashboard</h2>
+                  <p class="muted">Daily performance & store readiness.</p>
+                </div>
+                <div class="panel-actions">
+                  <button id="refreshBtn" class="btn btn-ghost">Refresh</button>
+                  <a
+                    id="viewStorefrontBtn"
+                    class="btn btn-primary"
+                    href="#"
+                    target="_blank"
+                    >View storefront</a
+                  >
+                </div>
+              </div>
+              <div id="kpiRow" class="kpi-row"></div>
+              <div class="dashboard-grid">
+                <div class="glass-card">
+                  <h3>Needs attention</h3>
+                  <ul id="attentionList" class="checklist"></ul>
+                </div>
+                <div class="glass-card">
+                  <div class="chart-head">
+                    <h3>Orders pulse</h3>
+                    <span id="ordersPulse" class="pill">—</span>
+                  </div>
+                  <div id="ordersTrendChart" class="chart"></div>
+                  <div id="ordersTrendLegend" class="chart-legend"></div>
+                </div>
+                <div class="glass-card">
+                  <div class="chart-head">
+                    <h3>Fulfillment mix</h3>
+                  </div>
+                  <div id="fulfillmentMixChart" class="chart"></div>
+                  <div id="fulfillmentMixLegend" class="chart-legend"></div>
+                </div>
+                <div class="glass-card" id="storefrontPreview"></div>
+              </div>
+            </section>
+
+            <section id="menuPanel" class="panel-section glass-card" hidden>
+              <div class="panel-header">
+                <div>
+                  <h2>Menu Manager</h2>
+                  <p class="muted">Create, edit, and manage your menu inventory.</p>
+                </div>
+                <div class="pill" id="menuCount">0 items</div>
+              </div>
+
+              <div class="panel-grid">
+                <div class="glass-card">
+                  <h3>Create or edit item</h3>
+                  <div class="form-grid">
+                    <label class="field">
+                      Item ID
+                      <input id="itemId" type="text" placeholder="ITEM-001" />
+                    </label>
+                    <label class="field">
+                      Title
+                      <input id="itemTitle" type="text" placeholder="Signature dish" />
+                    </label>
+                    <label class="field">
+                      Description
+                      <textarea id="itemDescription" rows="3"></textarea>
+                    </label>
+                    <label class="field">
+                      Category
+                      <select id="itemCategory">
+                        <option value="">Select</option>
+                        <option>Breakfast</option>
+                        <option>Lunch</option>
+                        <option>Dinner</option>
+                        <option>Drinks</option>
+                        <option>Snacks</option>
+                        <option>Dessert</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      Price
+                      <input id="itemPrice" type="number" min="0" step="0.01" />
+                    </label>
+                    <label class="field checkbox">
+                      <input id="itemFeatured" type="checkbox" />
+                      Featured item
+                    </label>
+                    <label class="field">
+                      Image URL
+                      <input id="itemImageUrl" type="text" placeholder="https://" />
+                    </label>
+                    <label class="field">
+                      Video URL
+                      <input id="itemVideoUrl" type="text" placeholder="https://" />
+                    </label>
+                    <div class="field">
+                      Labels
+                      <div class="label-grid">
+                        <label><input class="label-checkbox" type="checkbox" value="Top Pick" />Top Pick</label>
+                        <label><input class="label-checkbox" type="checkbox" value="New" />New</label>
+                        <label><input class="label-checkbox" type="checkbox" value="Popular" />Popular</label>
+                      </div>
+                      <input id="customLabel" type="text" placeholder="Custom label" />
+                    </div>
+                    <div class="field">
+                      Availability
+                      <div class="toggle-row">
+                        <label class="field checkbox">
+                          <input id="itemAvailable" type="checkbox" checked /> Available
+                        </label>
+                        <label class="field checkbox">
+                          <input id="itemLimited" type="checkbox" /> Limited
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="media-uploader">
+                    <input id="uploadInput" type="file" accept="image/*,video/*" />
+                    <button id="uploadBtn" class="btn btn-ghost">Upload media</button>
+                  </div>
+                  <div id="mediaPreview" class="media-preview"></div>
+                  <div class="panel-actions">
+                    <button id="saveItemBtn" class="btn btn-primary">Save item</button>
+                    <button id="resetItemBtn" class="btn btn-ghost">Clear</button>
+                    <button id="hideItemBtn" class="btn btn-danger">Archive item</button>
+                  </div>
+                </div>
+
+                <div class="glass-card">
+                  <div class="toolbar">
+                    <input id="menuSearch" type="search" placeholder="Search items" />
+                    <select id="menuCategoryFilter">
+                      <option value="">All categories</option>
+                      <option>Breakfast</option>
+                      <option>Lunch</option>
+                      <option>Dinner</option>
+                      <option>Drinks</option>
+                      <option>Snacks</option>
+                      <option>Dessert</option>
+                    </select>
+                    <select id="menuAvailabilityFilter">
+                      <option value="">All statuses</option>
+                      <option value="available">Available</option>
+                      <option value="limited">Limited</option>
+                      <option value="sold_out">Sold out</option>
+                      <option value="hidden">Archived</option>
+                    </select>
+                    <select id="menuSort">
+                      <option value="newest">Newest</option>
+                      <option value="popular">Most requested</option>
+                      <option value="price_low">Price: Low to high</option>
+                      <option value="price_high">Price: High to low</option>
+                    </select>
+                  </div>
+                  <div id="itemsList" class="list"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="ordersPanel" class="panel-section glass-card" hidden>
+              <div class="panel-header">
+                <div>
+                  <h2>Orders Inbox</h2>
+                  <p class="muted">Track live customer requests and fulfillment status.</p>
+                </div>
+                <div class="pill">
+                  New orders: <span id="newOrdersCount">0</span>
+                </div>
+              </div>
+              <div class="toolbar">
+                <input id="orderSearch" type="search" placeholder="Search orders" />
+                <select id="orderStatusFilter">
+                  <option value="">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="confirmed">Contacted</option>
+                  <option value="ready">Ready</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div id="ordersList" class="list"></div>
+            </section>
+
+            <section id="profilePanel" class="panel-section glass-card" hidden>
+              <div class="panel-header">
+                <div>
+                  <h2>Profile</h2>
+                  <p class="muted">Manage your storefront profile and contact info.</p>
+                </div>
+                <div class="completion-meter">
+                  <span id="completionValue">0%</span>
+                  <div class="meter">
+                    <div id="completionBar" class="meter-fill"></div>
+                  </div>
+                </div>
+              </div>
+              <div id="profilePreview" class="profile-preview"></div>
+              <div class="form-grid">
+                <label class="field">Store name <input id="profileStoreName" type="text" /></label>
+                <label class="field">Logo URL <input id="profileLogoUrl" type="text" /></label>
+                <label class="field">WhatsApp <input id="profileWhatsapp" type="text" /></label>
+                <label class="field">Email <input id="profileEmail" type="email" /></label>
+                <label class="field">Cuisine <input id="profileCuisine" type="text" /></label>
+                <label class="field">Description <textarea id="profileDescription" rows="3"></textarea></label>
+                <label class="field">Hours <input id="profileHours" type="text" /></label>
+                <label class="field">Address <input id="businessAddress" type="text" /></label>
+                <label class="field">Parish <input id="businessParish" type="text" /></label>
+                <label class="field">Owner name <input id="ownerName" type="text" /></label>
+                <label class="field">Owner phone <input id="ownerPhone" type="text" /></label>
+                <label class="field">Owner email <input id="ownerEmail" type="email" /></label>
+                <label class="field">Instagram <input id="instagramHandle" type="text" /></label>
+                <label class="field">TikTok <input id="tiktokHandle" type="text" /></label>
+                <label class="field checkbox">
+                  <input id="pickupEnabled" type="checkbox" /> Pickup enabled
+                </label>
+                <label class="field checkbox">
+                  <input id="deliveryEnabled" type="checkbox" /> Delivery enabled
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button id="saveProfileBtn" class="btn btn-primary">Save profile</button>
+              </div>
+              <ul id="completionChecklist" class="checklist"></ul>
+            </section>
+
+            <section id="settingsPanel" class="panel-section glass-card" hidden>
+              <div class="panel-header">
+                <div>
+                  <h2>Settings</h2>
+                  <p class="muted">Session management and refresh controls.</p>
+                </div>
+              </div>
+              <div class="settings-grid">
+                <div class="glass-card">
+                  <h3>Data</h3>
+                  <p class="muted">Refresh dashboard data.</p>
+                  <button id="settingsRefreshBtn" class="btn btn-ghost">Refresh data</button>
+                </div>
+                <div class="glass-card">
+                  <h3>Session</h3>
+                  <p class="muted">Log out from the merchant portal.</p>
+                  <button id="settingsLogoutBtn" class="btn btn-danger">Logout</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="orderDrawer" class="order-drawer" aria-hidden="true">
+      <div class="order-drawer__header">
+        <div>
+          <div id="drawerOrderId" class="drawer-title"></div>
+          <div id="drawerOrderMeta" class="muted"></div>
+        </div>
+        <button id="closeOrderDrawer" class="btn btn-ghost">Close</button>
+      </div>
+      <div class="order-drawer__content">
+        <div id="drawerCustomer"></div>
+        <div id="drawerItems"></div>
+        <div id="drawerNotes"></div>
+      </div>
+      <div class="order-drawer__footer">
+        <a id="drawerWhatsappBtn" class="btn btn-ghost" target="_blank" rel="noopener"
+          >WhatsApp customer</a
+        >
+        <button id="markContactedBtn" class="btn btn-ghost">Mark contacted</button>
+        <button id="markReadyBtn" class="btn btn-primary">Mark ready</button>
+        <button id="markClosedBtn" class="btn btn-danger">Close order</button>
+      </div>
+    </div>
+    <div id="orderBackdrop" class="order-backdrop"></div>
+
+    <script src="/public/assets/js/api.js"></script>
+    <script src="/public/assets/js/formatters.js"></script>
+    <script src="/public/assets/js/ui.js"></script>
+    <script src="/public/assets/js/merchant.js"></script>
+  </body>
+</html>
