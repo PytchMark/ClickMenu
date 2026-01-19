@@ -27,10 +27,13 @@ const mockState = {
       owner_name: "Luna Santos",
       owner_phone: "+15551230000",
       owner_email: "owner@lunatacos.example",
+      cuisine_type: "Modern Mexican",
       hours: "Mon-Sat 11am-9pm",
       about: "Birria-inspired tacos with a smoky twist.",
       instagram: "@lunatacos",
       tiktok: "@lunatacos",
+      pickup_enabled: true,
+      delivery_enabled: true,
       authorized: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -173,7 +176,7 @@ const getStoreProfile = async (storeId) => {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "store_id,name,status,whatsapp,logo_url,profile_email,business_address,parish,owner_name,owner_phone,owner_email,hours,about,instagram,tiktok,authorized"
+      "store_id,name,status,whatsapp,logo_url,profile_email,cuisine_type,business_address,parish,owner_name,owner_phone,owner_email,hours,about,instagram,tiktok,pickup_enabled,delivery_enabled,authorized"
     )
     .eq("store_id", storeId)
     .maybeSingle();
@@ -537,6 +540,7 @@ const createStore = async (payload) => {
     status: payload.status || "active",
     whatsapp: payload.whatsapp || null,
     profile_email: payload.profile_email || null,
+    cuisine_type: payload.cuisine_type || null,
     password: payload.password || crypto.randomBytes(4).toString("hex"),
     logo_url: payload.logo_url || null,
     business_address: payload.business_address || null,
@@ -548,6 +552,8 @@ const createStore = async (payload) => {
     about: payload.about || null,
     instagram: payload.instagram || null,
     tiktok: payload.tiktok || null,
+    pickup_enabled: payload.pickup_enabled ?? true,
+    delivery_enabled: payload.delivery_enabled ?? true,
     authorized: payload.authorized ?? false,
     updated_at: new Date().toISOString(),
     created_at: new Date().toISOString(),

@@ -7,6 +7,7 @@ create table if not exists profiles (
   status text not null default 'active',
   whatsapp text,
   profile_email text,
+  cuisine_type text,
   password text,
   logo_url text,
   business_address text,
@@ -18,6 +19,8 @@ create table if not exists profiles (
   about text,
   instagram text,
   tiktok text,
+  pickup_enabled boolean default true,
+  delivery_enabled boolean default true,
   authorized boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()

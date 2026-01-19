@@ -5,308 +5,329 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ClickMenu Merchant</title>
     <link rel="stylesheet" href="/public/assets/css/shared.css" />
+    <link rel="stylesheet" href="/public/assets/css/merchant.css" />
     <script src="/public/assets/js/api.js"></script>
     <script src="/public/assets/js/ui.js"></script>
     <script src="/public/assets/js/formatters.js"></script>
-    <style>
-      body {
-        margin: 0;
-        background: #060606;
-        color: #f5f5f5;
-        font-family: "Inter", "Segoe UI", sans-serif;
-      }
-
-      .background {
-        position: fixed;
-        inset: 0;
-        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent 40%),
-          repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 16px);
-        opacity: 0.2;
-        pointer-events: none;
-      }
-
-      .login {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .card {
-        background: rgba(14, 14, 14, 0.92);
-        padding: 32px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        width: min(380px, 90vw);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-      }
-
-      .card h2 {
-        margin-top: 0;
-      }
-
-      .card input {
-        width: 100%;
-        margin-bottom: 12px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(5, 5, 5, 0.8);
-        color: #fff;
-      }
-
-      .btn {
-        padding: 12px 20px;
-        border-radius: 999px;
-        border: none;
-        cursor: pointer;
-        background: linear-gradient(120deg, #ff3b30, #ff6b4a);
-        color: #fff;
-        font-weight: 600;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn::after {
-        content: "";
-        position: absolute;
-        inset: -40% 0;
-        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-        transform: translateX(-120%);
-        animation: gloss 3.6s ease-in-out infinite;
-      }
-
-      @keyframes gloss {
-        0% {
-          transform: translateX(-120%);
-        }
-        60% {
-          transform: translateX(120%);
-        }
-        100% {
-          transform: translateX(120%);
-        }
-      }
-
-      .dashboard {
-        padding: 32px 6vw 60px;
-      }
-
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-      }
-
-      .header img {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        object-fit: cover;
-      }
-
-      .tabs {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 24px;
-      }
-
-      .tab {
-        padding: 10px 18px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
-        cursor: pointer;
-      }
-
-      .tab.active {
-        background: rgba(255, 59, 48, 0.2);
-        border-color: rgba(255, 59, 48, 0.4);
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 20px;
-      }
-
-      .panel {
-        background: rgba(12, 12, 12, 0.9);
-        padding: 20px;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .panel input,
-      .panel textarea,
-      .panel select {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(5, 5, 5, 0.7);
-        color: #fff;
-      }
-
-      .items-list {
-        margin-top: 16px;
-      }
-
-      .item-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .gallery {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .gallery img {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        object-fit: cover;
-      }
-
-      .order-card {
-        padding: 16px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(12, 12, 12, 0.9);
-        margin-bottom: 16px;
-      }
-
-      .kpis {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-      }
-
-      .kpi {
-        padding: 16px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.06);
-      }
-
-      .warning {
-        border: 1px solid rgba(255, 193, 7, 0.4);
-        background: rgba(255, 193, 7, 0.1);
-        padding: 12px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-      }
-
-      .media-preview video {
-        width: 120px;
-        height: 80px;
-        border-radius: 10px;
-      }
-    </style>
   </head>
-  <body>
-    <div class="background"></div>
-    <div class="login" id="loginView">
-      <div class="card">
-        <h2>Merchant Login</h2>
-        <input id="loginId" placeholder="Store ID or Email" />
-        <input id="loginPass" type="password" placeholder="Passcode" />
-        <button class="btn" id="loginBtn">Access Portal</button>
-      </div>
-    </div>
+  <body class="merchant-body">
+    <div class="background-texture"></div>
+    <main class="merchant-shell">
+      <section class="login-view" id="loginView">
+        <div class="login-card glass-card">
+          <div class="login-brand">ClickMenu Merchant</div>
+          <h1>Welcome back</h1>
+          <p class="muted">Sign in to your control room.</p>
+          <label class="field">
+            <span>Store ID or Email</span>
+            <input id="loginId" placeholder="e.g. LUNA01 or hello@store.com" />
+          </label>
+          <label class="field">
+            <span>Passcode</span>
+            <input id="loginPass" type="password" placeholder="••••••••" />
+          </label>
+          <div class="inline-message" id="loginError" role="alert"></div>
+          <button class="btn btn-primary" id="loginBtn">Access Portal</button>
+          <p class="helper">Need access? Ask your administrator to reset your merchant passcode.</p>
+        </div>
+      </section>
 
-    <div class="dashboard" id="dashboardView" style="display:none;">
-      <div class="header">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <img id="storeLogo" src="" alt="logo" />
-          <div>
-            <h2 id="storeName"></h2>
-            <div id="storeStatus"></div>
+      <section class="dashboard-view" id="dashboardView" hidden>
+        <header class="merchant-header">
+          <div class="store-identity">
+            <div class="store-avatar">
+              <img id="storeLogo" src="" alt="Store logo" />
+            </div>
+            <div>
+              <p class="overline">Merchant Portal</p>
+              <h2 id="storeName">Store Name</h2>
+              <div class="status-pill" id="storeStatus"></div>
+            </div>
           </div>
-        </div>
-        <button class="btn" id="logoutBtn">Log out</button>
-      </div>
-
-      <div class="kpis" id="kpiRow"></div>
-
-      <div class="tabs">
-        <button class="tab active" data-tab="menu">Menu Manager</button>
-        <button class="tab" data-tab="orders">Orders Inbox</button>
-        <button class="tab" data-tab="profile">Profile</button>
-      </div>
-
-      <div id="menuPanel" class="panel">
-        <div class="warning" id="profileWarning" style="display:none;">
-          Complete your merchant profile to be authorized for storefront visibility.
-        </div>
-        <h3>Menu Item</h3>
-        <input id="itemId" placeholder="Item ID (FOOD-001)" />
-        <input id="itemTitle" placeholder="Title" />
-        <textarea id="itemDescription" rows="3" placeholder="Description"></textarea>
-        <select id="itemCategory">
-          <option value="">Category</option>
-          <option value="Breakfast">Breakfast</option>
-          <option value="Lunch">Lunch</option>
-          <option value="Dinner">Dinner</option>
-          <option value="Snacks">Snacks</option>
-          <option value="Drinks">Drinks</option>
-        </select>
-        <input id="itemPrice" type="number" placeholder="Price" />
-        <select id="itemStatus">
-          <option value="available">Available</option>
-          <option value="limited">Limited</option>
-          <option value="sold_out">Sold out</option>
-          <option value="hidden">Hidden</option>
-        </select>
-        <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <input type="checkbox" id="itemFeatured" /> Featured
-        </label>
-        <div class="panel" style="margin:16px 0;">
-          <strong>Labels</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
-            <label><input type="checkbox" class="label-checkbox" value="Chef's Special" /> Chef's Special</label>
-            <label><input type="checkbox" class="label-checkbox" value="Most Loved" /> Most Loved</label>
-            <label><input type="checkbox" class="label-checkbox" value="Spicy" /> Spicy</label>
-            <label><input type="checkbox" class="label-checkbox" value="Vegan" /> Vegan</label>
+          <div class="header-actions">
+            <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+            <button class="btn btn-secondary" id="logoutBtn">Log out</button>
           </div>
-          <input id="customLabel" placeholder="Custom label (optional)" />
-        </div>
-        <input id="itemImageUrl" placeholder="Image URL" />
-        <input id="itemVideoUrl" placeholder="Video URL" />
-        <input id="uploadInput" type="file" accept="image/*,video/*" />
-        <div class="gallery media-preview" id="mediaPreview"></div>
-        <button class="btn" id="saveItemBtn">Save Item</button>
-        <button class="btn" id="hideItemBtn" style="margin-left:10px;background:#202020;">Hide Item</button>
+        </header>
 
-        <div class="items-list" id="itemsList"></div>
-      </div>
+        <nav class="merchant-tabs">
+          <button class="tab active" data-tab="dashboard">Dashboard</button>
+          <button class="tab" data-tab="menu">Menu Manager</button>
+          <button class="tab" data-tab="orders">Orders Inbox</button>
+          <button class="tab" data-tab="profile">Profile</button>
+        </nav>
 
-      <div id="ordersPanel" style="display:none;"></div>
-      <div id="profilePanel" class="panel" style="display:none;">
-        <h3>Merchant Profile</h3>
-        <input id="businessAddress" placeholder="Business address" />
-        <input id="businessParish" placeholder="Parish" />
-        <input id="ownerName" placeholder="Owner name" />
-        <input id="ownerPhone" placeholder="Owner phone" />
-        <input id="ownerEmail" placeholder="Owner email" />
-        <input id="businessHours" placeholder="Hours" />
-        <textarea id="businessAbout" rows="3" placeholder="About the business"></textarea>
-        <input id="instagramHandle" placeholder="Instagram" />
-        <input id="tiktokHandle" placeholder="TikTok" />
-        <button class="btn" id="saveProfileBtn">Save Profile</button>
-        <div class="panel" style="margin-top:16px;">
-          <h4>Profile Preview</h4>
-          <div id="profilePreview"></div>
-        </div>
-      </div>
-    </div>
+        <section class="panel-section" id="dashboardPanel">
+          <div class="panel glass-card">
+            <div class="panel-header">
+              <div>
+                <h3>Control Room</h3>
+                <p class="muted">Your real-time performance snapshot.</p>
+              </div>
+              <div class="pill" id="ordersPulse">Live</div>
+            </div>
+            <div class="kpi-grid" id="kpiRow"></div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <h3>Needs Attention</h3>
+                <p class="muted">Priority tasks to unlock growth.</p>
+              </div>
+              <div class="attention-list" id="attentionList"></div>
+            </div>
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <h3>Storefront Preview</h3>
+                <p class="muted">Exactly how customers see you.</p>
+              </div>
+              <div class="storefront-preview" id="storefrontPreview"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-section" id="menuPanel" hidden>
+          <div class="menu-layout">
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <h3>Menu Item Builder</h3>
+                <p class="muted">Create premium dishes that convert.</p>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>Item ID</span>
+                  <input id="itemId" placeholder="FOOD-001" />
+                </label>
+                <label class="field">
+                  <span>Title</span>
+                  <input id="itemTitle" placeholder="Truffle Jerk Chicken" />
+                </label>
+                <label class="field field-full">
+                  <span>Description</span>
+                  <textarea id="itemDescription" rows="3" placeholder="Describe what makes it unforgettable."></textarea>
+                </label>
+                <label class="field">
+                  <span>Category</span>
+                  <select id="itemCategory">
+                    <option value="">Select category</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Dessert">Dessert</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Price</span>
+                  <input id="itemPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <label class="toggle">
+                  <input type="checkbox" id="itemAvailable" />
+                  <span>Available</span>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" id="itemLimited" />
+                  <span>Limited Batch</span>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" id="itemFeatured" />
+                  <span>Featured</span>
+                </label>
+              </div>
+
+              <div class="panel-subsection">
+                <h4>Labels</h4>
+                <div class="label-grid">
+                  <label><input type="checkbox" class="label-checkbox" value="Chef's Special" /> Chef's Special</label>
+                  <label><input type="checkbox" class="label-checkbox" value="Most Loved" /> Most Loved</label>
+                  <label><input type="checkbox" class="label-checkbox" value="Spicy" /> Spicy</label>
+                  <label><input type="checkbox" class="label-checkbox" value="Vegan" /> Vegan</label>
+                </div>
+                <input id="customLabel" placeholder="Custom label (optional)" />
+              </div>
+
+              <div class="panel-subsection">
+                <h4>Media</h4>
+                <p class="muted">Upload one image and one video to showcase this dish.</p>
+                <div class="media-uploader">
+                  <input id="uploadInput" type="file" accept="image/*,video/*" />
+                  <button class="btn btn-primary" id="uploadBtn" type="button">Upload Media</button>
+                </div>
+                <div class="media-preview" id="mediaPreview"></div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span>Image URL</span>
+                    <input id="itemImageUrl" placeholder="https://" />
+                  </label>
+                  <label class="field">
+                    <span>Video URL</span>
+                    <input id="itemVideoUrl" placeholder="https://" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button class="btn btn-primary" id="saveItemBtn">Save Item</button>
+                <button class="btn btn-secondary" id="resetItemBtn" type="button">New Item</button>
+                <button class="btn btn-ghost" id="hideItemBtn" type="button">Archive Item</button>
+              </div>
+            </div>
+
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <div>
+                  <h3>Inventory</h3>
+                  <p class="muted" id="menuCount">0 items</p>
+                </div>
+                <div class="pill">Live Menu</div>
+              </div>
+              <div class="toolbar">
+                <input id="menuSearch" placeholder="Search by name or ID" />
+                <select id="menuCategoryFilter">
+                  <option value="">All categories</option>
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                  <option value="Drinks">Drinks</option>
+                  <option value="Snacks">Snacks</option>
+                  <option value="Dessert">Dessert</option>
+                </select>
+                <select id="menuAvailabilityFilter">
+                  <option value="">All status</option>
+                  <option value="available">Available</option>
+                  <option value="limited">Limited</option>
+                  <option value="sold_out">Sold out</option>
+                  <option value="hidden">Archived</option>
+                </select>
+                <select id="menuSort">
+                  <option value="requested">Most requested</option>
+                  <option value="alpha">Alphabetical</option>
+                  <option value="price_desc">Price high-low</option>
+                  <option value="price_asc">Price low-high</option>
+                </select>
+              </div>
+              <div class="menu-grid" id="itemsList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-section" id="ordersPanel" hidden>
+          <div class="panel glass-card">
+            <div class="panel-header">
+              <div>
+                <h3>Orders Inbox</h3>
+                <p class="muted">Respond quickly to keep momentum high.</p>
+              </div>
+              <div class="pill" id="newOrdersCount">0 new</div>
+            </div>
+            <div class="orders-grid" id="ordersList"></div>
+          </div>
+        </section>
+
+        <section class="panel-section" id="profilePanel" hidden>
+          <div class="profile-layout">
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <h3>Store Settings</h3>
+                <p class="muted">Keep this polished for trust and conversion.</p>
+              </div>
+              <div class="completion-meter">
+                <div class="completion-header">
+                  <span>Profile completion</span>
+                  <strong id="completionValue">0%</strong>
+                </div>
+                <div class="completion-bar">
+                  <span id="completionBar"></span>
+                </div>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>Store name</span>
+                  <input id="profileStoreName" placeholder="Luna Tacos" />
+                </label>
+                <label class="field">
+                  <span>Logo URL</span>
+                  <input id="profileLogoUrl" placeholder="https://" />
+                </label>
+                <label class="field">
+                  <span>WhatsApp</span>
+                  <input id="profileWhatsapp" placeholder="+15550001111" />
+                </label>
+                <label class="field">
+                  <span>Contact email</span>
+                  <input id="profileEmail" placeholder="hello@store.com" />
+                </label>
+                <label class="field">
+                  <span>Cuisine type</span>
+                  <input id="profileCuisine" placeholder="Modern Caribbean" />
+                </label>
+                <label class="field field-full">
+                  <span>Business description</span>
+                  <textarea id="profileDescription" rows="3" placeholder="Share the story behind your menu."></textarea>
+                </label>
+                <label class="field">
+                  <span>Operating hours</span>
+                  <input id="profileHours" placeholder="Mon-Sat 11am-9pm" />
+                </label>
+                <label class="field">
+                  <span>Business address</span>
+                  <input id="businessAddress" placeholder="12 Duke Street" />
+                </label>
+                <label class="field">
+                  <span>Parish</span>
+                  <input id="businessParish" placeholder="Kingston" />
+                </label>
+                <label class="field">
+                  <span>Owner name</span>
+                  <input id="ownerName" placeholder="Owner name" />
+                </label>
+                <label class="field">
+                  <span>Owner phone</span>
+                  <input id="ownerPhone" placeholder="Owner phone" />
+                </label>
+                <label class="field">
+                  <span>Owner email</span>
+                  <input id="ownerEmail" placeholder="owner@store.com" />
+                </label>
+                <label class="field">
+                  <span>Instagram</span>
+                  <input id="instagramHandle" placeholder="@yourstore" />
+                </label>
+                <label class="field">
+                  <span>TikTok</span>
+                  <input id="tiktokHandle" placeholder="@yourstore" />
+                </label>
+              </div>
+              <div class="toggle-row">
+                <label class="toggle">
+                  <input type="checkbox" id="pickupEnabled" />
+                  <span>Pickup enabled</span>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" id="deliveryEnabled" />
+                  <span>Delivery enabled</span>
+                </label>
+              </div>
+              <div class="button-row">
+                <button class="btn btn-primary" id="saveProfileBtn">Save Profile</button>
+              </div>
+            </div>
+            <div class="panel glass-card">
+              <div class="panel-header">
+                <h3>Storefront Preview</h3>
+                <p class="muted">Customers will see this in the storefront.</p>
+              </div>
+              <div id="profilePreview" class="storefront-preview"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
     <script src="/public/assets/js/merchant.js" defer></script>
   </body>
 </html>
