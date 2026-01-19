@@ -104,6 +104,10 @@ create table if not exists order_requests (
   customer_email text,
   notes text,
   items_json jsonb not null,
+  fulfillment_method text not null default 'pickup',
+  parish text not null,
+  location_details text not null,
+  preferred_time text,
   total numeric,
   source text default 'storefront',
   created_at timestamptz default now()
@@ -136,9 +140,12 @@ curl http://localhost:8080/api/public/store/TACOS01/menu
 curl -X POST http://localhost:8080/api/public/store/TACOS01/orders \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "Ava",
-    "customer_phone": "+15550001111",
-    "items_json": [{"itemId":"FOOD-001","title":"Birria Taco Trio","qty":1,"price":14}]
+    "customerName": "Ava",
+    "customerPhone": "+15550001111",
+    "fulfillmentMethod": "pickup",
+    "parish": "Kingston",
+    "locationDetails": "Pickup counter",
+    "items": [{"itemId":"FOOD-001","title":"Birria Taco Trio","qty":1,"price":14}]
   }'
 ```
 
