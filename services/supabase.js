@@ -1,6 +1,7 @@
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
 const { summarizeOrders } = require("./analytics");
+const { uploadFiles } = require("./cloudinary");
 
 const hasSupabase = () => !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -21,8 +22,18 @@ const mockState = {
       profile_email: "hello@lunatacos.example",
       password: "tacos123",
       logo_url: "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=160&q=80",
-      theme_json: null,
+      business_address: "12 Duke Street",
+      parish: "Kingston",
+      owner_name: "Luna Santos",
+      owner_phone: "+15551230000",
+      owner_email: "owner@lunatacos.example",
+      hours: "Mon-Sat 11am-9pm",
+      about: "Birria-inspired tacos with a smoky twist.",
+      instagram: "@lunatacos",
+      tiktok: "@lunatacos",
+      authorized: true,
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     },
   ],
   menu_items: [
@@ -32,11 +43,13 @@ const mockState = {
       item_id: "FOOD-001",
       title: "Birria Taco Trio",
       description: "Slow-braised beef, consommé, pickled onion, cilantro.",
-      category: "Featured",
+      category: "Lunch",
       price: 14,
       status: "available",
-      is_featured: true,
-      image_urls: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80",
+      featured: true,
+      labels: ["Top Pick"],
+      image_url: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
@@ -49,8 +62,10 @@ const mockState = {
       category: "Bowls",
       price: 12,
       status: "available",
-      is_featured: false,
-      image_urls: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+      featured: false,
+      labels: ["Most Loved"],
+      image_url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
@@ -68,11 +83,12 @@ const mockState = {
       items_json: [
         { itemId: "FOOD-001", title: "Birria Taco Trio", qty: 1, price: 14 },
       ],
-      fulfillment_method: "pickup",
+      fulfillment_type: "pickup",
       parish: "Kingston",
-      location_details: "Pickup counter",
+      delivery_address: "Pickup counter",
+      delivery_notes: null,
       preferred_time: null,
-      total: 14,
+      subtotal: 14,
       source: "storefront",
       created_at: new Date().toISOString(),
     },
@@ -81,27 +97,11 @@ const mockState = {
 
 const buildOrderId = () => `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
-const parseImageUrls = (value) => {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed;
-  } catch (error) {
-    // ignore
-  }
-  return value
-    .split(/\n|,/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
-const serializeImageUrls = (urls) => (Array.isArray(urls) ? urls.join("\n") : urls || "");
-
-const mapMenuItems = (items) =>
-  items.map((item) => ({
-    ...item,
-    image_urls: serializeImageUrls(parseImageUrls(item.image_urls)),
-  }));
+const normalizeMenuItem = (item) => ({
+  ...item,
+  featured: item.featured ?? item.is_featured ?? false,
+  labels: item.labels || [],
+});
 
 const getStoreProfile = async (storeId) => {
   if (!hasSupabase()) {
@@ -109,7 +109,9 @@ const getStoreProfile = async (storeId) => {
   }
   const { data, error } = await supabase
     .from("profiles")
-    .select("store_id,name,status,whatsapp,logo_url,profile_email,theme_json")
+    .select(
+      "store_id,name,status,whatsapp,logo_url,profile_email,business_address,parish,owner_name,owner_phone,owner_email,hours,about,instagram,tiktok,authorized"
+    )
     .eq("store_id", storeId)
     .maybeSingle();
   if (error) throw error;
@@ -130,30 +132,44 @@ const getMenuItems = async (storeId, includeAll = false) => {
   }
   const { data, error } = await query.order("created_at", { ascending: false });
   if (error) throw error;
-  return data || [];
+  return (data || []).map(normalizeMenuItem);
 };
 
 const getCombinedMenu = async (storeIds) => {
   const uniqueIds = Array.from(new Set(storeIds.filter(Boolean))).slice(0, 3);
   if (!hasSupabase()) {
-    const stores = mockState.profiles.filter((profile) => uniqueIds.includes(profile.store_id));
-    const items = mockState.menu_items.filter((item) =>
-      uniqueIds.includes(item.store_id)
+    const stores = mockState.profiles.filter(
+      (profile) =>
+        uniqueIds.includes(profile.store_id) &&
+        profile.status === "active" &&
+        profile.authorized
     );
-    return { stores, items };
+    const activeStoreIds = stores.map((store) => store.store_id);
+    const items = mockState.menu_items.filter(
+      (item) =>
+        activeStoreIds.includes(item.store_id) &&
+        ["available", "limited"].includes(item.status)
+    );
+    return { stores, items: items.map(normalizeMenuItem) };
   }
   const { data: stores, error: storesError } = await supabase
     .from("profiles")
-    .select("store_id,name,status,whatsapp,logo_url")
+    .select("store_id,name,status,whatsapp,logo_url,about,hours,authorized")
     .in("store_id", uniqueIds);
   if (storesError) throw storesError;
+  const activeStoreIds = (stores || [])
+    .filter((store) => store.status === "active" && store.authorized)
+    .map((store) => store.store_id);
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
     .select("*")
-    .in("store_id", uniqueIds)
+    .in("store_id", activeStoreIds)
     .in("status", ["available", "limited"]);
   if (itemsError) throw itemsError;
-  return { stores, items };
+  const activeStores = (stores || []).filter(
+    (store) => store.status === "active" && store.authorized
+  );
+  return { stores: activeStores, items: (items || []).map(normalizeMenuItem) };
 };
 
 const createOrderRequest = async (storeId, payload) => {
@@ -167,11 +183,12 @@ const createOrderRequest = async (storeId, payload) => {
     customer_email: payload.customer_email || null,
     notes: payload.notes || null,
     items_json: payload.items_json || [],
-    fulfillment_method: payload.fulfillment_method || "pickup",
+    fulfillment_type: payload.fulfillment_type || "pickup",
     parish: payload.parish || null,
-    location_details: payload.location_details || null,
+    delivery_address: payload.delivery_address || null,
+    delivery_notes: payload.delivery_notes || null,
     preferred_time: payload.preferred_time || null,
-    total: payload.total || null,
+    subtotal: payload.subtotal || null,
     source: payload.source || "storefront",
     created_at: new Date().toISOString(),
   };
@@ -222,20 +239,27 @@ const getMerchantItems = async (storeId) => {
     .eq("store_id", storeId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data || [];
+  return (data || []).map(normalizeMenuItem);
 };
 
 const upsertMenuItem = async (storeId, payload) => {
+  const labels = Array.isArray(payload.labels)
+    ? payload.labels
+    : payload.labels
+      ? [payload.labels]
+      : [];
   const record = {
     store_id: storeId,
     item_id: payload.item_id,
     title: payload.title,
     description: payload.description || null,
     category: payload.category || null,
-    price: payload.price || null,
+    price: payload.price ?? null,
     status: payload.status || "available",
-    is_featured: payload.is_featured || false,
-    image_urls: serializeImageUrls(payload.image_urls || payload.image_urls === "" ? payload.image_urls : ""),
+    featured: payload.featured || false,
+    labels,
+    image_url: payload.image_url || null,
+    video_url: payload.video_url || null,
     updated_at: new Date().toISOString(),
   };
 
@@ -347,16 +371,37 @@ const createStore = async (payload) => {
     profile_email: payload.profile_email || null,
     password: payload.password || crypto.randomBytes(4).toString("hex"),
     logo_url: payload.logo_url || null,
-    theme_json: payload.theme_json || null,
+    business_address: payload.business_address || null,
+    parish: payload.parish || null,
+    owner_name: payload.owner_name || null,
+    owner_phone: payload.owner_phone || null,
+    owner_email: payload.owner_email || null,
+    hours: payload.hours || null,
+    about: payload.about || null,
+    instagram: payload.instagram || null,
+    tiktok: payload.tiktok || null,
+    authorized: payload.authorized ?? false,
+    updated_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
   };
 
   if (!hasSupabase()) {
+    const existingIndex = mockState.profiles.findIndex(
+      (profile) => profile.store_id === payload.store_id
+    );
+    if (existingIndex >= 0) {
+      mockState.profiles[existingIndex] = { ...mockState.profiles[existingIndex], ...record };
+      return mockState.profiles[existingIndex];
+    }
     mockState.profiles.unshift({ id: crypto.randomUUID(), ...record });
     return record;
   }
 
-  const { data, error } = await supabase.from("profiles").insert(record).select("*").single();
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(record, { onConflict: "store_id" })
+    .select("*")
+    .single();
   if (error) throw error;
   return data;
 };
@@ -404,28 +449,57 @@ const getSummary = async () => {
   };
 };
 
-const uploadMedia = async ({ storeId, itemId, files }) => {
-  if (!files || files.length === 0) return [];
+const getAdminMenu = async (storeId) => {
   if (!hasSupabase()) {
-    return files.map((file) =>
-      `https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=80&sig=${encodeURIComponent(file.originalname)}`
-    );
+    return storeId
+      ? mockState.menu_items.filter((item) => item.store_id === storeId)
+      : mockState.menu_items;
   }
-  const bucket = supabase.storage.from("menu-media");
-  const uploads = await Promise.all(
-    files.map(async (file) => {
-      const path = `stores/${storeId}/items/${itemId || "general"}/${Date.now()}-${file.originalname}`;
-      const { error } = await bucket.upload(path, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
-      });
-      if (error) throw error;
-      const { data } = bucket.getPublicUrl(path);
-      return data.publicUrl;
-    })
-  );
-  return uploads;
+  let query = supabase.from("menu_items").select("*").order("created_at", { ascending: false });
+  if (storeId) {
+    query = query.eq("store_id", storeId);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(normalizeMenuItem);
 };
+
+const updateOrderStatusAdmin = async (requestId, status) => {
+  if (!hasSupabase()) {
+    const existing = mockState.order_requests.find((order) => order.request_id === requestId);
+    if (!existing) return null;
+    existing.status = status;
+    return existing;
+  }
+  const { data, error } = await supabase
+    .from("order_requests")
+    .update({ status })
+    .eq("request_id", requestId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const updateMerchantProfile = async (storeId, payload) => {
+  if (!hasSupabase()) {
+    const index = mockState.profiles.findIndex((profile) => profile.store_id === storeId);
+    if (index < 0) return null;
+    mockState.profiles[index] = { ...mockState.profiles[index], ...payload };
+    return mockState.profiles[index];
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ ...payload, updated_at: new Date().toISOString() })
+    .eq("store_id", storeId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const uploadMedia = async ({ storeId, itemId, files }) =>
+  uploadFiles({ storeId, itemId, files });
 
 module.exports = {
   hasSupabase,
@@ -444,5 +518,8 @@ module.exports = {
   resetPassword,
   getAdminOrders,
   getSummary,
+  getAdminMenu,
+  updateOrderStatusAdmin,
+  updateMerchantProfile,
   uploadMedia,
 };

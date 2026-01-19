@@ -11,6 +11,7 @@ const {
   requireAdmin,
   requireMerchant,
 } = require("./services/auth");
+const { buildMerchantAnalytics } = require("./services/analytics");
 const supabase = require("./services/supabase");
 
 const app = express();
@@ -65,6 +66,12 @@ app.get("/api/public/store/:storeId", async (req, res) => {
     if (!profile) {
       return res.status(404).json({ ok: false, error: "Store not found" });
     }
+    if (profile.authorized === false) {
+      return res.status(403).json({ ok: false, error: "Store not authorized" });
+    }
+    if (profile.status && profile.status !== "active") {
+      return res.json({ ok: true, store: profile, paused: true });
+    }
     return res.json({ ok: true, store: profile });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
@@ -73,6 +80,16 @@ app.get("/api/public/store/:storeId", async (req, res) => {
 
 app.get("/api/public/store/:storeId/menu", async (req, res) => {
   try {
+    const profile = await supabase.getStoreProfile(req.params.storeId);
+    if (!profile) {
+      return res.status(404).json({ ok: false, error: "Store not found" });
+    }
+    if (profile.authorized === false) {
+      return res.status(403).json({ ok: false, error: "Store not authorized" });
+    }
+    if (profile.status && profile.status !== "active") {
+      return res.status(403).json({ ok: false, error: "Store is not active" });
+    }
     const items = await supabase.getMenuItems(req.params.storeId, req.query.all === "1");
     return res.json({ ok: true, items });
   } catch (error) {
@@ -102,6 +119,7 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
     const fulfillmentMethod = req.body.fulfillmentMethod || req.body.fulfillment_method;
     const parish = req.body.parish;
     const locationDetails = req.body.locationDetails || req.body.location_details;
+    const deliveryNotes = req.body.deliveryNotes || req.body.delivery_notes;
     const preferredTime = req.body.preferredTime || req.body.preferred_time || null;
     const items = req.body.items || req.body.items_json;
     if (!customerName || !customerPhone || !Array.isArray(items) || items.length === 0) {
@@ -125,10 +143,11 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
       customer_email: customerEmail,
       notes,
       items_json: items,
-      total,
-      fulfillment_method: fulfillmentMethod,
+      subtotal: total,
+      fulfillment_type: fulfillmentMethod,
       parish,
-      location_details: locationDetails,
+      delivery_address: locationDetails,
+      delivery_notes: deliveryNotes,
       preferred_time: preferredTime,
       source: "storefront",
     });
@@ -193,22 +212,49 @@ app.get("/api/merchant/me", requireMerchant, async (req, res) => {
   return res.json({ ok: true, profile });
 });
 
-app.get("/api/merchant/items", requireMerchant, async (req, res) => {
+const listMerchantMenu = async (req, res) => {
   try {
     const items = await supabase.getMerchantItems(req.user.storeId);
     return res.json({ ok: true, items });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
+};
 
-app.post("/api/merchant/items", requireMerchant, async (req, res) => {
+app.get("/api/merchant/items", requireMerchant, listMerchantMenu);
+app.get("/api/merchant/menu", requireMerchant, listMerchantMenu);
+
+const saveMerchantMenu = async (req, res) => {
   try {
-    const payload = req.body;
-    if (!payload.item_id || !payload.title) {
-      return res.status(400).json({ ok: false, error: "item_id and title required" });
+    const payload = {
+      ...req.body,
+      featured: req.body.featured ?? req.body.is_featured ?? false,
+      image_url: req.body.image_url || req.body.imageUrl || null,
+      video_url: req.body.video_url || req.body.videoUrl || null,
+    };
+    if (!payload.item_id || !payload.title || !payload.category) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "item_id, title, category required" });
     }
     const item = await supabase.upsertMenuItem(req.user.storeId, payload);
+    return res.json({ ok: true, item });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+app.post("/api/merchant/items", requireMerchant, saveMerchantMenu);
+app.post("/api/merchant/menu", requireMerchant, saveMerchantMenu);
+
+app.post("/api/merchant/menu/:itemId/hide", requireMerchant, async (req, res) => {
+  try {
+    const item = await supabase.updateMenuItem(req.user.storeId, req.params.itemId, {
+      status: "hidden",
+    });
+    if (!item) {
+      return res.status(404).json({ ok: false, error: "Item not found" });
+    }
     return res.json({ ok: true, item });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
@@ -244,6 +290,29 @@ app.post("/api/merchant/orders/:requestId/status", requireMerchant, async (req, 
       return res.status(404).json({ ok: false, error: "Order not found" });
     }
     return res.json({ ok: true, order });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/merchant/analytics", requireMerchant, async (req, res) => {
+  try {
+    const items = await supabase.getMerchantItems(req.user.storeId);
+    const orders = await supabase.getMerchantOrders(req.user.storeId);
+    const analytics = buildMerchantAnalytics(orders, items);
+    return res.json({ ok: true, analytics });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/merchant/profile", requireMerchant, async (req, res) => {
+  try {
+    const profile = await supabase.updateMerchantProfile(req.user.storeId, req.body);
+    if (!profile) {
+      return res.status(404).json({ ok: false, error: "Profile not found" });
+    }
+    return res.json({ ok: true, profile });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -297,7 +366,7 @@ app.post("/api/admin/stores", requireAdmin, async (req, res) => {
   }
 });
 
-app.post("/api/admin/reset-password", requireAdmin, async (req, res) => {
+const resetAdminPasscode = async (req, res) => {
   try {
     const { storeId } = req.body;
     if (!storeId) {
@@ -311,12 +380,18 @@ app.post("/api/admin/reset-password", requireAdmin, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
+};
+
+app.post("/api/admin/reset-password", requireAdmin, resetAdminPasscode);
+app.post("/api/admin/reset-passcode", requireAdmin, resetAdminPasscode);
 
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   try {
     const orders = await supabase.getAdminOrders(req.query.storeId);
-    return res.json({ ok: true, orders });
+    const filtered = req.query.status
+      ? orders.filter((order) => order.status === req.query.status)
+      : orders;
+    return res.json({ ok: true, orders: filtered });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -338,7 +413,12 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`ClickMenu server running on ${PORT}`);
   if (!process.env.JWT_SECRET) {
-    console.warn("JWT_SECRET not set. Using development fallback.");
+    console.error(
+      "JWT_SECRET is not set. Provide a strong JWT_SECRET in Cloud Run environment variables."
+    );
+    if (process.env.NODE_ENV === "production") {
+      process.exit(1);
+    }
   }
   if (!supabase.hasSupabase()) {
     console.warn("Supabase credentials missing. Running in mock mode.");

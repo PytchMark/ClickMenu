@@ -139,6 +139,14 @@
           <input id="storeWhatsapp" placeholder="WhatsApp number" />
           <input id="storeEmail" placeholder="Contact email" />
           <input id="storeLogo" placeholder="Logo URL" />
+          <input id="storePasscode" placeholder="Passcode (leave empty to autogenerate)" />
+          <input id="storeAddress" placeholder="Business address" />
+          <input id="storeParish" placeholder="Parish" />
+          <input id="storeOwnerName" placeholder="Owner name" />
+          <input id="storeOwnerPhone" placeholder="Owner phone" />
+          <input id="storeOwnerEmail" placeholder="Owner email" />
+          <input id="storeHours" placeholder="Hours" />
+          <input id="storeAbout" placeholder="About" />
           <select id="storeStatus">
             <option value="active">Active</option>
             <option value="paused">Paused</option>
@@ -162,6 +170,15 @@
       <div class="panel" style="margin-top:24px;">
         <h3>Orders</h3>
         <div id="ordersList"></div>
+      </div>
+
+      <div class="panel" style="margin-top:24px;">
+        <h3>Menu Items</h3>
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+          <input id="menuStoreFilter" placeholder="Filter by Store ID" />
+          <button class="btn" id="loadMenuBtn">Load Menu</button>
+        </div>
+        <div id="menuList"></div>
       </div>
     </div>
 
