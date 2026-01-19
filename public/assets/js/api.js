@@ -48,7 +48,7 @@ const Api = (() => {
         status: response.status,
         url,
         snippet: rawText.slice(0, 200),
-        isNonJson: false,
+        isNonJson: true,
       });
     }
   };

@@ -19,6 +19,7 @@ const dashboardPanel = document.getElementById("dashboardPanel");
 const menuPanel = document.getElementById("menuPanel");
 const ordersPanel = document.getElementById("ordersPanel");
 const profilePanel = document.getElementById("profilePanel");
+const settingsPanel = document.getElementById("settingsPanel");
 
 const menuCount = document.getElementById("menuCount");
 const itemsList = document.getElementById("itemsList");
@@ -105,22 +106,22 @@ const getLoginErrorMessage = (error) => {
   return error.message || "Login failed";
 };
 
-const setActiveTab = (tab, { updateHash = true } = {}) => {
-  const currentTab = document.querySelector(".tab.active")?.dataset.tab;
-  if (currentTab) {
-    state.scrollPositions[currentTab] = window.scrollY;
+const setActiveSection = (section) => {
+  const currentSection = document.querySelector(".sidebar-link.active")?.dataset.section;
+  if (currentSection) {
+    state.scrollPositions[currentSection] = window.scrollY;
   }
-  document.querySelectorAll(".tab").forEach((btn) => btn.classList.remove("active"));
-  const nextTab = document.querySelector(`.tab[data-tab="${tab}"]`);
-  if (nextTab) nextTab.classList.add("active");
-  dashboardPanel.hidden = tab !== "dashboard";
-  menuPanel.hidden = tab !== "menu";
-  ordersPanel.hidden = tab !== "orders";
-  profilePanel.hidden = tab !== "profile";
-  if (updateHash) {
-    window.location.hash = tab;
-  }
-  const nextScroll = state.scrollPositions[tab] || 0;
+  document
+    .querySelectorAll(".sidebar-link")
+    .forEach((btn) => btn.classList.remove("active"));
+  const nextLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
+  if (nextLink) nextLink.classList.add("active");
+  dashboardPanel.hidden = section !== "dashboard";
+  menuPanel.hidden = section !== "menu";
+  ordersPanel.hidden = section !== "orders";
+  profilePanel.hidden = section !== "profile";
+  settingsPanel.hidden = section !== "settings";
+  const nextScroll = state.scrollPositions[section] || 0;
   window.scrollTo({ top: nextScroll, behavior: "smooth" });
 };
 
@@ -667,6 +668,7 @@ loginBtn.addEventListener("click", async () => {
     localStorage.setItem("merchant_token", data.token);
     loginView.hidden = true;
     dashboardView.hidden = false;
+    setActiveSection("dashboard");
     await loadDashboard();
   } catch (error) {
     const message = getLoginErrorMessage(error);
@@ -683,7 +685,11 @@ loginBtn.addEventListener("click", async () => {
   }
 });
 
-document.getElementById("logoutBtn").addEventListener("click", () => {
+const logoutBtn = document.getElementById("logoutBtn");
+const settingsRefreshBtn = document.getElementById("settingsRefreshBtn");
+const settingsLogoutBtn = document.getElementById("settingsLogoutBtn");
+
+logoutBtn.addEventListener("click", () => {
   resetToLogin();
 });
 
@@ -698,10 +704,25 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
   }
 });
 
-document.querySelectorAll(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    const target = tab.dataset.tab;
-    setActiveTab(target);
+settingsRefreshBtn.addEventListener("click", async () => {
+  try {
+    await loadDashboard();
+    UI.toast("Dashboard refreshed", "success");
+  } catch (error) {
+    if (!handleAuthError(error)) {
+      UI.toast(error.message, "error");
+    }
+  }
+});
+
+settingsLogoutBtn.addEventListener("click", () => {
+  resetToLogin();
+});
+
+document.querySelectorAll(".sidebar-link").forEach((link) => {
+  link.addEventListener("click", () => {
+    const target = link.dataset.section;
+    setActiveSection(target);
   });
 });
 
@@ -1051,14 +1072,8 @@ menuSort.addEventListener("change", (event) => {
   event.target.dataset.auto = "false";
 });
 
-window.addEventListener("hashchange", () => {
-  const target = window.location.hash.replace("#", "") || "dashboard";
-  setActiveTab(target, { updateHash: false });
-});
-
 const boot = async () => {
-  const initialTab = window.location.hash.replace("#", "") || "dashboard";
-  setActiveTab(initialTab, { updateHash: false });
+  setActiveSection("dashboard");
   if (localStorage.getItem("merchant_token")) {
     loginView.hidden = true;
     dashboardView.hidden = false;
