@@ -70,6 +70,7 @@ const isAuthError = (error) =>
 
 const resetToLogin = () => {
   localStorage.removeItem("merchant_token");
+  localStorage.removeItem("merchant_store_id");
   loginView.hidden = false;
   dashboardView.hidden = true;
   loginDebug.hidden = true;
@@ -120,46 +121,30 @@ const panelMap = {
   settings: settingsPanel,
 };
 
-const SWITCH_DELAY = 180;
+const SECTION_STORAGE_KEY = "merchant_active_section";
 
-const setActiveSection = (section) => {
+const setSection = (section) => {
   if (!panelMap[section]) return;
-  const currentSection = document.querySelector(".sidebar-link.active")?.dataset.section;
-  if (currentSection) {
-    state.scrollPositions[currentSection] = window.scrollY;
-  }
   document
     .querySelectorAll(".sidebar-link")
     .forEach((btn) => btn.classList.remove("active"));
   const nextLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
   if (nextLink) nextLink.classList.add("active");
-  const nextPanel = panelMap[section];
-  const currentPanel = panelMap[state.activeSection];
-  if (currentPanel && currentPanel !== nextPanel) {
-    if (state.sectionTimeouts[state.activeSection]) {
-      clearTimeout(state.sectionTimeouts[state.activeSection]);
-    }
-    currentPanel.classList.remove("is-active");
-    currentPanel.classList.add("is-leaving");
-    state.sectionTimeouts[state.activeSection] = window.setTimeout(() => {
-      currentPanel.hidden = true;
-      currentPanel.classList.remove("is-leaving");
-    }, SWITCH_DELAY);
-  }
-  if (currentPanel === nextPanel) {
-    currentPanel.classList.add("is-active");
-  }
-  if (state.sectionTimeouts[section]) {
-    clearTimeout(state.sectionTimeouts[section]);
-  }
-  nextPanel.hidden = false;
-  nextPanel.classList.remove("is-leaving");
-  requestAnimationFrame(() => {
-    nextPanel.classList.add("is-active");
+
+  document.querySelectorAll(".panel-section").forEach((panel) => {
+    panel.hidden = true;
+    panel.classList.remove("is-active");
   });
+  const nextPanel = panelMap[section];
+  nextPanel.hidden = false;
+  nextPanel.classList.add("is-active");
   state.activeSection = section;
-  const nextScroll = state.scrollPositions[section] || 0;
-  window.scrollTo({ top: nextScroll, behavior: "smooth" });
+  localStorage.setItem(SECTION_STORAGE_KEY, section);
+};
+
+const getStoredSection = () => {
+  const stored = localStorage.getItem(SECTION_STORAGE_KEY);
+  return panelMap[stored] ? stored : "dashboard";
 };
 
 const summarizeOrders = () => {
@@ -727,10 +712,10 @@ const renderOrdersSkeleton = () => {
   `;
 };
 
-const loadDashboard = async () => {
+const loadDashboard = async (profileOverride = null) => {
   renderItemsSkeleton();
   renderOrdersSkeleton();
-  const profileData = await Api.merchant.me();
+  const profileData = profileOverride ? { profile: profileOverride } : await Api.merchant.me();
   state.profile = profileData.profile;
   storeName.textContent = state.profile.name || "Store";
   storeStatus.textContent = state.profile.status || "active";
@@ -741,6 +726,7 @@ const loadDashboard = async () => {
     viewStorefrontBtn.href = `/storefront?storeId=${encodeURIComponent(
       state.profile.store_id
     )}`;
+    localStorage.setItem("merchant_store_id", state.profile.store_id);
   }
 
   const itemsData = await Api.merchant.menu();
@@ -773,14 +759,17 @@ loginBtn.addEventListener("click", async () => {
     setLoginDebug();
     UI.setLoading(loginBtn, true);
     const data = await Api.merchant.login({
-      storeIdOrEmail: document.getElementById("loginId").value.trim(),
+      identifier: document.getElementById("loginId").value.trim(),
       passcode: document.getElementById("loginPass").value.trim(),
     });
     localStorage.setItem("merchant_token", data.token);
+    if (data.merchant?.store_id) {
+      localStorage.setItem("merchant_store_id", data.merchant.store_id);
+    }
     loginView.hidden = true;
     dashboardView.hidden = false;
-    setActiveSection("dashboard");
-    await loadDashboard();
+    setSection(getStoredSection());
+    await loadDashboard(state.profile);
   } catch (error) {
     const message = getLoginErrorMessage(error);
     setInlineError(message);
@@ -806,7 +795,7 @@ logoutBtn.addEventListener("click", () => {
 
 document.getElementById("refreshBtn").addEventListener("click", async () => {
   try {
-    await loadDashboard();
+    await loadDashboard(state.profile);
     UI.toast("Dashboard refreshed", "success");
   } catch (error) {
     if (!handleAuthError(error)) {
@@ -817,7 +806,7 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
 
 settingsRefreshBtn.addEventListener("click", async () => {
   try {
-    await loadDashboard();
+    await loadDashboard(state.profile);
     UI.toast("Dashboard refreshed", "success");
   } catch (error) {
     if (!handleAuthError(error)) {
@@ -833,7 +822,7 @@ settingsLogoutBtn.addEventListener("click", () => {
 document.querySelectorAll(".sidebar-link").forEach((link) => {
   link.addEventListener("click", () => {
     const target = link.dataset.section;
-    setActiveSection(target);
+    setSection(target);
   });
 });
 
@@ -925,8 +914,17 @@ saveItemBtn.addEventListener("click", async () => {
     labels: getSelectedLabels(),
   };
 
-  if (!payload.item_id || !payload.title || !payload.description || !payload.category) {
-    UI.toast("Please complete item_id, title, description, and category.", "error");
+  if (
+    !payload.item_id ||
+    !payload.title ||
+    !payload.description ||
+    !payload.category ||
+    Number.isNaN(payload.price)
+  ) {
+    UI.toast(
+      "Please complete item_id, title, description, category, and price.",
+      "error"
+    );
     return;
   }
 
@@ -1184,16 +1182,25 @@ menuSort.addEventListener("change", (event) => {
 });
 
 const boot = async () => {
-  setActiveSection("dashboard");
-  if (localStorage.getItem("merchant_token")) {
+  loginView.hidden = false;
+  dashboardView.hidden = true;
+  setSection("dashboard");
+  const token = localStorage.getItem("merchant_token");
+  if (!token) return;
+  try {
+    const profileData = await Api.merchant.me();
+    if (!profileData?.profile) {
+      resetToLogin();
+      return;
+    }
+    state.profile = profileData.profile;
     loginView.hidden = true;
     dashboardView.hidden = false;
-    try {
-      await loadDashboard();
-    } catch (error) {
-      if (!handleAuthError(error)) {
-        UI.toast(error.message, "error");
-      }
+    setSection(getStoredSection());
+    await loadDashboard(state.profile);
+  } catch (error) {
+    if (!handleAuthError(error)) {
+      UI.toast(error.message, "error");
     }
   }
 };
