@@ -104,6 +104,10 @@ create table if not exists order_requests (
   customer_email text,
   notes text,
   items_json jsonb not null,
+  fulfillment_method text not null default 'pickup',
+  parish text not null,
+  location_details text not null,
+  preferred_time text,
   total numeric,
   source text default 'storefront',
   created_at timestamptz default now()
@@ -136,9 +140,12 @@ curl http://localhost:8080/api/public/store/TACOS01/menu
 curl -X POST http://localhost:8080/api/public/store/TACOS01/orders \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "Ava",
-    "customer_phone": "+15550001111",
-    "items_json": [{"itemId":"FOOD-001","title":"Birria Taco Trio","qty":1,"price":14}]
+    "customerName": "Ava",
+    "customerPhone": "+15550001111",
+    "fulfillmentMethod": "pickup",
+    "parish": "Kingston",
+    "locationDetails": "Pickup counter",
+    "items": [{"itemId":"FOOD-001","title":"Birria Taco Trio","qty":1,"price":14}]
   }'
 ```
 
@@ -159,3 +166,40 @@ curl -X POST http://localhost:8080/api/admin/login \
 - Set `NODE_ENV=production` and ensure `JWT_SECRET` is configured.
 - Provide Supabase env vars to switch from mock mode to persistent storage.
 - Host on any Node-compatible platform (Cloud Run, Render, Railway, Fly.io, etc.).
+
+## Storefront Media
+
+- Replace `/public/assets/video/hero.mp4` with your production hero video (keep the same path so the storefront background video loads).
+
+## Cloud Run (Docker) Deployment
+
+Required environment variables (see `.env.example`):
+
+- `PORT` (Cloud Run sets this automatically; default is `8080`)
+- `NODE_ENV`
+- `CORS_ORIGINS`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `JWT_SECRET`
+- `ADMIN_USERNAME`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `ADMIN_API_KEY`
+- `DEFAULT_HERO_VIDEO_URL`
+- `BRAND_NAME`
+
+Build and test locally:
+
+```bash
+docker build -t clickmenu .
+docker run -p 8080:8080 --env-file .env clickmenu
+```
+
+Deploy to Cloud Run (high level):
+
+```bash
+gcloud run deploy clickmenu \
+  --source . \
+  --region YOUR_REGION \
+  --allow-unauthenticated
+```

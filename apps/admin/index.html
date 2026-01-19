@@ -38,6 +38,22 @@
         padding: 32px;
         border-radius: 18px;
         border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 107, 74, 0.12);
+      }
+
+      .login-panel {
+        width: min(420px, 92vw);
+        padding: 40px 36px;
+        border-radius: 22px;
+      }
+
+      .login-panel h2 {
+        margin-bottom: 10px;
+      }
+
+      .login-panel p {
+        margin-top: 0;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       input,
@@ -60,6 +76,7 @@
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 12px 30px rgba(255, 59, 48, 0.3);
       }
 
       .btn::after {
@@ -110,13 +127,21 @@
         padding: 12px 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
+
+      #resetResult,
+      #createResult {
+        margin-top: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+      }
     </style>
   </head>
   <body>
     <div class="texture"></div>
     <div class="login" id="loginView">
-      <div class="panel">
+      <div class="panel login-panel">
         <h2>Admin Console</h2>
+        <p>Secure access to stores, orders, and growth insights.</p>
         <input id="adminUser" placeholder="Admin username" />
         <input id="adminPass" type="password" placeholder="Password" />
         <button class="btn" id="adminLoginBtn">Log in</button>
@@ -144,6 +169,7 @@
             <option value="paused">Paused</option>
           </select>
           <button class="btn" id="createStoreBtn">Create Store</button>
+          <div id="createResult"></div>
         </div>
 
         <div class="panel">
@@ -215,12 +241,24 @@
       };
 
       const loadAdminData = async () => {
-        const summaryData = await Api.admin.summary();
-        const storesData = await Api.admin.stores();
-        const ordersData = await Api.admin.orders();
-        state.summary = summaryData.summary;
-        state.stores = storesData.stores;
-        state.orders = ordersData.orders;
+        try {
+          const summaryData = await Api.admin.summary();
+          state.summary = summaryData.summary;
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+        try {
+          const storesData = await Api.admin.stores();
+          state.stores = storesData.stores;
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
+        try {
+          const ordersData = await Api.admin.orders();
+          state.orders = ordersData.orders;
+        } catch (error) {
+          UI.toast(error.message, "error");
+        }
         renderSummary();
         renderStores();
         renderOrders();
@@ -259,6 +297,11 @@
           const data = await Api.admin.createStore(payload);
           state.stores.unshift(data.store);
           renderStores();
+          if (data.store.password) {
+            document.getElementById(
+              "createResult"
+            ).textContent = `New passcode: ${data.store.password}`;
+          }
           UI.toast("Store created", "success");
         } catch (error) {
           UI.toast(error.message, "error");
@@ -287,8 +330,7 @@
           try {
             await loadAdminData();
           } catch (error) {
-            localStorage.removeItem("admin_token");
-            location.reload();
+            UI.toast(error.message, "error");
           }
         }
       };

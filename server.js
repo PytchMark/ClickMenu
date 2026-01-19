@@ -95,27 +95,77 @@ app.get("/api/public/menu", async (req, res) => {
 
 app.post("/api/public/store/:storeId/orders", async (req, res) => {
   try {
-    const { customer_name, customer_phone, items_json } = req.body;
-    if (!customer_name || !customer_phone || !Array.isArray(items_json) || items_json.length === 0) {
+    const customerName = req.body.customerName || req.body.customer_name;
+    const customerPhone = req.body.customerPhone || req.body.customer_phone;
+    const customerEmail = req.body.customerEmail || req.body.customer_email;
+    const notes = req.body.notes || null;
+    const fulfillmentMethod = req.body.fulfillmentMethod || req.body.fulfillment_method;
+    const parish = req.body.parish;
+    const locationDetails = req.body.locationDetails || req.body.location_details;
+    const preferredTime = req.body.preferredTime || req.body.preferred_time || null;
+    const items = req.body.items || req.body.items_json;
+    if (!customerName || !customerPhone || !Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
-        .json({ ok: false, error: "customer_name, customer_phone, items_json required" });
+        .json({ ok: false, error: "customerName, customerPhone, items required" });
     }
+    if (!fulfillmentMethod || !["pickup", "delivery"].includes(fulfillmentMethod)) {
+      return res.status(400).json({ ok: false, error: "fulfillmentMethod required" });
+    }
+    if (!parish || !locationDetails) {
+      return res.status(400).json({ ok: false, error: "parish and locationDetails required" });
+    }
+    const total =
+      typeof req.body.total === "number"
+        ? req.body.total
+        : items.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 0), 0);
     const order = await supabase.createOrderRequest(req.params.storeId, {
-      customer_name,
-      customer_phone,
-      customer_email: req.body.customer_email,
-      notes: req.body.notes,
-      items_json,
-      total: req.body.total,
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      customer_email: customerEmail,
+      notes,
+      items_json: items,
+      total,
+      fulfillment_method: fulfillmentMethod,
+      parish,
+      location_details: locationDetails,
+      preferred_time: preferredTime,
       source: "storefront",
     });
     const profile = await supabase.getStoreProfile(req.params.storeId);
-    const message = `Hi ${profile?.name || "there"}, I just sent order request ${order.request_id}.`;
+    const formatMoney = (value) =>
+      new Intl.NumberFormat("en-JM", {
+        style: "currency",
+        currency: "JMD",
+        maximumFractionDigits: 0,
+      }).format(value || 0);
+    const lineItems = items.map(
+      (item) =>
+        `${item.qty || 0}x ${item.title || "Item"} — ${formatMoney(
+          (item.price || 0) * (item.qty || 0)
+        )}`
+    );
+    const message = [
+      `Hi ${profile?.name || "there"},`,
+      "",
+      `Store: ${profile?.name || "Store"}`,
+      `Order ID: ${order.request_id}`,
+      `Customer: ${customerName}`,
+      `Fulfillment: ${fulfillmentMethod} (${parish})`,
+      "",
+      "Items:",
+      ...lineItems,
+      `Total: ${formatMoney(total)}`,
+      `Location: ${locationDetails}`,
+    ].join("\n");
     const whatsappUrl = profile?.whatsapp
       ? `https://wa.me/${profile.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`
       : null;
-    return res.json({ ok: true, request: order, whatsappUrl });
+    return res.json({
+      ok: true,
+      request: { ...order, requestId: order.request_id },
+      whatsappUrl,
+    });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -247,9 +297,9 @@ app.post("/api/admin/stores", requireAdmin, async (req, res) => {
   }
 });
 
-app.post("/api/admin/reset-password", requireAdmin, async (req, res) => {
+const handleAdminResetPassword = async (req, res) => {
   try {
-    const { storeId } = req.body;
+    const storeId = req.body.storeId || req.body.store_id;
     if (!storeId) {
       return res.status(400).json({ ok: false, error: "storeId required" });
     }
@@ -261,7 +311,10 @@ app.post("/api/admin/reset-password", requireAdmin, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
+};
+
+app.post("/api/admin/reset-password", requireAdmin, handleAdminResetPassword);
+app.post("/api/admin/reset-passcode", requireAdmin, handleAdminResetPassword);
 
 app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   try {
@@ -272,14 +325,17 @@ app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   }
 });
 
-app.get("/api/admin/stores/summary", requireAdmin, async (req, res) => {
+const handleAdminSummary = async (req, res) => {
   try {
     const summary = await supabase.getSummary(req.query.month);
     return res.json({ ok: true, summary });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
+};
+
+app.get("/api/admin/stores/summary", requireAdmin, handleAdminSummary);
+app.get("/api/admin/summary", requireAdmin, handleAdminSummary);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

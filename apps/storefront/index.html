@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ClickMenu Storefront</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/public/assets/css/shared.css" />
     <script src="/public/assets/js/api.js"></script>
     <script src="/public/assets/js/ui.js"></script>
@@ -18,14 +24,16 @@
         margin: 0;
         background: #050505;
         color: #f5f5f5;
+        scroll-behavior: smooth;
       }
 
       .texture {
         position: fixed;
         inset: 0;
         background-image: radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 50%),
+          radial-gradient(circle at 20% 20%, rgba(255, 107, 74, 0.08), transparent 55%),
           repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0.05) 1px, transparent 1px, transparent 14px);
-        opacity: 0.2;
+        opacity: 0.18;
         pointer-events: none;
         z-index: 0;
       }
@@ -36,9 +44,11 @@
         display: grid;
         align-items: center;
         justify-content: center;
-        text-align: center;
+        text-align: left;
         padding: 80px 24px 40px;
         overflow: hidden;
+        background: radial-gradient(circle at top left, rgba(255, 107, 74, 0.2), transparent 55%),
+          linear-gradient(180deg, rgba(10, 10, 10, 0.6), #050505 80%);
       }
 
       .hero video {
@@ -47,20 +57,39 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0.45;
+        opacity: 0.5;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 50%);
       }
 
       .hero::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(5, 5, 5, 0.2) 0%, #050505 80%);
+        background: linear-gradient(180deg, rgba(5, 5, 5, 0.3) 0%, #050505 78%);
       }
 
       .hero-content {
         position: relative;
         z-index: 1;
         max-width: 820px;
+        animation: heroEnter 0.7s ease-out;
+      }
+
+      @keyframes heroEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .badge {
@@ -78,12 +107,25 @@
       h1 {
         font-size: clamp(2.4rem, 4vw, 3.6rem);
         margin: 20px 0 16px;
+        line-height: 1.1;
       }
 
       p.lead {
         font-size: 1.1rem;
         color: rgba(255, 255, 255, 0.72);
         margin-bottom: 28px;
+      }
+
+      .hero-highlights {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+
+      .hero-highlights span {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
       }
 
       .input-row {
@@ -157,6 +199,57 @@
         padding: 32px 6vw;
       }
 
+      .reveal {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      .reveal-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+      }
+
+      .section-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+      }
+
+      .how-grid,
+      .trust-row {
+        display: grid;
+        gap: 16px;
+      }
+
+      .how-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .trust-row {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+
+      .glass-card {
+        background: rgba(12, 12, 12, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 18px;
+        backdrop-filter: blur(14px);
+      }
+
+      .glass-card h4 {
+        margin: 0 0 8px;
+      }
+
+      .accent {
+        color: #ff6b4a;
+      }
+
       .store-header {
         display: flex;
         align-items: center;
@@ -183,11 +276,24 @@
         padding: 18px;
         border: 1px solid rgba(255, 255, 255, 0.08);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
       }
 
       .menu-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255, 107, 74, 0.2);
+      }
+
+      .menu-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        background: rgba(255, 107, 74, 0.16);
+        color: #ffb199;
+        border: 1px solid rgba(255, 107, 74, 0.4);
       }
 
       .menu-card img {
@@ -231,12 +337,44 @@
       .cart {
         position: sticky;
         bottom: 24px;
-        background: rgba(8, 8, 8, 0.96);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 20px;
-        max-width: 360px;
+        background: rgba(10, 10, 10, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 24px;
+        padding: 22px;
+        max-width: 380px;
         margin-left: auto;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .cart:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45), 0 0 22px rgba(255, 59, 48, 0.25);
+      }
+
+      .cart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .cart-header span {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .cart-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 16px 0;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
       }
 
       .cart-items {
@@ -246,10 +384,71 @@
       }
 
       .cart-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
         font-size: 0.9rem;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .cart-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .cart-item-title {
+        font-weight: 600;
+      }
+
+      .cart-item-meta {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .cart-item-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .qty-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .cart-item-subtotal {
+        text-align: right;
+        font-weight: 600;
+      }
+
+      .cart-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .radio-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        cursor: pointer;
       }
 
       .order-form input,
@@ -327,6 +526,109 @@
         }
       }
 
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 20;
+      }
+
+      .modal.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(6px);
+      }
+
+      .modal-card {
+        position: relative;
+        background: rgba(12, 12, 12, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 24px;
+        padding: 28px;
+        width: min(520px, 90vw);
+        z-index: 1;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .modal.show .modal-card {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .wizard-progress {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .progress-track {
+        flex: 1;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 50%;
+        background: linear-gradient(120deg, #ff3b30, #ff6b4a);
+        transition: width 0.3s ease;
+      }
+
+      .wizard-step {
+        opacity: 0;
+        transform: translateX(12px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        display: none;
+      }
+
+      .wizard-step.active {
+        display: block;
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .wizard-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .confirmation-card {
+        text-align: center;
+      }
+
+      .confirmation-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.1rem;
+      }
+
       @media (max-width: 960px) {
         .section {
           padding: 24px;
@@ -342,45 +644,173 @@
     <div class="texture"></div>
     <section class="hero">
       <video autoplay muted loop playsinline>
-        <source
-          src="https://cdn.coverr.co/videos/coverr-chef-flipping-skillet-1512/1080p.mp4"
-          type="video/mp4"
-        />
+        <source src="/public/assets/video/hero.mp4" type="video/mp4" />
       </video>
       <div class="hero-content">
-        <div class="badge">Fresh · Fast · Verified</div>
-        <h1>Order requests go straight to the kitchen. No apps. No middlemen.</h1>
+        <div class="badge">Concierge Ordering · Fresh · Verified Kitchens</div>
+        <h1>Crave-worthy meals, delivered with the calm of a concierge.</h1>
         <p class="lead">
-          Tap into the store’s live menu, build a request in seconds, and get a direct response.
-          Everything stays personal.
+          Browse live menus, build one beautiful cart, and send a single request straight to the
+          kitchen. We keep it personal, fast, and delicious.
         </p>
         <div class="input-row">
           <input id="storeIdInput" placeholder="Enter Store ID(s), up to 3" />
           <button class="btn btn-primary" id="loadMenuBtn">Load Menu</button>
         </div>
+        <div class="hero-highlights">
+          <span>Chef’s picks curated daily</span>
+          <span>Best with: handcrafted sides & drinks</span>
+          <span>Popular right now in your parish</span>
+        </div>
       </div>
     </section>
 
-    <section class="section" id="menuSection">
+    <section class="section reveal" id="howSection">
+      <h2 class="section-title">How it works</h2>
+      <p class="section-subtitle">
+        A premium order concierge flow built for speed, clarity, and confidence.
+      </p>
+      <div class="how-grid">
+        <div class="glass-card">
+          <h4>1. Discover</h4>
+          <p class="section-subtitle">Browse chef-led menus and see what’s popular now.</p>
+        </div>
+        <div class="glass-card">
+          <h4>2. Build your cart</h4>
+          <p class="section-subtitle">Add favorites, adjust quantity, and view a clean summary.</p>
+        </div>
+        <div class="glass-card">
+          <h4>3. Request instantly</h4>
+          <p class="section-subtitle">Two quick steps, then we confirm with the kitchen.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="trustSection">
+      <div class="trust-row">
+        <div class="glass-card">
+          <h4 class="accent">Fast pickup</h4>
+          <p class="section-subtitle">Real-time availability so you can grab and go.</p>
+        </div>
+        <div class="glass-card">
+          <h4 class="accent">Clean kitchens</h4>
+          <p class="section-subtitle">Verified kitchens and trusted customer care.</p>
+        </div>
+        <div class="glass-card">
+          <h4 class="accent">WhatsApp support</h4>
+          <p class="section-subtitle">Message your order concierge anytime.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="menuSection">
       <div id="storeHeader" class="store-header"></div>
       <div class="chip-row" id="categoryRow"></div>
       <div class="menu-grid" id="menuGrid"></div>
     </section>
 
-    <section class="section" id="cartSection">
+    <section class="section reveal" id="cartSection">
       <div class="cart">
-        <h3>Order Request</h3>
-        <div class="cart-items" id="cartItems"></div>
-        <div class="order-form">
+        <div class="cart-header">
+          <div>
+            <h3>Order Tray / Cart</h3>
+            <span>Build a single request</span>
+          </div>
           <select id="storeSelect"></select>
-          <input id="customerName" placeholder="Your name" />
-          <input id="customerPhone" placeholder="Phone number" />
-          <textarea id="customerNotes" rows="3" placeholder="Notes or customizations"></textarea>
-          <button class="btn btn-primary" id="submitOrderBtn">Send Order Request</button>
-          <button class="btn btn-secondary" id="whatsappBtn" style="display:none;">Message on WhatsApp</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-summary">
+          <div>
+            <div>Total items</div>
+            <strong id="cartCount">0</strong>
+          </div>
+          <div>
+            <div>Estimated total</div>
+            <strong id="cartTotal">—</strong>
+          </div>
+        </div>
+        <div class="cart-actions">
+          <button class="btn btn-primary" id="requestOrderBtn">Request Order</button>
+          <button class="btn btn-secondary" id="whatsappCartBtn">WhatsApp Order</button>
         </div>
       </div>
     </section>
+
+    <div class="modal" id="orderModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close="true"></div>
+      <div class="modal-card">
+        <div class="wizard-progress">
+          <span id="stepIndicator">Step 1 of 2</span>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <button class="modal-close" data-close="true">&times;</button>
+        </div>
+        <div class="wizard-step active" data-step="1">
+          <h3>Quick details</h3>
+          <p class="lead">
+            Takes 10 seconds — we only use this to confirm your order.
+          </p>
+          <div class="order-form">
+            <input id="customerName" placeholder="Your name" />
+            <input id="customerPhone" placeholder="Phone number" />
+            <input id="customerEmail" placeholder="Email (optional)" />
+            <textarea id="orderNotes" rows="3" placeholder="Order notes (optional)"></textarea>
+          </div>
+          <div class="wizard-actions">
+            <div></div>
+            <button class="btn btn-primary" id="continueBtn">Continue →</button>
+          </div>
+        </div>
+        <div class="wizard-step" data-step="2">
+          <h3>Delivery details</h3>
+          <div class="order-form">
+            <div class="radio-group">
+              <label><input type="radio" name="fulfillmentMethod" value="pickup" checked /> Pickup</label>
+              <label><input type="radio" name="fulfillmentMethod" value="delivery" /> Delivery</label>
+            </div>
+            <select id="parishSelect">
+              <option value="">Select parish</option>
+              <option value="Kingston">Kingston</option>
+              <option value="St. Andrew">St. Andrew</option>
+              <option value="St. Thomas">St. Thomas</option>
+              <option value="Portland">Portland</option>
+              <option value="St. Mary">St. Mary</option>
+              <option value="St. Ann">St. Ann</option>
+              <option value="Trelawny">Trelawny</option>
+              <option value="St. James">St. James</option>
+              <option value="Hanover">Hanover</option>
+              <option value="Westmoreland">Westmoreland</option>
+              <option value="St. Elizabeth">St. Elizabeth</option>
+              <option value="Manchester">Manchester</option>
+              <option value="Clarendon">Clarendon</option>
+              <option value="St. Catherine">St. Catherine</option>
+            </select>
+            <textarea
+              id="locationDetails"
+              rows="3"
+              placeholder="Street name, landmark, community, gate color"
+            ></textarea>
+            <input id="preferredTime" placeholder="Preferred time (optional)" />
+          </div>
+          <div class="wizard-actions">
+            <button class="btn btn-secondary" id="backBtn">← Back</button>
+            <button class="btn btn-primary" id="submitOrderBtn">Submit Request</button>
+          </div>
+        </div>
+        <div class="wizard-step" data-step="3">
+          <div class="confirmation-card">
+            <h3>Request sent ✅</h3>
+            <div>Order ID</div>
+            <strong id="confirmationOrderId"></strong>
+            <div class="wizard-actions">
+              <button class="btn btn-primary" id="whatsappOrderBtn">Message on WhatsApp</button>
+              <button class="btn btn-secondary" data-close="true">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       const state = {
@@ -388,6 +818,7 @@
         items: [],
         cart: {},
         lastOrder: null,
+        lastOrderContext: null,
       };
 
       const storeInput = document.getElementById("storeIdInput");
@@ -397,8 +828,18 @@
       const storeHeader = document.getElementById("storeHeader");
       const cartItems = document.getElementById("cartItems");
       const storeSelect = document.getElementById("storeSelect");
+      const cartCount = document.getElementById("cartCount");
+      const cartTotal = document.getElementById("cartTotal");
+      const requestOrderBtn = document.getElementById("requestOrderBtn");
+      const whatsappCartBtn = document.getElementById("whatsappCartBtn");
       const submitOrderBtn = document.getElementById("submitOrderBtn");
-      const whatsappBtn = document.getElementById("whatsappBtn");
+      const orderModal = document.getElementById("orderModal");
+      const stepIndicator = document.getElementById("stepIndicator");
+      const progressFill = document.getElementById("progressFill");
+      const continueBtn = document.getElementById("continueBtn");
+      const backBtn = document.getElementById("backBtn");
+      const confirmationOrderId = document.getElementById("confirmationOrderId");
+      const whatsappOrderBtn = document.getElementById("whatsappOrderBtn");
 
       const renderStoreHeader = () => {
         storeHeader.innerHTML = "";
@@ -434,15 +875,21 @@
           .filter((item) => !filterCategory || item.category === filterCategory)
           .map((item) => {
             const images = item.image_urls ? item.image_urls.split(/\n|,/) : [];
+            const badge = item.is_featured
+              ? "Chef’s pick"
+              : item.category === "Featured"
+              ? "Popular right now"
+              : "";
             return `
               <div class="menu-card">
+                ${badge ? `<div class="menu-badge">${badge}</div>` : ""}
                 <img src="${images[0] || "https://images.unsplash.com/photo-1526318896980-cf78c088247c?auto=format&fit=crop&w=800&q=80"}" alt="${item.title}" />
                 <small>${item.item_id}</small>
                 <h4>${item.title}</h4>
                 <p>${item.description || "Crafted fresh for today"}</p>
-                <strong>${Formatters.money(item.price)}</strong>
+                <strong>${Formatters.money(item.price, "JMD")}</strong>
                 <div class="card-actions">
-                  <button class="btn btn-primary" data-add="${item.item_id}">Order / Reserve</button>
+                  <button class="btn btn-primary" data-add="${item.item_id}">Add to Cart</button>
                   <button class="btn btn-secondary" data-info="${item.item_id}">Request More Info</button>
                 </div>
               </div>
@@ -457,8 +904,19 @@
           .map(
             (item) => `
             <div class="cart-item">
-              <span>${item.title} x${item.qty}</span>
-              <span>${Formatters.money(item.price * item.qty)}</span>
+              <div>
+                <div class="cart-item-title">${item.title}</div>
+                <div class="cart-item-meta">${Formatters.money(item.price, "JMD")} each</div>
+              </div>
+              <div class="cart-item-controls">
+                <button class="qty-btn" data-qty="${item.item_id}" data-change="-1">-</button>
+                <span>${item.qty}</span>
+                <button class="qty-btn" data-qty="${item.item_id}" data-change="1">+</button>
+              </div>
+              <div class="cart-item-subtotal">${Formatters.money(
+                item.price * item.qty,
+                "JMD"
+              )}</div>
             </div>
           `
           )
@@ -466,6 +924,10 @@
         if (!items.length) {
           cartItems.innerHTML = "<div>Pick a few favorites to start a request.</div>";
         }
+        const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
+        const totalCost = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+        cartCount.textContent = totalItems;
+        cartTotal.textContent = totalItems ? Formatters.money(totalCost, "JMD") : "—";
       };
 
       const renderStoreSelect = () => {
@@ -498,13 +960,78 @@
         }
       };
 
-      const buildWhatsAppMessage = (storeName) => {
-        const items = Object.values(state.cart)
-          .map((item) => `${item.title} x${item.qty} (${item.item_id})`)
-          .join(", ");
-        return `Hi ${storeName}, I’m interested in ${items}. Order request: ${
-          state.lastOrder?.request_id || ""
-        }.`;
+      const getActiveStore = () => {
+        const storeId = storeSelect.value;
+        return state.stores.find((store) => store.store_id === storeId);
+      };
+
+      const buildWhatsAppMessage = (store, orderId = "") => {
+        const context = orderId ? state.lastOrderContext : null;
+        const items = context?.items || Object.values(state.cart);
+        const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+        const customerName =
+          context?.customerName || document.getElementById("customerName").value.trim();
+        const fulfillmentMethod =
+          context?.fulfillmentMethod ||
+          document.querySelector("input[name='fulfillmentMethod']:checked")?.value ||
+          "pickup";
+        const parish = context?.parish || document.getElementById("parishSelect").value || "TBD";
+        const locationDetails =
+          context?.locationDetails ||
+          document.getElementById("locationDetails").value.trim() ||
+          "TBD";
+        const lineItems = items
+          .map(
+            (item) =>
+              `${item.qty}x ${item.title} — ${Formatters.money(
+                item.price * item.qty,
+                "JMD"
+              )}`
+          )
+          .join("\n");
+        return `Hi ${store?.name || "there"},\n\nStore: ${store?.name || "Store"}\n${
+          orderId ? `Order ID: ${orderId}\n` : ""
+        }Customer: ${customerName || "Customer"}\nFulfillment: ${fulfillmentMethod} (${parish})\n\nItems:\n${lineItems}\nTotal: ${Formatters.money(
+          total,
+          "JMD"
+        )}\nLocation: ${locationDetails}`;
+      };
+
+      const buildWhatsAppUrl = (store, orderId = "") => {
+        if (!store?.whatsapp) {
+          UI.toast("WhatsApp not available for this store", "error");
+          return null;
+        }
+        const message = buildWhatsAppMessage(store, orderId);
+        return `https://wa.me/${store.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+          message
+        )}`;
+      };
+
+      const steps = Array.from(document.querySelectorAll(".wizard-step"));
+
+      const setStep = (step) => {
+        steps.forEach((entry) => {
+          entry.classList.toggle("active", Number(entry.dataset.step) === step);
+        });
+        if (step === 3) {
+          stepIndicator.textContent = "Request sent";
+          progressFill.style.width = "100%";
+          return;
+        }
+        stepIndicator.textContent = `Step ${step} of 2`;
+        progressFill.style.width = step === 1 ? "50%" : "100%";
+      };
+
+      const openModal = () => {
+        orderModal.classList.add("show");
+        orderModal.setAttribute("aria-hidden", "false");
+        setStep(1);
+      };
+
+      const closeModal = () => {
+        orderModal.classList.remove("show");
+        orderModal.setAttribute("aria-hidden", "true");
       };
 
       loadMenuBtn.addEventListener("click", loadMenu);
@@ -524,12 +1051,65 @@
           const existing = state.cart[item.item_id] || { ...item, qty: 0 };
           state.cart[item.item_id] = { ...existing, qty: existing.qty + 1 };
           renderCart();
-          UI.toast("Added to request", "success");
+          UI.toast("Added to cart", "success");
         }
         if (infoId) {
           UI.toast(`We’ll ask about ${item.title} for you.`, "success");
         }
       });
+
+      cartItems.addEventListener("click", (event) => {
+        const qtyId = event.target.dataset.qty;
+        const change = Number(event.target.dataset.change || 0);
+        if (!qtyId || !change) return;
+        const existing = state.cart[qtyId];
+        if (!existing) return;
+        const nextQty = existing.qty + change;
+        if (nextQty <= 0) {
+          delete state.cart[qtyId];
+        } else {
+          state.cart[qtyId] = { ...existing, qty: nextQty };
+        }
+        renderCart();
+      });
+
+      requestOrderBtn.addEventListener("click", () => {
+        if (!Object.values(state.cart).length) {
+          UI.toast("Add at least one menu item", "error");
+          return;
+        }
+        openModal();
+      });
+
+      whatsappCartBtn.addEventListener("click", () => {
+        if (!Object.values(state.cart).length) {
+          UI.toast("Add at least one menu item", "error");
+          return;
+        }
+        const store = getActiveStore();
+        const url = buildWhatsAppUrl(store);
+        if (url) {
+          window.open(url, "_blank");
+        }
+      });
+
+      orderModal.addEventListener("click", (event) => {
+        if (event.target.dataset.close) {
+          closeModal();
+        }
+      });
+
+      continueBtn.addEventListener("click", () => {
+        const customerName = document.getElementById("customerName").value.trim();
+        const customerPhone = document.getElementById("customerPhone").value.trim();
+        if (!customerName || !customerPhone) {
+          UI.toast("Name and phone required", "error");
+          return;
+        }
+        setStep(2);
+      });
+
+      backBtn.addEventListener("click", () => setStep(1));
 
       submitOrderBtn.addEventListener("click", async () => {
         const items = Object.values(state.cart);
@@ -540,32 +1120,62 @@
         const storeId = storeSelect.value;
         const customerName = document.getElementById("customerName").value.trim();
         const customerPhone = document.getElementById("customerPhone").value.trim();
-        const notes = document.getElementById("customerNotes").value.trim();
+        const customerEmail = document.getElementById("customerEmail").value.trim();
+        const notes = document.getElementById("orderNotes").value.trim();
+        const fulfillmentMethod =
+          document.querySelector("input[name='fulfillmentMethod']:checked")?.value;
+        const parish = document.getElementById("parishSelect").value;
+        const locationDetails = document.getElementById("locationDetails").value.trim();
+        const preferredTime = document.getElementById("preferredTime").value.trim();
+
         if (!customerName || !customerPhone) {
           UI.toast("Name and phone required", "error");
+          setStep(1);
           return;
         }
+        if (!fulfillmentMethod || !parish || !locationDetails) {
+          UI.toast("Fulfillment, parish, and location required", "error");
+          return;
+        }
+
         UI.setLoading(submitOrderBtn, true);
         try {
           const payload = {
-            customer_name: customerName,
-            customer_phone: customerPhone,
+            customerName,
+            customerPhone,
+            customerEmail,
             notes,
-            items_json: items.map((item) => ({
+            fulfillmentMethod,
+            parish,
+            locationDetails,
+            preferredTime,
+            items: items.map((item) => ({
               itemId: item.item_id,
               title: item.title,
               qty: item.qty,
               price: item.price,
             })),
-            total: items.reduce((sum, item) => sum + item.price * item.qty, 0),
           };
           const data = await Api.public.createOrder(storeId, payload);
           state.lastOrder = data.request;
-          UI.toast(`Request sent: ${data.request.request_id}`, "success");
-          if (data.whatsappUrl) {
-            whatsappBtn.style.display = "inline-flex";
-            whatsappBtn.onclick = () => window.open(data.whatsappUrl, "_blank");
-          }
+          state.lastOrderContext = {
+            items,
+            customerName,
+            fulfillmentMethod,
+            parish,
+            locationDetails,
+          };
+          confirmationOrderId.textContent = data.request.request_id || data.request.requestId;
+          UI.toast(`Request sent: ${confirmationOrderId.textContent}`, "success");
+          whatsappOrderBtn.onclick = () => {
+            const store = getActiveStore();
+            const url = buildWhatsAppUrl(
+              store,
+              data.request.request_id || data.request.requestId
+            );
+            if (url) window.open(url, "_blank");
+          };
+          setStep(3);
           state.cart = {};
           renderCart();
         } catch (error) {
@@ -575,6 +1185,22 @@
         }
       });
 
+      const revealSections = () => {
+        const sections = document.querySelectorAll(".reveal");
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("reveal-visible");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.2 }
+        );
+        sections.forEach((section) => observer.observe(section));
+      };
+
       const params = new URLSearchParams(window.location.search);
       const preset = params.get("storeIds") || params.get("storeId") || "";
       if (preset) {
@@ -582,6 +1208,7 @@
         loadMenu();
       }
       renderCart();
+      revealSections();
     </script>
   </body>
 </html>
