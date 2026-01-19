@@ -139,6 +139,14 @@
           <input id="storeWhatsapp" placeholder="WhatsApp number" />
           <input id="storeEmail" placeholder="Contact email" />
           <input id="storeLogo" placeholder="Logo URL" />
+          <input id="storePasscode" placeholder="Passcode (leave empty to autogenerate)" />
+          <input id="storeAddress" placeholder="Business address" />
+          <input id="storeParish" placeholder="Parish" />
+          <input id="storeOwnerName" placeholder="Owner name" />
+          <input id="storeOwnerPhone" placeholder="Owner phone" />
+          <input id="storeOwnerEmail" placeholder="Owner email" />
+          <input id="storeHours" placeholder="Hours" />
+          <input id="storeAbout" placeholder="About" />
           <select id="storeStatus">
             <option value="active">Active</option>
             <option value="paused">Paused</option>
@@ -163,137 +171,17 @@
         <h3>Orders</h3>
         <div id="ordersList"></div>
       </div>
+
+      <div class="panel" style="margin-top:24px;">
+        <h3>Menu Items</h3>
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+          <input id="menuStoreFilter" placeholder="Filter by Store ID" />
+          <button class="btn" id="loadMenuBtn">Load Menu</button>
+        </div>
+        <div id="menuList"></div>
+      </div>
     </div>
 
-    <script>
-      const loginView = document.getElementById("loginView");
-      const dashboardView = document.getElementById("dashboardView");
-      const summaryRow = document.getElementById("summaryRow");
-      const storesList = document.getElementById("storesList");
-      const ordersList = document.getElementById("ordersList");
-
-      const state = {
-        stores: [],
-        orders: [],
-        summary: null,
-      };
-
-      const renderSummary = () => {
-        if (!state.summary) return;
-        summaryRow.innerHTML = `
-          <div class="card"><strong>${state.summary.totalStores}</strong><div>Total stores</div></div>
-          <div class="card"><strong>${state.summary.ordersToday}</strong><div>Orders today</div></div>
-          <div class="card"><strong>${state.summary.newOrders}</strong><div>New orders</div></div>
-        `;
-      };
-
-      const renderStores = () => {
-        storesList.innerHTML = state.stores
-          .map(
-            (store) => `
-          <div class="list-item">
-            <strong>${store.name}</strong> · ${store.store_id} · ${store.status}
-            <div>${store.profile_email || ""}</div>
-          </div>
-        `
-          )
-          .join("");
-      };
-
-      const renderOrders = () => {
-        ordersList.innerHTML = state.orders
-          .map(
-            (order) => `
-          <div class="list-item">
-            <strong>${order.request_id}</strong> · ${order.store_id}
-            <div>${order.customer_name} · ${Formatters.dateTime(order.created_at)}</div>
-            <div>${order.status}</div>
-          </div>
-        `
-          )
-          .join("");
-      };
-
-      const loadAdminData = async () => {
-        const summaryData = await Api.admin.summary();
-        const storesData = await Api.admin.stores();
-        const ordersData = await Api.admin.orders();
-        state.summary = summaryData.summary;
-        state.stores = storesData.stores;
-        state.orders = ordersData.orders;
-        renderSummary();
-        renderStores();
-        renderOrders();
-      };
-
-      document.getElementById("adminLoginBtn").addEventListener("click", async () => {
-        try {
-          const data = await Api.admin.login({
-            username: document.getElementById("adminUser").value.trim(),
-            password: document.getElementById("adminPass").value.trim(),
-          });
-          localStorage.setItem("admin_token", data.token);
-          loginView.style.display = "none";
-          dashboardView.style.display = "block";
-          await loadAdminData();
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      document.getElementById("adminLogout").addEventListener("click", () => {
-        localStorage.removeItem("admin_token");
-        location.reload();
-      });
-
-      document.getElementById("createStoreBtn").addEventListener("click", async () => {
-        try {
-          const payload = {
-            store_id: document.getElementById("storeId").value.trim(),
-            name: document.getElementById("storeName").value.trim(),
-            whatsapp: document.getElementById("storeWhatsapp").value.trim(),
-            profile_email: document.getElementById("storeEmail").value.trim(),
-            logo_url: document.getElementById("storeLogo").value.trim(),
-            status: document.getElementById("storeStatus").value,
-          };
-          const data = await Api.admin.createStore(payload);
-          state.stores.unshift(data.store);
-          renderStores();
-          UI.toast("Store created", "success");
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      document.getElementById("resetPassBtn").addEventListener("click", async () => {
-        const storeId = document.getElementById("resetStoreId").value.trim();
-        if (!storeId) {
-          UI.toast("Enter a store ID", "error");
-          return;
-        }
-        try {
-          const data = await Api.admin.resetPassword({ storeId });
-          document.getElementById("resetResult").textContent = `New passcode: ${data.password}`;
-          UI.toast("Passcode reset", "success");
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      const boot = async () => {
-        if (localStorage.getItem("admin_token")) {
-          loginView.style.display = "none";
-          dashboardView.style.display = "block";
-          try {
-            await loadAdminData();
-          } catch (error) {
-            localStorage.removeItem("admin_token");
-            location.reload();
-          }
-        }
-      };
-
-      boot();
-    </script>
+    <script src="/public/assets/js/admin.js" defer></script>
   </body>
 </html>

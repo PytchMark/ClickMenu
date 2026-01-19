@@ -30,6 +30,13 @@ const extractBearer = (req) => {
 
 const requireAuth = (role) => (req, res, next) => {
   try {
+    if (role === "admin") {
+      const adminKey = req.headers["x-admin-key"];
+      if (adminKey && process.env.ADMIN_API_KEY && adminKey === process.env.ADMIN_API_KEY) {
+        req.user = { role: "admin", apiKey: true };
+        return next();
+      }
+    }
     const token = extractBearer(req);
     if (!token) {
       return res.status(401).json({ ok: false, error: "Missing token" });

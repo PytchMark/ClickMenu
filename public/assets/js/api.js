@@ -52,13 +52,23 @@ const Api = (() => {
           "/api/merchant/items",
           withAuth(getToken("merchant_token"))({ method: "GET" })
         ),
+      menu: () =>
+        request(
+          "/api/merchant/menu",
+          withAuth(getToken("merchant_token"))({ method: "GET" })
+        ),
       saveItem: (payload) =>
         request(
-          "/api/merchant/items",
+          "/api/merchant/menu",
           withAuth(getToken("merchant_token"))({
             method: "POST",
             body: JSON.stringify(payload),
           })
+        ),
+      hideItem: (itemId) =>
+        request(
+          `/api/merchant/menu/${itemId}/hide`,
+          withAuth(getToken("merchant_token"))({ method: "POST" })
         ),
       updateItem: (itemId, payload) =>
         request(
@@ -76,6 +86,19 @@ const Api = (() => {
       updateOrderStatus: (requestId, payload) =>
         request(
           `/api/merchant/orders/${requestId}/status`,
+          withAuth(getToken("merchant_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
+        ),
+      analytics: () =>
+        request(
+          "/api/merchant/analytics",
+          withAuth(getToken("merchant_token"))({ method: "GET" })
+        ),
+      updateProfile: (payload) =>
+        request(
+          "/api/merchant/profile",
           withAuth(getToken("merchant_token"))({
             method: "POST",
             body: JSON.stringify(payload),
@@ -129,10 +152,47 @@ const Api = (() => {
           `/api/admin/orders${storeId ? `?storeId=${storeId}` : ""}`,
           withAuth(getToken("admin_token"))({ method: "GET" })
         ),
+      updateOrderStatus: (requestId, payload) =>
+        request(
+          `/api/admin/orders/${requestId}/status`,
+          withAuth(getToken("admin_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
+        ),
+      menu: (storeId) =>
+        request(
+          `/api/admin/menu${storeId ? `?storeId=${storeId}` : ""}`,
+          withAuth(getToken("admin_token"))({ method: "GET" })
+        ),
+      updateMenuItem: (itemId, payload) =>
+        request(
+          `/api/admin/menu/${itemId}`,
+          withAuth(getToken("admin_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
+        ),
+      deleteMenuItem: (itemId, payload) =>
+        request(
+          `/api/admin/menu/${itemId}/delete`,
+          withAuth(getToken("admin_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
+        ),
       summary: () =>
         request(
-          "/api/admin/stores/summary",
+          "/api/admin/summary",
           withAuth(getToken("admin_token"))({ method: "GET" })
+        ),
+      resetPasscode: (payload) =>
+        request(
+          "/api/admin/reset-passcode",
+          withAuth(getToken("admin_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
         ),
     },
   };

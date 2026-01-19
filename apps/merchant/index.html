@@ -195,6 +195,20 @@
         border-radius: 16px;
         background: rgba(255, 255, 255, 0.06);
       }
+
+      .warning {
+        border: 1px solid rgba(255, 193, 7, 0.4);
+        background: rgba(255, 193, 7, 0.1);
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+
+      .media-preview video {
+        width: 120px;
+        height: 80px;
+        border-radius: 10px;
+      }
     </style>
   </head>
   <body>
@@ -225,14 +239,25 @@
       <div class="tabs">
         <button class="tab active" data-tab="menu">Menu Manager</button>
         <button class="tab" data-tab="orders">Orders Inbox</button>
+        <button class="tab" data-tab="profile">Profile</button>
       </div>
 
       <div id="menuPanel" class="panel">
+        <div class="warning" id="profileWarning" style="display:none;">
+          Complete your merchant profile to be authorized for storefront visibility.
+        </div>
         <h3>Menu Item</h3>
         <input id="itemId" placeholder="Item ID (FOOD-001)" />
         <input id="itemTitle" placeholder="Title" />
         <textarea id="itemDescription" rows="3" placeholder="Description"></textarea>
-        <input id="itemCategory" placeholder="Category" />
+        <select id="itemCategory">
+          <option value="">Category</option>
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch">Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Drinks">Drinks</option>
+        </select>
         <input id="itemPrice" type="number" placeholder="Price" />
         <select id="itemStatus">
           <option value="available">Available</option>
@@ -243,237 +268,45 @@
         <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <input type="checkbox" id="itemFeatured" /> Featured
         </label>
-        <textarea id="itemImages" rows="3" placeholder="Image URLs (one per line)"></textarea>
-        <input id="uploadInput" type="file" multiple />
-        <div class="gallery" id="imageGallery"></div>
+        <div class="panel" style="margin:16px 0;">
+          <strong>Labels</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+            <label><input type="checkbox" class="label-checkbox" value="Chef's Special" /> Chef's Special</label>
+            <label><input type="checkbox" class="label-checkbox" value="Most Loved" /> Most Loved</label>
+            <label><input type="checkbox" class="label-checkbox" value="Spicy" /> Spicy</label>
+            <label><input type="checkbox" class="label-checkbox" value="Vegan" /> Vegan</label>
+          </div>
+          <input id="customLabel" placeholder="Custom label (optional)" />
+        </div>
+        <input id="itemImageUrl" placeholder="Image URL" />
+        <input id="itemVideoUrl" placeholder="Video URL" />
+        <input id="uploadInput" type="file" accept="image/*,video/*" />
+        <div class="gallery media-preview" id="mediaPreview"></div>
         <button class="btn" id="saveItemBtn">Save Item</button>
+        <button class="btn" id="hideItemBtn" style="margin-left:10px;background:#202020;">Hide Item</button>
 
         <div class="items-list" id="itemsList"></div>
       </div>
 
       <div id="ordersPanel" style="display:none;"></div>
+      <div id="profilePanel" class="panel" style="display:none;">
+        <h3>Merchant Profile</h3>
+        <input id="businessAddress" placeholder="Business address" />
+        <input id="businessParish" placeholder="Parish" />
+        <input id="ownerName" placeholder="Owner name" />
+        <input id="ownerPhone" placeholder="Owner phone" />
+        <input id="ownerEmail" placeholder="Owner email" />
+        <input id="businessHours" placeholder="Hours" />
+        <textarea id="businessAbout" rows="3" placeholder="About the business"></textarea>
+        <input id="instagramHandle" placeholder="Instagram" />
+        <input id="tiktokHandle" placeholder="TikTok" />
+        <button class="btn" id="saveProfileBtn">Save Profile</button>
+        <div class="panel" style="margin-top:16px;">
+          <h4>Profile Preview</h4>
+          <div id="profilePreview"></div>
+        </div>
+      </div>
     </div>
-
-    <script>
-      const loginView = document.getElementById("loginView");
-      const dashboardView = document.getElementById("dashboardView");
-      const storeName = document.getElementById("storeName");
-      const storeStatus = document.getElementById("storeStatus");
-      const storeLogo = document.getElementById("storeLogo");
-      const itemsList = document.getElementById("itemsList");
-      const ordersPanel = document.getElementById("ordersPanel");
-      const kpiRow = document.getElementById("kpiRow");
-
-      const state = {
-        profile: null,
-        items: [],
-        orders: [],
-      };
-
-      const renderKpis = () => {
-        const totalOrders = state.orders.length;
-        const newOrders = state.orders.filter((order) => order.status === "new").length;
-        const activeItems = state.items.filter((item) => item.status === "available").length;
-        kpiRow.innerHTML = `
-          <div class="kpi"><strong>${totalOrders}</strong><div>Total Requests</div></div>
-          <div class="kpi"><strong>${newOrders}</strong><div>New Orders</div></div>
-          <div class="kpi"><strong>${activeItems}</strong><div>Active Items</div></div>
-        `;
-      };
-
-      const renderItemsList = () => {
-        itemsList.innerHTML = state.items
-          .map(
-            (item) => `
-          <div class="item-row">
-            <div>
-              <strong>${item.title}</strong>
-              <div>${item.item_id} · ${item.status}</div>
-            </div>
-            <button class="btn" data-edit="${item.item_id}">Edit</button>
-          </div>
-        `
-          )
-          .join("");
-      };
-
-      const renderOrders = () => {
-        ordersPanel.innerHTML = state.orders
-          .map(
-            (order) => `
-          <div class="order-card">
-            <strong>${order.request_id}</strong> · ${order.customer_name}
-            <div>${Formatters.dateTime(order.created_at)}</div>
-            <div>${order.customer_phone}</div>
-            <div>Status: ${order.status}</div>
-            <select data-status="${order.request_id}">
-              <option value="new">New</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="canceled">Canceled</option>
-            </select>
-          </div>
-        `
-          )
-          .join("");
-        ordersPanel.querySelectorAll("select").forEach((select) => {
-          const order = state.orders.find((o) => o.request_id === select.dataset.status);
-          if (order) select.value = order.status;
-        });
-      };
-
-      const loadDashboard = async () => {
-        const profileData = await Api.merchant.me();
-        state.profile = profileData.profile;
-        storeName.textContent = state.profile.name;
-        storeStatus.textContent = `Status: ${state.profile.status}`;
-        storeLogo.src = state.profile.logo_url || "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=160&q=80";
-        const itemsData = await Api.merchant.items();
-        state.items = itemsData.items || [];
-        const ordersData = await Api.merchant.orders();
-        state.orders = ordersData.orders || [];
-        renderItemsList();
-        renderOrders();
-        renderKpis();
-      };
-
-      document.getElementById("loginBtn").addEventListener("click", async () => {
-        try {
-          const data = await Api.merchant.login({
-            storeIdOrEmail: document.getElementById("loginId").value.trim(),
-            password: document.getElementById("loginPass").value.trim(),
-          });
-          localStorage.setItem("merchant_token", data.token);
-          loginView.style.display = "none";
-          dashboardView.style.display = "block";
-          await loadDashboard();
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("merchant_token");
-        location.reload();
-      });
-
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.addEventListener("click", () => {
-          document.querySelectorAll(".tab").forEach((btn) => btn.classList.remove("active"));
-          tab.classList.add("active");
-          const target = tab.dataset.tab;
-          document.getElementById("menuPanel").style.display = target === "menu" ? "block" : "none";
-          ordersPanel.style.display = target === "orders" ? "block" : "none";
-        });
-      });
-
-      itemsList.addEventListener("click", (event) => {
-        const itemId = event.target.dataset.edit;
-        if (!itemId) return;
-        const item = state.items.find((entry) => entry.item_id === itemId);
-        if (!item) return;
-        document.getElementById("itemId").value = item.item_id;
-        document.getElementById("itemTitle").value = item.title;
-        document.getElementById("itemDescription").value = item.description || "";
-        document.getElementById("itemCategory").value = item.category || "";
-        document.getElementById("itemPrice").value = item.price || "";
-        document.getElementById("itemStatus").value = item.status || "available";
-        document.getElementById("itemFeatured").checked = !!item.is_featured;
-        document.getElementById("itemImages").value = item.image_urls || "";
-        renderGallery(item.image_urls);
-      });
-
-      const renderGallery = (value) => {
-        const urls = value
-          ? value.split(/\n|,/).map((item) => item.trim()).filter(Boolean)
-          : [];
-        document.getElementById("imageGallery").innerHTML = urls
-          .map((url) => `<img src="${url}" alt="preview" />`)
-          .join("");
-      };
-
-      document.getElementById("itemImages").addEventListener("input", (event) => {
-        renderGallery(event.target.value);
-      });
-
-      document.getElementById("saveItemBtn").addEventListener("click", async () => {
-        const payload = {
-          item_id: document.getElementById("itemId").value.trim(),
-          title: document.getElementById("itemTitle").value.trim(),
-          description: document.getElementById("itemDescription").value.trim(),
-          category: document.getElementById("itemCategory").value.trim(),
-          price: Number(document.getElementById("itemPrice").value),
-          status: document.getElementById("itemStatus").value,
-          is_featured: document.getElementById("itemFeatured").checked,
-          image_urls: document.getElementById("itemImages").value.trim(),
-        };
-        try {
-          const data = await Api.merchant.saveItem(payload);
-          const existingIndex = state.items.findIndex((item) => item.item_id === data.item.item_id);
-          if (existingIndex >= 0) {
-            state.items[existingIndex] = data.item;
-          } else {
-            state.items.unshift(data.item);
-          }
-          renderItemsList();
-          UI.toast("Saved", "success");
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      document.getElementById("uploadInput").addEventListener("change", async (event) => {
-        const files = Array.from(event.target.files || []);
-        if (!files.length) return;
-        const itemId = document.getElementById("itemId").value.trim() || "general";
-        const formData = new FormData();
-        files.forEach((file) => formData.append("files", file));
-        formData.append("itemId", itemId);
-        try {
-          const data = await Api.merchant.uploadMedia(formData);
-          const existing = document.getElementById("itemImages").value.trim();
-          const combined = [existing, ...(data.urls || [])].filter(Boolean).join("\n");
-          document.getElementById("itemImages").value = combined;
-          renderGallery(combined);
-          UI.toast("Images uploaded", "success");
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      ordersPanel.addEventListener("change", async (event) => {
-        if (!event.target.dataset.status) return;
-        try {
-          const data = await Api.merchant.updateOrderStatus(event.target.dataset.status, {
-            status: event.target.value,
-          });
-          const orderIndex = state.orders.findIndex(
-            (order) => order.request_id === data.order.request_id
-          );
-          if (orderIndex >= 0) {
-            state.orders[orderIndex] = data.order;
-          }
-          UI.toast("Status updated", "success");
-          renderKpis();
-        } catch (error) {
-          UI.toast(error.message, "error");
-        }
-      });
-
-      const boot = async () => {
-        if (localStorage.getItem("merchant_token")) {
-          loginView.style.display = "none";
-          dashboardView.style.display = "block";
-          try {
-            await loadDashboard();
-          } catch (error) {
-            localStorage.removeItem("merchant_token");
-            location.reload();
-          }
-        }
-      };
-
-      boot();
-    </script>
+    <script src="/public/assets/js/merchant.js" defer></script>
   </body>
 </html>
