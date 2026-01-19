@@ -21,6 +21,16 @@ const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
   : ["*"];
 
+const ensureSupabaseConfigured = (req, res, next) => {
+  if (process.env.NODE_ENV !== "production") {
+    return next();
+  }
+  if (supabase.hasSupabase()) {
+    return next();
+  }
+  return res.status(503).json({ ok: false, error: "Supabase not configured" });
+};
+
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
@@ -57,8 +67,11 @@ app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
     mockMode: !supabase.hasSupabase(),
+    supabaseConfigured: supabase.hasSupabase(),
   });
 });
+
+app.use("/api", ensureSupabaseConfigured);
 
 app.get("/api/public/store/:storeId", async (req, res) => {
   try {
@@ -598,7 +611,12 @@ app.use((error, req, res, next) => {
     return next(error);
   }
   console.error("Unhandled error", error);
-  return res.status(500).json({ ok: false, error: error.message || "Server error" });
+  const status = error.status || error.statusCode || 500;
+  const message =
+    error.type === "entity.parse.failed"
+      ? "Invalid JSON payload"
+      : error.message || "Server error";
+  return res.status(status).json({ ok: false, error: message });
 });
 
 const PORT = process.env.PORT || 8080;
