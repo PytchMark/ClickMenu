@@ -38,6 +38,11 @@ Required for Supabase mode:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `JWT_SECRET`
 
+Recommended:
+
+- `NODE_ENV`
+- `PORT`
+
 Admin auth:
 
 - `ADMIN_USERNAME` or `ADMIN_EMAIL`
@@ -162,6 +167,7 @@ create table if not exists audit_events (
 );
 
 create index if not exists idx_profiles_store_id on profiles(store_id);
+create index if not exists idx_profiles_profile_email on profiles(profile_email);
 create index if not exists idx_menu_items_store_id on menu_items(store_id);
 create index if not exists idx_order_requests_store_id_created_at on order_requests(store_id, created_at desc);
 create index if not exists idx_order_requests_status on order_requests(status);
