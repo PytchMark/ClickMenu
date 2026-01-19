@@ -21,6 +21,16 @@ const Api = (() => {
     },
   });
 
+  const buildQuery = (params = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return;
+      query.append(key, value);
+    });
+    const queryString = query.toString();
+    return queryString ? `?${queryString}` : "";
+  };
+
   return {
     health: () => request("/api/health"),
     public: {
@@ -126,10 +136,23 @@ const Api = (() => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }),
-      stores: () =>
+      stores: (params = {}) =>
         request(
-          "/api/admin/stores",
+          `/api/admin/stores${buildQuery(params)}`,
           withAuth(getToken("admin_token"))({ method: "GET" })
+        ),
+      storeDetail: (storeId) =>
+        request(
+          `/api/admin/stores/${storeId}`,
+          withAuth(getToken("admin_token"))({ method: "GET" })
+        ),
+      updateStore: (storeId, payload) =>
+        request(
+          `/api/admin/stores/${storeId}`,
+          withAuth(getToken("admin_token"))({
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          })
         ),
       createStore: (payload) =>
         request(
@@ -147,9 +170,9 @@ const Api = (() => {
             body: JSON.stringify(payload),
           })
         ),
-      orders: (storeId) =>
+      orders: (params = {}) =>
         request(
-          `/api/admin/orders${storeId ? `?storeId=${storeId}` : ""}`,
+          `/api/admin/orders${buildQuery(params)}`,
           withAuth(getToken("admin_token"))({ method: "GET" })
         ),
       updateOrderStatus: (requestId, payload) =>
@@ -165,9 +188,30 @@ const Api = (() => {
           `/api/admin/menu${storeId ? `?storeId=${storeId}` : ""}`,
           withAuth(getToken("admin_token"))({ method: "GET" })
         ),
+      menuItems: (params = {}) =>
+        request(
+          `/api/admin/menu-items${buildQuery(params)}`,
+          withAuth(getToken("admin_token"))({ method: "GET" })
+        ),
       updateMenuItem: (itemId, payload) =>
         request(
-          `/api/admin/menu/${itemId}`,
+          `/api/admin/menu-items/${itemId}`,
+          withAuth(getToken("admin_token"))({
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          })
+        ),
+      bulkUpdateStores: (payload) =>
+        request(
+          "/api/admin/stores/bulk-update",
+          withAuth(getToken("admin_token"))({
+            method: "POST",
+            body: JSON.stringify(payload),
+          })
+        ),
+      bulkResetPasscodes: (payload) =>
+        request(
+          "/api/admin/stores/bulk-reset-passcodes",
           withAuth(getToken("admin_token"))({
             method: "POST",
             body: JSON.stringify(payload),
@@ -193,6 +237,11 @@ const Api = (() => {
             method: "POST",
             body: JSON.stringify(payload),
           })
+        ),
+      analytics: () =>
+        request(
+          "/api/admin/analytics",
+          withAuth(getToken("admin_token"))({ method: "GET" })
         ),
     },
   };

@@ -95,6 +95,13 @@ const mockState = {
   ],
 };
 
+const parseNumber = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
 const buildOrderId = () => `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
 const normalizeMenuItem = (item) => ({
@@ -102,6 +109,62 @@ const normalizeMenuItem = (item) => ({
   featured: item.featured ?? item.is_featured ?? false,
   labels: item.labels || [],
 });
+
+const startOfDay = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+const daysAgo = (days) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date;
+};
+
+const profileCompleteness = (store) => {
+  const fields = [
+    store.name,
+    store.logo_url,
+    store.whatsapp,
+    store.profile_email,
+    store.business_address,
+    store.parish,
+    store.hours,
+    store.about,
+  ];
+  const filled = fields.filter((value) => value && String(value).trim()).length;
+  return Math.round((filled / fields.length) * 100);
+};
+
+const buildStoreMetrics = (stores, orders = []) => {
+  const todayStart = startOfDay();
+  const weekStart = daysAgo(7);
+  const grouped = stores.reduce((acc, store) => {
+    acc[store.store_id] = {
+      orders_today: 0,
+      orders_7d: 0,
+      last_active: store.updated_at || store.created_at || null,
+    };
+    return acc;
+  }, {});
+
+  orders.forEach((order) => {
+    const created = new Date(order.created_at);
+    const entry = grouped[order.store_id];
+    if (!entry) return;
+    if (created >= weekStart) {
+      entry.orders_7d += 1;
+    }
+    if (created >= todayStart) {
+      entry.orders_today += 1;
+    }
+    if (!entry.last_active || created > new Date(entry.last_active)) {
+      entry.last_active = order.created_at;
+    }
+  });
+
+  return grouped;
+};
 
 const getStoreProfile = async (storeId) => {
   if (!hasSupabase()) {
@@ -350,16 +413,121 @@ const updateOrderStatus = async (storeId, requestId, status) => {
   return data;
 };
 
-const getAdminStores = async () => {
+const getAdminStores = async ({
+  q,
+  status,
+  parish,
+  cuisine,
+  limit = 25,
+  offset = 0,
+  sort = "newest",
+} = {}) => {
+  const safeLimit = clamp(parseNumber(limit, 25), 1, 100);
+  const safeOffset = Math.max(0, parseNumber(offset, 0));
+
   if (!hasSupabase()) {
-    return mockState.profiles;
+    let stores = [...mockState.profiles];
+    if (q) {
+      const needle = q.toLowerCase();
+      stores = stores.filter(
+        (store) =>
+          store.store_id.toLowerCase().includes(needle) ||
+          store.name.toLowerCase().includes(needle) ||
+          (store.profile_email || "").toLowerCase().includes(needle) ||
+          (store.whatsapp || "").toLowerCase().includes(needle)
+      );
+    }
+    if (status) {
+      stores = stores.filter((store) => store.status === status);
+    }
+    if (parish) {
+      stores = stores.filter((store) => (store.parish || "").includes(parish));
+    }
+    if (cuisine) {
+      const matching = new Set(
+        mockState.menu_items
+          .filter((item) => (item.category || "").toLowerCase().includes(cuisine.toLowerCase()))
+          .map((item) => item.store_id)
+      );
+      stores = stores.filter((store) => matching.has(store.store_id));
+    }
+    if (sort === "orders") {
+      const counts = mockState.order_requests.reduce((acc, order) => {
+        acc[order.store_id] = (acc[order.store_id] || 0) + 1;
+        return acc;
+      }, {});
+      stores.sort((a, b) => (counts[b.store_id] || 0) - (counts[a.store_id] || 0));
+    } else {
+      stores.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+    const total = stores.length;
+    const paged = stores.slice(safeOffset, safeOffset + safeLimit);
+    const metrics = buildStoreMetrics(paged, mockState.order_requests);
+    return {
+      stores: paged.map((store) => ({
+        ...store,
+        profile_completeness: profileCompleteness(store),
+        ...metrics[store.store_id],
+      })),
+      total,
+    };
   }
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+
+  let query = supabase.from("profiles").select("*", { count: "exact" });
+  if (q) {
+    query = query.or(
+      `store_id.ilike.%${q}%,name.ilike.%${q}%,profile_email.ilike.%${q}%,whatsapp.ilike.%${q}%`
+    );
+  }
+  if (status) {
+    query = query.eq("status", status);
+  }
+  if (parish) {
+    query = query.ilike("parish", `%${parish}%`);
+  }
+  if (cuisine) {
+    const { data: cuisineMatches, error: cuisineError } = await supabase
+      .from("menu_items")
+      .select("store_id")
+      .ilike("category", `%${cuisine}%`);
+    if (cuisineError) throw cuisineError;
+    const storeIds = Array.from(new Set((cuisineMatches || []).map((item) => item.store_id)));
+    query = query.in("store_id", storeIds.length ? storeIds : [""]);
+  }
+
+  if (sort === "orders") {
+    query = query.order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const { data, error, count } = await query.range(
+    safeOffset,
+    safeOffset + safeLimit - 1
+  );
   if (error) throw error;
-  return data || [];
+  const stores = data || [];
+  const storeIds = stores.map((store) => store.store_id);
+  let orders = [];
+  if (storeIds.length) {
+    const { data: orderData, error: orderError } = await supabase
+      .from("order_requests")
+      .select("store_id,created_at")
+      .in("store_id", storeIds)
+      .gte("created_at", daysAgo(7).toISOString());
+    if (orderError) throw orderError;
+    orders = orderData || [];
+  }
+  const metrics = buildStoreMetrics(stores, orders);
+  const enriched = stores.map((store) => ({
+      ...store,
+      profile_completeness: profileCompleteness(store),
+      ...metrics[store.store_id],
+    }));
+  if (sort === "orders") {
+    enriched.sort((a, b) => (b.orders_7d || 0) - (a.orders_7d || 0));
+  }
+  return { stores: enriched, total: count || 0 };
 };
 
 const createStore = async (payload) => {
@@ -424,45 +592,190 @@ const resetPassword = async (storeId) => {
   return data;
 };
 
-const getAdminOrders = async (storeId) => {
+const getAdminOrders = async ({
+  storeId,
+  q,
+  status,
+  limit = 25,
+  offset = 0,
+  from,
+  to,
+} = {}) => {
+  const safeLimit = clamp(parseNumber(limit, 25), 1, 100);
+  const safeOffset = Math.max(0, parseNumber(offset, 0));
+
   if (!hasSupabase()) {
-    return storeId
+    let orders = storeId
       ? mockState.order_requests.filter((order) => order.store_id === storeId)
-      : mockState.order_requests;
+      : [...mockState.order_requests];
+    if (q) {
+      const needle = q.toLowerCase();
+      orders = orders.filter(
+        (order) =>
+          order.request_id.toLowerCase().includes(needle) ||
+          order.store_id.toLowerCase().includes(needle) ||
+          (order.customer_name || "").toLowerCase().includes(needle) ||
+          (order.customer_phone || "").toLowerCase().includes(needle)
+      );
+    }
+    if (status) {
+      orders = orders.filter((order) => order.status === status);
+    }
+    if (from) {
+      orders = orders.filter((order) => new Date(order.created_at) >= new Date(from));
+    }
+    if (to) {
+      orders = orders.filter((order) => new Date(order.created_at) <= new Date(to));
+    }
+    orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const total = orders.length;
+    const storeWhatsapps = mockState.profiles.reduce((acc, profile) => {
+      acc[profile.store_id] = profile.whatsapp || null;
+      return acc;
+    }, {});
+    return {
+      orders: orders.slice(safeOffset, safeOffset + safeLimit).map((order) => ({
+        ...order,
+        store_whatsapp: storeWhatsapps[order.store_id] || null,
+      })),
+      total,
+    };
   }
-  let query = supabase.from("order_requests").select("*").order("created_at", { ascending: false });
+
+  let query = supabase.from("order_requests").select("*", { count: "exact" });
   if (storeId) {
     query = query.eq("store_id", storeId);
   }
-  const { data, error } = await query;
+  if (status) {
+    query = query.eq("status", status);
+  }
+  if (from) {
+    query = query.gte("created_at", from);
+  }
+  if (to) {
+    query = query.lte("created_at", to);
+  }
+  if (q) {
+    query = query.or(
+      `request_id.ilike.%${q}%,store_id.ilike.%${q}%,customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`
+    );
+  }
+  const { data, error, count } = await query
+    .order("created_at", { ascending: false })
+    .range(safeOffset, safeOffset + safeLimit - 1);
   if (error) throw error;
-  return data || [];
-};
-
-const getSummary = async () => {
-  const orders = await getAdminOrders();
-  const stores = await getAdminStores();
-  const summary = summarizeOrders(orders);
+  const orders = data || [];
+  let storeWhatsapps = {};
+  const storeIds = Array.from(new Set(orders.map((order) => order.store_id)));
+  if (storeIds.length) {
+    const { data: profiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("store_id,whatsapp")
+      .in("store_id", storeIds);
+    if (profileError) throw profileError;
+    storeWhatsapps = (profiles || []).reduce((acc, profile) => {
+      acc[profile.store_id] = profile.whatsapp || null;
+      return acc;
+    }, {});
+  }
   return {
-    ...summary,
-    totalStores: stores.length,
+    orders: orders.map((order) => ({
+      ...order,
+      store_whatsapp: storeWhatsapps[order.store_id] || null,
+    })),
+    total: count || 0,
   };
 };
 
-const getAdminMenu = async (storeId) => {
+const getSummary = async () => {
+  const ordersData = await getAdminOrders({ limit: 500, offset: 0 });
+  const storesData = await getAdminStores({ limit: 500, offset: 0 });
+  const summary = summarizeOrders(ordersData.orders || ordersData);
+  return {
+    ...summary,
+    totalStores: (storesData.stores || storesData).length,
+  };
+};
+
+const getAdminMenuItems = async ({
+  storeId,
+  q,
+  category,
+  status,
+  featured,
+  missingMedia,
+  limit = 25,
+  offset = 0,
+} = {}) => {
+  const safeLimit = clamp(parseNumber(limit, 25), 1, 100);
+  const safeOffset = Math.max(0, parseNumber(offset, 0));
+
+  const needsMedia = missingMedia === true || missingMedia === "true";
+  const featuredFlag = featured === true || featured === "true";
+
   if (!hasSupabase()) {
-    return storeId
+    let items = storeId
       ? mockState.menu_items.filter((item) => item.store_id === storeId)
-      : mockState.menu_items;
+      : [...mockState.menu_items];
+    if (q) {
+      const needle = q.toLowerCase();
+      items = items.filter(
+        (item) =>
+          item.item_id.toLowerCase().includes(needle) ||
+          item.title.toLowerCase().includes(needle) ||
+          item.store_id.toLowerCase().includes(needle)
+      );
+    }
+    if (category) {
+      items = items.filter((item) => (item.category || "").includes(category));
+    }
+    if (status) {
+      items = items.filter((item) => item.status === status);
+    }
+    if (featured !== undefined && featured !== null && featured !== "") {
+      items = items.filter((item) => Boolean(item.featured) === featuredFlag);
+    }
+    if (needsMedia) {
+      items = items.filter((item) => !item.image_url && !item.video_url);
+    }
+    items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const total = items.length;
+    return {
+      items: items.slice(safeOffset, safeOffset + safeLimit).map(normalizeMenuItem),
+      total,
+    };
   }
-  let query = supabase.from("menu_items").select("*").order("created_at", { ascending: false });
+
+  let query = supabase.from("menu_items").select("*", { count: "exact" });
   if (storeId) {
     query = query.eq("store_id", storeId);
   }
-  const { data, error } = await query;
+  if (status) {
+    query = query.eq("status", status);
+  }
+  if (category) {
+    query = query.ilike("category", `%${category}%`);
+  }
+  if (featured !== undefined && featured !== null && featured !== "") {
+    query = query.eq("featured", featuredFlag);
+  }
+  if (needsMedia) {
+    query = query.is("image_url", null).is("video_url", null);
+  }
+  if (q) {
+    query = query.or(
+      `item_id.ilike.%${q}%,title.ilike.%${q}%,store_id.ilike.%${q}%`
+    );
+  }
+  const { data, error, count } = await query
+    .order("created_at", { ascending: false })
+    .range(safeOffset, safeOffset + safeLimit - 1);
   if (error) throw error;
-  return (data || []).map(normalizeMenuItem);
+  return { items: (data || []).map(normalizeMenuItem), total: count || 0 };
 };
+
+const getAdminMenu = async (storeId) =>
+  getAdminMenuItems({ storeId }).then((result) => result.items);
 
 const updateOrderStatusAdmin = async (requestId, status) => {
   if (!hasSupabase()) {
@@ -498,6 +811,121 @@ const updateMerchantProfile = async (storeId, payload) => {
   return data;
 };
 
+const getAdminStoreDetail = async (storeId) => {
+  if (!hasSupabase()) {
+    return mockState.profiles.find((profile) => profile.store_id === storeId) || null;
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("store_id", storeId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+const bulkUpdateStores = async (storeIds, action) => {
+  const nextStatus = action === "pause" ? "paused" : "active";
+  if (!hasSupabase()) {
+    mockState.profiles = mockState.profiles.map((profile) =>
+      storeIds.includes(profile.store_id) ? { ...profile, status: nextStatus } : profile
+    );
+    return mockState.profiles.filter((profile) => storeIds.includes(profile.store_id));
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ status: nextStatus, updated_at: new Date().toISOString() })
+    .in("store_id", storeIds)
+    .select("*");
+  if (error) throw error;
+  return data || [];
+};
+
+const bulkResetPasscodes = async (storeIds) => {
+  if (!hasSupabase()) {
+    return storeIds
+      .map((storeId) => {
+        const profile = mockState.profiles.find((item) => item.store_id === storeId);
+        if (!profile) return null;
+        const newPassword = crypto.randomBytes(4).toString("hex");
+        profile.password = newPassword;
+        return { store_id: storeId, password: newPassword };
+      })
+      .filter(Boolean);
+  }
+  const resets = await Promise.all(
+    storeIds.map(async (storeId) => {
+      const newPassword = crypto.randomBytes(4).toString("hex");
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ password: newPassword })
+        .eq("store_id", storeId)
+        .select("store_id,password")
+        .single();
+      if (error) throw error;
+      return data;
+    })
+  );
+  return resets;
+};
+
+const getAdminAnalytics = async () => {
+  const storesData = await getAdminStores({ limit: 500, offset: 0 });
+  const ordersData = await getAdminOrders({ limit: 500, offset: 0 });
+  const stores = storesData.stores || storesData;
+  const orders = ordersData.orders || ordersData;
+
+  const orderCounts = orders.reduce((acc, order) => {
+    acc[order.store_id] = (acc[order.store_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const weekStart = daysAgo(7);
+  const sevenDayOrders = orders.filter((order) => new Date(order.created_at) >= weekStart);
+  const sevenDayCounts = sevenDayOrders.reduce((acc, order) => {
+    acc[order.store_id] = (acc[order.store_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topMerchants = stores
+    .map((store) => ({
+      store_id: store.store_id,
+      name: store.name,
+      total_orders: sevenDayCounts[store.store_id] || 0,
+    }))
+    .sort((a, b) => b.total_orders - a.total_orders)
+    .slice(0, 5);
+
+  const itemCounts = {};
+  orders.forEach((order) => {
+    (order.items_json || []).forEach((item) => {
+      const id = item.itemId || item.item_id;
+      if (!id) return;
+      itemCounts[id] = itemCounts[id] || { item_id: id, title: item.title || "Item", total_requests: 0 };
+      itemCounts[id].total_requests += item.qty || 1;
+    });
+  });
+  const topItems = Object.values(itemCounts)
+    .sort((a, b) => b.total_requests - a.total_requests)
+    .slice(0, 5);
+
+  const deadMerchants = stores
+    .map((store) => {
+      const lastOrder = orders
+        .filter((order) => order.store_id === store.store_id)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+      const fallbackDate = store.updated_at || store.created_at || new Date().toISOString();
+      const lastActive = lastOrder ? new Date(lastOrder.created_at) : new Date(fallbackDate);
+      const diffDays = Math.floor((Date.now() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
+      return { store_id: store.store_id, name: store.name, days: diffDays };
+    })
+    .filter((entry) => entry.days >= 30)
+    .sort((a, b) => b.days - a.days)
+    .slice(0, 5);
+
+  return { totals: orderCounts, topMerchants, topItems, deadMerchants };
+};
+
 const uploadMedia = async ({ storeId, itemId, files }) =>
   uploadFiles({ storeId, itemId, files });
 
@@ -519,7 +947,12 @@ module.exports = {
   getAdminOrders,
   getSummary,
   getAdminMenu,
+  getAdminMenuItems,
   updateOrderStatusAdmin,
   updateMerchantProfile,
+  getAdminStoreDetail,
+  bulkUpdateStores,
+  bulkResetPasscodes,
+  getAdminAnalytics,
   uploadMedia,
 };

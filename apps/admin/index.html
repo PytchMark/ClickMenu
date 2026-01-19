@@ -5,183 +5,338 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ClickMenu Admin</title>
     <link rel="stylesheet" href="/public/assets/css/shared.css" />
-    <script src="/public/assets/js/api.js"></script>
-    <script src="/public/assets/js/ui.js"></script>
-    <script src="/public/assets/js/formatters.js"></script>
-    <style>
-      body {
-        margin: 0;
-        background: #050505;
-        color: #f5f5f5;
-        font-family: "Inter", "Segoe UI", sans-serif;
-      }
-
-      .texture {
-        position: fixed;
-        inset: 0;
-        background: radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.08), transparent 40%),
-          repeating-linear-gradient(140deg, rgba(255, 255, 255, 0.04) 0, rgba(255, 255, 255, 0.04) 1px, transparent 1px, transparent 18px);
-        opacity: 0.2;
-        pointer-events: none;
-      }
-
-      .login {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .panel {
-        width: min(380px, 90vw);
-        background: rgba(12, 12, 12, 0.95);
-        padding: 32px;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      input,
-      select {
-        width: 100%;
-        margin-bottom: 12px;
-        padding: 12px 14px;
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(5, 5, 5, 0.8);
-        color: #fff;
-      }
-
-      .btn {
-        padding: 12px 20px;
-        border-radius: 999px;
-        border: none;
-        background: linear-gradient(120deg, #ff3b30, #ff6b4a);
-        color: #fff;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn::after {
-        content: "";
-        position: absolute;
-        inset: -40% 0;
-        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-        transform: translateX(-120%);
-        animation: gloss 3.6s ease-in-out infinite;
-      }
-
-      @keyframes gloss {
-        0% {
-          transform: translateX(-120%);
-        }
-        60% {
-          transform: translateX(120%);
-        }
-        100% {
-          transform: translateX(120%);
-        }
-      }
-
-      .dashboard {
-        padding: 32px 6vw 60px;
-      }
-
-      .summary {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-      }
-
-      .card {
-        background: rgba(255, 255, 255, 0.06);
-        padding: 16px;
-        border-radius: 16px;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      .list-item {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="texture"></div>
-    <div class="login" id="loginView">
-      <div class="panel">
-        <h2>Admin Console</h2>
-        <input id="adminUser" placeholder="Admin username" />
-        <input id="adminPass" type="password" placeholder="Password" />
-        <button class="btn" id="adminLoginBtn">Log in</button>
-      </div>
-    </div>
-
-    <div class="dashboard" id="dashboardView" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <h2>ClickMenu Admin</h2>
-        <button class="btn" id="adminLogout">Log out</button>
-      </div>
-
-      <div class="summary" id="summaryRow"></div>
-
-      <div class="grid">
-        <div class="panel">
-          <h3>Create Store</h3>
-          <input id="storeId" placeholder="Store ID" />
-          <input id="storeName" placeholder="Store name" />
-          <input id="storeWhatsapp" placeholder="WhatsApp number" />
-          <input id="storeEmail" placeholder="Contact email" />
-          <input id="storeLogo" placeholder="Logo URL" />
-          <input id="storePasscode" placeholder="Passcode (leave empty to autogenerate)" />
-          <input id="storeAddress" placeholder="Business address" />
-          <input id="storeParish" placeholder="Parish" />
-          <input id="storeOwnerName" placeholder="Owner name" />
-          <input id="storeOwnerPhone" placeholder="Owner phone" />
-          <input id="storeOwnerEmail" placeholder="Owner email" />
-          <input id="storeHours" placeholder="Hours" />
-          <input id="storeAbout" placeholder="About" />
-          <select id="storeStatus">
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-          </select>
-          <button class="btn" id="createStoreBtn">Create Store</button>
-        </div>
-
-        <div class="panel">
-          <h3>Reset Passcode</h3>
-          <input id="resetStoreId" placeholder="Store ID" />
-          <button class="btn" id="resetPassBtn">Reset Passcode</button>
-          <div id="resetResult"></div>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:24px;">
-        <h3>Stores</h3>
-        <div id="storesList"></div>
-      </div>
-
-      <div class="panel" style="margin-top:24px;">
-        <h3>Orders</h3>
-        <div id="ordersList"></div>
-      </div>
-
-      <div class="panel" style="margin-top:24px;">
-        <h3>Menu Items</h3>
-        <div style="display:flex;gap:12px;margin-bottom:12px;">
-          <input id="menuStoreFilter" placeholder="Filter by Store ID" />
-          <button class="btn" id="loadMenuBtn">Load Menu</button>
-        </div>
-        <div id="menuList"></div>
-      </div>
-    </div>
-
+    <link rel="stylesheet" href="/public/assets/css/admin.css" />
+    <script src="/public/assets/js/api.js" defer></script>
+    <script src="/public/assets/js/ui.js" defer></script>
+    <script src="/public/assets/js/formatters.js" defer></script>
     <script src="/public/assets/js/admin.js" defer></script>
+  </head>
+  <body class="admin-body">
+    <div class="texture"></div>
+
+    <div class="login-view" id="loginView">
+      <div class="login-panel">
+        <div class="login-brand">ClickMenu</div>
+        <h1>Admin Portal</h1>
+        <p class="muted">Secure access for operations and support.</p>
+        <label class="field">
+          <span>Username or email</span>
+          <input id="adminUser" placeholder="admin@company.com" />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="adminPass" type="password" placeholder="••••••••" />
+        </label>
+        <button class="btn primary" id="adminLoginBtn">Log in</button>
+      </div>
+    </div>
+
+    <div class="admin-shell hidden" id="adminShell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-name">ClickMenu</div>
+            <div class="brand-sub">Admin Console</div>
+          </div>
+        </div>
+        <nav class="nav">
+          <button class="nav-item active" data-view="overview">Overview</button>
+          <button class="nav-item" data-view="merchants">Merchants</button>
+          <button class="nav-item" data-view="menu">Menu Items</button>
+          <button class="nav-item" data-view="orders">Orders</button>
+          <button class="nav-item" data-view="analytics">Analytics</button>
+          <button class="nav-item" data-view="moderation">Moderation</button>
+          <button class="nav-item" data-view="settings">Settings</button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="status-pill">Cloud Run ready</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="search">
+            <span class="search-icon">🔎</span>
+            <input id="globalSearch" placeholder="Search merchants, orders, items" />
+          </div>
+          <div class="top-actions">
+            <button class="btn ghost" id="exportCsvBtn">Export CSV</button>
+            <button class="btn primary" id="createMerchantBtn">Create merchant</button>
+            <button class="btn ghost" id="adminLogout">Log out</button>
+          </div>
+        </header>
+
+        <div class="filter-row hidden" id="filterRow"></div>
+
+        <section class="view active" id="view-overview">
+          <div class="grid-3" id="overviewCards"></div>
+          <div class="panel split">
+            <div>
+              <h3>Ops pulse</h3>
+              <div class="list" id="opsPulse"></div>
+            </div>
+            <div>
+              <h3>Recent orders</h3>
+              <div class="list" id="overviewOrders"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-merchants">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Merchants</h3>
+                <p class="muted">Manage storefronts at scale.</p>
+              </div>
+              <div class="panel-actions">
+                <select id="merchantStatusFilter">
+                  <option value="">All status</option>
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="onboarding">Onboarding</option>
+                  <option value="flagged">Flagged</option>
+                </select>
+                <input id="merchantParishFilter" placeholder="Parish" />
+                <select id="merchantSort">
+                  <option value="newest">Newest</option>
+                  <option value="orders">Most orders</option>
+                </select>
+              </div>
+            </div>
+            <div class="bulk-actions">
+              <label class="checkbox">
+                <input type="checkbox" id="selectAllMerchants" />
+                <span>Select all</span>
+              </label>
+              <button class="btn ghost" id="bulkActivateBtn">Activate</button>
+              <button class="btn ghost" id="bulkPauseBtn">Pause</button>
+              <button class="btn ghost" id="bulkResetBtn">Reset passcodes</button>
+              <button class="btn ghost" id="bulkExportBtn">Export selected</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Merchant</th>
+                    <th>Store ID</th>
+                    <th>Status</th>
+                    <th>Orders (Today / 7d)</th>
+                    <th>Profile</th>
+                    <th>Last active</th>
+                    <th>WhatsApp</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="merchantTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="merchantPagination"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-menu">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Menu Items</h3>
+                <p class="muted">Moderate items across the platform.</p>
+              </div>
+              <div class="panel-actions">
+                <input id="menuStoreFilter" placeholder="Store ID" />
+                <input id="menuCategoryFilter" placeholder="Category" />
+                <select id="menuAvailabilityFilter">
+                  <option value="">All availability</option>
+                  <option value="available">Available</option>
+                  <option value="limited">Limited</option>
+                  <option value="unavailable">Unavailable</option>
+                </select>
+                <select id="menuFeaturedFilter">
+                  <option value="">Featured?</option>
+                  <option value="true">Featured</option>
+                  <option value="false">Not featured</option>
+                </select>
+                <label class="checkbox">
+                  <input type="checkbox" id="menuMissingMedia" />
+                  <span>Missing media</span>
+                </label>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Store</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Price</th>
+                    <th>Featured</th>
+                    <th>Media</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="menuTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="menuPagination"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-orders">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Orders Inbox</h3>
+                <p class="muted">Track customer requests across merchants.</p>
+              </div>
+              <div class="panel-actions">
+                <input id="ordersStoreFilter" placeholder="Store ID" />
+                <select id="ordersStatusFilter">
+                  <option value="">All status</option>
+                  <option value="new">New</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <input id="ordersFrom" type="date" />
+                <input id="ordersTo" type="date" />
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Merchant</th>
+                    <th>Customer</th>
+                    <th>Fulfillment</th>
+                    <th>Parish</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="ordersPagination"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-analytics">
+          <div class="grid-3" id="analyticsCards"></div>
+          <div class="panel">
+            <h3>Top merchants (7d)</h3>
+            <div class="list" id="topMerchants"></div>
+          </div>
+          <div class="panel">
+            <h3>Top items requested</h3>
+            <div class="list" id="topItems"></div>
+          </div>
+          <div class="panel">
+            <h3>Dead merchants</h3>
+            <div class="list" id="deadMerchants"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-moderation">
+          <div class="panel">
+            <h3>Moderation</h3>
+            <p class="muted">Review flagged merchants, items, and customer feedback. (Coming soon)</p>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="panel">
+            <h3>Settings</h3>
+            <p class="muted">Manage admin users, audit policies, and export schedules. (Coming soon)</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="drawer" id="drawer">
+      <div class="drawer-content" id="drawerContent"></div>
+    </div>
+
+    <div class="modal" id="modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Create merchant</h3>
+          <button class="icon-btn" id="closeModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <label class="field">
+              <span>Store ID</span>
+              <input id="createStoreId" />
+            </label>
+            <label class="field">
+              <span>Store name</span>
+              <input id="createStoreName" />
+            </label>
+            <label class="field">
+              <span>WhatsApp</span>
+              <input id="createStoreWhatsapp" />
+            </label>
+            <label class="field">
+              <span>Profile email</span>
+              <input id="createStoreEmail" />
+            </label>
+            <label class="field">
+              <span>Logo URL</span>
+              <input id="createStoreLogo" />
+            </label>
+            <label class="field">
+              <span>Status</span>
+              <select id="createStoreStatus">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="onboarding">Onboarding</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Passcode (optional)</span>
+              <input id="createStorePasscode" />
+            </label>
+            <label class="field">
+              <span>Business address</span>
+              <input id="createStoreAddress" />
+            </label>
+            <label class="field">
+              <span>Parish</span>
+              <input id="createStoreParish" />
+            </label>
+            <label class="field">
+              <span>Owner name (internal)</span>
+              <input id="createOwnerName" />
+            </label>
+            <label class="field">
+              <span>Owner phone (internal)</span>
+              <input id="createOwnerPhone" />
+            </label>
+            <label class="field">
+              <span>Owner email (internal)</span>
+              <input id="createOwnerEmail" />
+            </label>
+            <label class="field">
+              <span>Hours</span>
+              <input id="createStoreHours" />
+            </label>
+            <label class="field full">
+              <span>About</span>
+              <textarea id="createStoreAbout" rows="3"></textarea>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn ghost" id="cancelModal">Cancel</button>
+          <button class="btn primary" id="submitCreateStore">Create merchant</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
