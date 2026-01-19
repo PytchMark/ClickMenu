@@ -39,6 +39,10 @@ create table if not exists order_requests (
   customer_email text,
   notes text,
   items_json jsonb not null,
+  fulfillment_method text not null default 'pickup',
+  parish text not null,
+  location_details text not null,
+  preferred_time text,
   total numeric,
   source text default 'storefront',
   created_at timestamptz default now()
