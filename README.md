@@ -114,7 +114,7 @@ create table if not exists menu_items (
   description text,
   category text not null,
   price numeric,
-  labels jsonb,
+  labels jsonb default '[]'::jsonb,
   featured boolean default false,
   status text not null default 'available',
   image_url text,
@@ -143,6 +143,15 @@ create table if not exists order_requests (
   source text default 'storefront',
   created_at timestamptz default now()
 );
+
+-- Optional: status constraints
+alter table menu_items
+  add constraint menu_items_status_check
+  check (status in ('available', 'limited', 'sold_out', 'hidden'));
+
+alter table order_requests
+  add constraint order_requests_status_check
+  check (status in ('new', 'confirmed', 'preparing', 'ready', 'completed', 'canceled'));
 
 create table if not exists audit_events (
   id uuid primary key default gen_random_uuid(),
@@ -198,7 +207,7 @@ curl -X POST http://localhost:8080/api/public/store/TACOS01/orders \
 ```bash
 curl -X POST http://localhost:8080/api/merchant/login \
   -H "Content-Type: application/json" \
-  -d '{"storeIdOrEmail":"TACOS01","password":"tacos123"}'
+  -d '{"storeIdOrEmail":"TACOS01","passcode":"tacos123"}'
 ```
 
 ```bash

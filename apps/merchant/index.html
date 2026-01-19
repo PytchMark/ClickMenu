@@ -27,6 +27,27 @@
             <input id="loginPass" type="password" placeholder="••••••••" />
           </label>
           <div class="inline-message" id="loginError" role="alert"></div>
+          <details class="login-debug" id="loginDebug" hidden>
+            <summary>Login diagnostics</summary>
+            <div class="debug-grid">
+              <div>
+                <span class="muted">Endpoint</span>
+                <strong id="loginDebugEndpoint">—</strong>
+              </div>
+              <div>
+                <span class="muted">Status</span>
+                <strong id="loginDebugStatus">—</strong>
+              </div>
+              <div class="debug-full">
+                <span class="muted">Response snippet</span>
+                <code id="loginDebugSnippet">—</code>
+              </div>
+              <div class="debug-full">
+                <span class="muted">Hint</span>
+                <strong id="loginDebugHint">Check Cloud Run env vars + server route</strong>
+              </div>
+            </div>
+          </details>
           <button class="btn btn-primary" id="loginBtn">Access Portal</button>
           <p class="helper">Need access? Ask your administrator to reset your merchant passcode.</p>
         </div>
@@ -46,6 +67,7 @@
           </div>
           <div class="header-actions">
             <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+            <a class="btn btn-secondary" id="viewStorefrontBtn" href="/storefront" target="_blank" rel="noreferrer">View Storefront</a>
             <button class="btn btn-secondary" id="logoutBtn">Log out</button>
           </div>
         </header>
@@ -211,7 +233,16 @@
                   <option value="price_asc">Price low-high</option>
                 </select>
               </div>
-              <div class="menu-grid" id="itemsList"></div>
+              <div class="list-table">
+                <div class="list-header menu-row">
+                  <span>Item</span>
+                  <span>Status</span>
+                  <span>Price</span>
+                  <span>Requests</span>
+                  <span>Actions</span>
+                </div>
+                <div class="list-body" id="itemsList"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -225,7 +256,25 @@
               </div>
               <div class="pill" id="newOrdersCount">0 new</div>
             </div>
-            <div class="orders-grid" id="ordersList"></div>
+            <div class="toolbar">
+              <input id="orderSearch" placeholder="Search by customer or order ID" />
+              <select id="orderStatusFilter">
+                <option value="">All statuses</option>
+                <option value="new">New</option>
+                <option value="in_progress">In progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div class="list-table">
+              <div class="list-header order-row">
+                <span>Order</span>
+                <span>Status</span>
+                <span>Fulfillment</span>
+                <span>Total</span>
+                <span>Actions</span>
+              </div>
+              <div class="list-body" id="ordersList"></div>
+            </div>
           </div>
         </section>
 
@@ -303,6 +352,10 @@
                   <input id="tiktokHandle" placeholder="@yourstore" />
                 </label>
               </div>
+              <div class="panel-subsection">
+                <h4>Completion checklist</h4>
+                <div class="checklist" id="completionChecklist"></div>
+              </div>
               <div class="toggle-row">
                 <label class="toggle">
                   <input type="checkbox" id="pickupEnabled" />
@@ -328,6 +381,25 @@
         </section>
       </section>
     </main>
+    <div class="drawer-backdrop" id="orderBackdrop"></div>
+    <aside class="order-drawer" id="orderDrawer" aria-hidden="true">
+      <div class="drawer-header">
+        <div>
+          <h3 id="drawerOrderId">Order</h3>
+          <p class="muted" id="drawerOrderMeta">—</p>
+        </div>
+        <button class="btn btn-ghost" id="closeOrderDrawer" type="button">Close</button>
+      </div>
+      <div class="drawer-section" id="drawerCustomer"></div>
+      <div class="drawer-section" id="drawerItems"></div>
+      <div class="drawer-section" id="drawerNotes"></div>
+      <div class="drawer-actions">
+        <button class="btn btn-secondary" id="markContactedBtn" type="button">Mark contacted</button>
+        <button class="btn btn-secondary" id="markReadyBtn" type="button">Mark ready</button>
+        <button class="btn btn-primary" id="markClosedBtn" type="button">Closed</button>
+        <a class="btn btn-secondary" id="drawerWhatsappBtn" href="#" target="_blank" rel="noreferrer">WhatsApp customer</a>
+      </div>
+    </aside>
     <script src="/public/assets/js/merchant.js" defer></script>
   </body>
 </html>

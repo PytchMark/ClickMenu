@@ -192,16 +192,28 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
 
 app.post("/api/merchant/login", async (req, res) => {
   try {
-    const { storeIdOrEmail, password } = req.body;
-    if (!storeIdOrEmail || !password) {
+    const { storeIdOrEmail, password, passcode } = req.body;
+    const credential = password || passcode;
+    if (!storeIdOrEmail || !credential) {
       return res.status(400).json({ ok: false, error: "Missing credentials" });
     }
-    const profile = await supabase.merchantLogin({ storeIdOrEmail, password });
+    const profile = await supabase.merchantLogin({
+      storeIdOrEmail,
+      password: credential,
+    });
     if (!profile) {
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
     const token = signToken({ role: "merchant", storeId: profile.store_id });
-    return res.json({ ok: true, token, profile });
+    const merchant = {
+      store_id: profile.store_id,
+      name: profile.name,
+      whatsapp: profile.whatsapp,
+      logo_url: profile.logo_url,
+      status: profile.status,
+      profile_email: profile.profile_email,
+    };
+    return res.json({ ok: true, token, merchant, profile: merchant });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
@@ -576,6 +588,18 @@ const sendAdminSummary = async (req, res) => {
 
 app.get("/api/admin/summary", requireAdmin, sendAdminSummary);
 app.get("/api/admin/stores/summary", requireAdmin, sendAdminSummary);
+
+app.use("/api", (req, res) => {
+  res.status(404).json({ ok: false, error: "API route not found" });
+});
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+  console.error("Unhandled error", error);
+  return res.status(500).json({ ok: false, error: error.message || "Server error" });
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
