@@ -31,6 +31,36 @@ const floatingCartCount = document.getElementById("floatingCartCount");
 const cartDrawer = document.getElementById("cartDrawer");
 const drawerBackdrop = document.getElementById("drawerBackdrop");
 const closeCartBtn = document.getElementById("closeCartBtn");
+let lastCartCount = 0;
+
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const revealObserver =
+  !prefersReducedMotion && "IntersectionObserver" in window
+    ? new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.2 }
+      )
+    : null;
+
+const observeReveals = () => {
+  const elements = document.querySelectorAll(".reveal");
+  if (!revealObserver) {
+    elements.forEach((element) => element.classList.add("is-visible"));
+    return;
+  }
+  elements.forEach((element) => {
+    if (element.dataset.revealObserved) return;
+    element.dataset.revealObserved = "true";
+    revealObserver.observe(element);
+  });
+};
 
 const openDrawer = () => {
   cartDrawer.classList.add("show");
@@ -40,6 +70,15 @@ const openDrawer = () => {
 const closeDrawer = () => {
   cartDrawer.classList.remove("show");
   drawerBackdrop.classList.remove("show");
+};
+
+const triggerCartAnimation = () => {
+  floatingCartBtn.classList.remove("cart-bounce");
+  floatingCartCount.classList.remove("count-pop");
+  void floatingCartBtn.offsetWidth;
+  floatingCartBtn.classList.add("cart-bounce");
+  void floatingCartCount.offsetWidth;
+  floatingCartCount.classList.add("count-pop");
 };
 
 const renderStoreHeader = () => {
@@ -73,7 +112,7 @@ const renderCategories = () => {
 };
 
 const buildMenuCard = (item) => `
-  <div class="menu-card">
+  <div class="menu-card reveal">
     <img src="${item.image_url || "https://images.unsplash.com/photo-1526318896980-cf78c088247c?auto=format&fit=crop&w=800&q=80"}" alt="${item.title}" />
     <small>${item.item_id}</small>
     <h4>${item.title}</h4>
@@ -93,6 +132,7 @@ const renderTopPicks = () => {
     return;
   }
   topPicksGrid.innerHTML = picks.map(buildMenuCard).join("");
+  observeReveals();
 };
 
 const renderMenu = (filterCategory = null) => {
@@ -104,6 +144,7 @@ const renderMenu = (filterCategory = null) => {
     .filter((item) => !filterCategory || item.category === filterCategory)
     .map(buildMenuCard)
     .join("");
+  observeReveals();
 };
 
 const renderCart = () => {
@@ -137,6 +178,10 @@ const renderCart = () => {
   cartCount.textContent = totalItems;
   cartTotal.textContent = totalItems ? Formatters.money(totalCost, "JMD") : "—";
   floatingCartCount.textContent = totalItems;
+  if (totalItems !== lastCartCount) {
+    triggerCartAnimation();
+    lastCartCount = totalItems;
+  }
 };
 
 const renderStoreSelect = () => {
@@ -412,4 +457,5 @@ if (preset) {
   storeInput.value = preset;
   loadMenu();
 }
+observeReveals();
 renderCart();

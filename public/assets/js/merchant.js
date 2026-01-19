@@ -1,6 +1,11 @@
 const loginView = document.getElementById("loginView");
 const dashboardView = document.getElementById("dashboardView");
 const loginError = document.getElementById("loginError");
+const loginDebug = document.getElementById("loginDebug");
+const loginDebugEndpoint = document.getElementById("loginDebugEndpoint");
+const loginDebugStatus = document.getElementById("loginDebugStatus");
+const loginDebugSnippet = document.getElementById("loginDebugSnippet");
+const loginDebugHint = document.getElementById("loginDebugHint");
 const storeName = document.getElementById("storeName");
 const storeStatus = document.getElementById("storeStatus");
 const storeLogo = document.getElementById("storeLogo");
@@ -8,6 +13,7 @@ const kpiRow = document.getElementById("kpiRow");
 const attentionList = document.getElementById("attentionList");
 const storefrontPreview = document.getElementById("storefrontPreview");
 const ordersPulse = document.getElementById("ordersPulse");
+const viewStorefrontBtn = document.getElementById("viewStorefrontBtn");
 
 const dashboardPanel = document.getElementById("dashboardPanel");
 const menuPanel = document.getElementById("menuPanel");
@@ -19,11 +25,26 @@ const itemsList = document.getElementById("itemsList");
 const ordersList = document.getElementById("ordersList");
 const newOrdersCount = document.getElementById("newOrdersCount");
 const menuSort = document.getElementById("menuSort");
+const orderSearch = document.getElementById("orderSearch");
+const orderStatusFilter = document.getElementById("orderStatusFilter");
 
 const mediaPreview = document.getElementById("mediaPreview");
 const profilePreview = document.getElementById("profilePreview");
 const completionValue = document.getElementById("completionValue");
 const completionBar = document.getElementById("completionBar");
+const completionChecklist = document.getElementById("completionChecklist");
+const orderDrawer = document.getElementById("orderDrawer");
+const orderBackdrop = document.getElementById("orderBackdrop");
+const drawerOrderId = document.getElementById("drawerOrderId");
+const drawerOrderMeta = document.getElementById("drawerOrderMeta");
+const drawerCustomer = document.getElementById("drawerCustomer");
+const drawerItems = document.getElementById("drawerItems");
+const drawerNotes = document.getElementById("drawerNotes");
+const drawerWhatsappBtn = document.getElementById("drawerWhatsappBtn");
+const closeOrderDrawer = document.getElementById("closeOrderDrawer");
+const markContactedBtn = document.getElementById("markContactedBtn");
+const markReadyBtn = document.getElementById("markReadyBtn");
+const markClosedBtn = document.getElementById("markClosedBtn");
 
 const state = {
   profile: null,
@@ -31,6 +52,8 @@ const state = {
   orders: [],
   analytics: null,
   requestCounts: {},
+  activeOrder: null,
+  scrollPositions: {},
 };
 
 menuSort.dataset.auto = "true";
@@ -42,6 +65,8 @@ const resetToLogin = () => {
   localStorage.removeItem("merchant_token");
   loginView.hidden = false;
   dashboardView.hidden = true;
+  loginDebug.hidden = true;
+  loginDebug.open = false;
 };
 
 const handleAuthError = (error) => {
@@ -54,6 +79,49 @@ const handleAuthError = (error) => {
 
 const setInlineError = (message = "") => {
   loginError.textContent = message;
+};
+
+const setLoginDebug = (details = {}) => {
+  if (!details.url && !details.status) {
+    loginDebug.hidden = true;
+    loginDebug.open = false;
+    return;
+  }
+  loginDebug.hidden = false;
+  loginDebugEndpoint.textContent = details.url || "—";
+  loginDebugStatus.textContent = details.status ? `${details.status}` : "—";
+  loginDebugSnippet.textContent = details.snippet || "—";
+  loginDebugHint.textContent =
+    details.hint || "Check Cloud Run env vars + server route";
+};
+
+const getLoginErrorMessage = (error) => {
+  if (error?.isNonJson && error?.status) {
+    return `Login failed (${error.status}). Server returned non-JSON response. Check /api/merchant/login route + Cloud Run service health.`;
+  }
+  if (error?.status) {
+    return `Login failed (${error.status}). ${error.message}`;
+  }
+  return error.message || "Login failed";
+};
+
+const setActiveTab = (tab, { updateHash = true } = {}) => {
+  const currentTab = document.querySelector(".tab.active")?.dataset.tab;
+  if (currentTab) {
+    state.scrollPositions[currentTab] = window.scrollY;
+  }
+  document.querySelectorAll(".tab").forEach((btn) => btn.classList.remove("active"));
+  const nextTab = document.querySelector(`.tab[data-tab="${tab}"]`);
+  if (nextTab) nextTab.classList.add("active");
+  dashboardPanel.hidden = tab !== "dashboard";
+  menuPanel.hidden = tab !== "menu";
+  ordersPanel.hidden = tab !== "orders";
+  profilePanel.hidden = tab !== "profile";
+  if (updateHash) {
+    window.location.hash = tab;
+  }
+  const nextScroll = state.scrollPositions[tab] || 0;
+  window.scrollTo({ top: nextScroll, behavior: "smooth" });
 };
 
 const summarizeOrders = () => {
@@ -105,6 +173,9 @@ const renderKpis = () => {
   const activeItems = state.items.filter((item) =>
     ["available", "limited"].includes(item.status)
   ).length;
+  const unavailableItems = state.items.filter((item) =>
+    ["sold_out", "hidden"].includes(item.status)
+  ).length;
   const topItemName =
     state.analytics?.topItem?.title ||
     state.items.find((item) => item.item_id in state.requestCounts)?.title ||
@@ -130,6 +201,10 @@ const renderKpis = () => {
     <div class="kpi-card">
       <div class="muted">Menu Items Active</div>
       <strong data-count="${activeItems}">0</strong>
+    </div>
+    <div class="kpi-card">
+      <div class="muted">Items Unavailable</div>
+      <strong data-count="${unavailableItems}">0</strong>
     </div>
   `;
 
@@ -224,6 +299,25 @@ const formatStatusLabel = (status) => {
   }
 };
 
+const formatOrderStatus = (status) => {
+  switch (status) {
+    case "new":
+      return "New";
+    case "confirmed":
+      return "Contacted";
+    case "preparing":
+      return "Preparing";
+    case "ready":
+      return "Ready";
+    case "completed":
+      return "Completed";
+    case "canceled":
+      return "Canceled";
+    default:
+      return status || "Unknown";
+  }
+};
+
 const resolveMenuSort = () => {
   const hasRequests = Object.values(state.requestCounts).some((count) => count > 0);
   const isAuto = menuSort.dataset.auto !== "false";
@@ -268,9 +362,7 @@ const renderItemsList = () => {
   menuCount.textContent = `${filtered.length} item${filtered.length === 1 ? "" : "s"}`;
 
   if (filtered.length === 0) {
-    itemsList.innerHTML = `
-      <div class="empty-state">No menu items yet — publish your first dish in 60 seconds.</div>
-    `;
+    itemsList.innerHTML = `<div class="empty-state">No menu items yet — publish your first dish in 60 seconds.</div>`;
     return;
   }
 
@@ -282,25 +374,39 @@ const renderItemsList = () => {
         item.image_url ||
         "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=600&q=80";
       return `
-        <div class="menu-card">
-          <img src="${image}" alt="${item.title}" />
-          <div>
-            <strong>${item.title}</strong>
-            <div class="muted">${item.item_id} · ${item.category}</div>
+        <div class="list-row menu-row" data-item="${item.item_id}">
+          <div class="row-cell" data-label="Item">
+            <div class="row-title">
+              <img src="${image}" alt="${item.title}" />
+              <div>
+                <strong>${item.title}</strong>
+                <div class="muted">${item.item_id} · ${item.category}</div>
+                <div class="badge-row">
+                  ${labels.map((label) => `<span class="badge">${label}</span>`).join("")}
+                  ${item.featured ? `<span class="badge badge-accent">Featured</span>` : ""}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="badge-row">
-            <span class="badge badge-accent">${formatStatusLabel(item.status)}</span>
-            ${requestCount > 0 ? `<span class="badge">${requestCount} requests</span>` : ""}
-            ${item.featured ? `<span class="badge">Featured</span>` : ""}
+          <div class="row-cell" data-label="Status">
+            <span class="status-pill status-${item.status || "available"}">${formatStatusLabel(
+              item.status
+            )}</span>
           </div>
-          <div class="badge-row">
-            ${labels.map((label) => `<span class="badge">${label}</span>`).join("")}
-          </div>
-          <div class="order-meta">
+          <div class="row-cell" data-label="Price">
             <strong>${formatPrice(item.price)}</strong>
           </div>
-          <div class="order-actions">
-            <button class="btn btn-secondary" data-edit="${item.item_id}">Edit</button>
+          <div class="row-cell" data-label="Requests">
+            <span class="badge">${requestCount} requests</span>
+          </div>
+          <div class="row-cell" data-label="Actions">
+            <div class="row-actions">
+              <button class="btn btn-secondary btn-sm" data-edit="${item.item_id}">Edit</button>
+              <button class="btn btn-ghost btn-sm" data-toggle="${item.item_id}">
+                ${item.status === "sold_out" ? "Mark available" : "Mark sold out"}
+              </button>
+              <button class="btn btn-ghost btn-sm" data-archive="${item.item_id}">Archive</button>
+            </div>
           </div>
         </div>
       `;
@@ -308,77 +414,82 @@ const renderItemsList = () => {
     .join("");
 };
 
+const matchOrderFilter = (order, filter) => {
+  if (!filter) return true;
+  if (filter === "new") return order.status === "new";
+  if (filter === "in_progress") {
+    return ["confirmed", "preparing", "ready"].includes(order.status);
+  }
+  if (filter === "completed") {
+    return ["completed", "canceled"].includes(order.status);
+  }
+  return true;
+};
+
 const renderOrders = () => {
   const newCount = state.orders.filter((order) => order.status === "new").length;
   newOrdersCount.textContent = `${newCount} new`;
 
-  if (state.orders.length === 0) {
-    ordersList.innerHTML = `
-      <div class="empty-state">No new orders — your link is ready to share.</div>
-    `;
+  const searchTerm = orderSearch.value.trim().toLowerCase();
+  const statusFilter = orderStatusFilter.value;
+  const filteredOrders = state.orders.filter((order) => {
+    const matchesSearch = searchTerm
+      ? [order.customer_name, order.request_id]
+          .filter(Boolean)
+          .some((field) => field.toLowerCase().includes(searchTerm))
+      : true;
+    return matchesSearch && matchOrderFilter(order, statusFilter);
+  });
+
+  if (filteredOrders.length === 0) {
+    ordersList.innerHTML = `<div class="empty-state">No orders match this view yet.</div>`;
     return;
   }
 
-  ordersList.innerHTML = state.orders
+  ordersList.innerHTML = filteredOrders
     .map((order) => {
       const items = order.items_json || [];
-      const itemsList = items
+      const itemsListText = items
         .map((item) => `${item.qty || 1}x ${item.title}`)
         .join(", ");
       const total =
         order.subtotal ||
         items.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
-      const phone = order.customer_phone ? order.customer_phone.replace(/\D/g, "") : "";
-      const message = `Hi ${order.customer_name}, this is ${state.profile?.name}.`;
-      const whatsappMessage = `${message} Order ${order.request_id}: ${itemsList}. Total: ${Formatters.money(
-        total
-      )}`;
-      const whatsappUrl = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`
-        : "";
-
       return `
-        <div class="order-card ${order.status === "new" ? "new" : ""}">
-          <div>
-            <strong>${order.request_id}</strong> · ${order.customer_name}
-            <div class="muted">${Formatters.dateTime(order.created_at)}</div>
+        <div class="list-row order-row ${order.status === "new" ? "is-new" : ""}">
+          <div class="row-cell" data-label="Order">
+            <div class="row-title">
+              <div>
+                <strong>${order.request_id}</strong>
+                <div class="muted">${order.customer_name} · ${Formatters.dateTime(
+                  order.created_at
+                )}</div>
+                <div class="muted">${itemsListText || "No items listed"}</div>
+              </div>
+            </div>
           </div>
-          <div class="order-meta">
-            <span>${order.customer_phone || "No phone"}</span>
+          <div class="row-cell" data-label="Status">
+            <span class="status-pill status-${order.status || "new"}">${formatOrderStatus(
+              order.status
+            )}</span>
+          </div>
+          <div class="row-cell" data-label="Fulfillment">
             <span>${order.fulfillment_type || "pickup"} · ${order.parish || "—"}</span>
-            <span>Total: ${Formatters.money(total)}</span>
           </div>
-          <div class="order-items">
-            ${items.map((item) => `<div>${item.qty || 1}x ${item.title}</div>`).join("")}
+          <div class="row-cell" data-label="Total">
+            <strong>${Formatters.money(total)}</strong>
           </div>
-          ${order.notes ? `<div class="muted">Note: ${order.notes}</div>` : ""}
-          <div class="order-actions">
-            <select data-status="${order.request_id}">
-              <option value="new">New</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="preparing">Preparing</option>
-              <option value="ready">Ready</option>
-              <option value="completed">Completed</option>
-              <option value="canceled">Canceled</option>
-            </select>
-            <a
-              class="btn btn-secondary"
-              href="${whatsappUrl || "#"}"
-              ${whatsappUrl ? "target=\"_blank\" rel=\"noreferrer\"" : ""}
-              ${whatsappUrl ? "" : "aria-disabled=\"true\""}
-            >
-              Reply on WhatsApp
-            </a>
+          <div class="row-cell" data-label="Actions">
+            <div class="row-actions">
+              <button class="btn btn-secondary btn-sm" data-open="${order.request_id}">
+                View
+              </button>
+            </div>
           </div>
         </div>
       `;
     })
     .join("");
-
-  ordersList.querySelectorAll("select").forEach((select) => {
-    const order = state.orders.find((entry) => entry.request_id === select.dataset.status);
-    if (order) select.value = order.status;
-  });
 };
 
 const setProfileForm = () => {
@@ -423,6 +534,11 @@ const renderProfileCompletion = () => {
   const completion = getProfileCompletion(state.profile || {});
   completionValue.textContent = `${completion.percent}%`;
   completionBar.style.width = `${completion.percent}%`;
+  completionChecklist.innerHTML = completion.missing.length
+    ? completion.missing
+        .map((item) => `<div class="checklist-item">Missing ${item}</div>`)
+        .join("")
+    : `<div class="checklist-item complete">All essential fields complete.</div>`;
 };
 
 const renderMediaPreview = (imageUrl, videoUrl) => {
@@ -486,7 +602,24 @@ const clearItemForm = () => {
   renderMediaPreview();
 };
 
+const renderItemsSkeleton = () => {
+  itemsList.innerHTML = `
+    <div class="skeleton-row"></div>
+    <div class="skeleton-row"></div>
+    <div class="skeleton-row"></div>
+  `;
+};
+
+const renderOrdersSkeleton = () => {
+  ordersList.innerHTML = `
+    <div class="skeleton-row"></div>
+    <div class="skeleton-row"></div>
+  `;
+};
+
 const loadDashboard = async () => {
+  renderItemsSkeleton();
+  renderOrdersSkeleton();
   const profileData = await Api.merchant.me();
   state.profile = profileData.profile;
   storeName.textContent = state.profile.name || "Store";
@@ -494,6 +627,11 @@ const loadDashboard = async () => {
   storeLogo.src =
     state.profile.logo_url ||
     "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=160&q=80";
+  if (state.profile.store_id) {
+    viewStorefrontBtn.href = `/storefront?storeId=${encodeURIComponent(
+      state.profile.store_id
+    )}`;
+  }
 
   const itemsData = await Api.merchant.menu();
   state.items = itemsData.items || [];
@@ -520,18 +658,26 @@ const loginBtn = document.getElementById("loginBtn");
 loginBtn.addEventListener("click", async () => {
   try {
     setInlineError();
+    setLoginDebug();
     UI.setLoading(loginBtn, true);
     const data = await Api.merchant.login({
       storeIdOrEmail: document.getElementById("loginId").value.trim(),
-      password: document.getElementById("loginPass").value.trim(),
+      passcode: document.getElementById("loginPass").value.trim(),
     });
     localStorage.setItem("merchant_token", data.token);
     loginView.hidden = true;
     dashboardView.hidden = false;
     await loadDashboard();
   } catch (error) {
-    setInlineError(error.message);
-    UI.toast(error.message, "error");
+    const message = getLoginErrorMessage(error);
+    setInlineError(message);
+    UI.toast(message, "error");
+    setLoginDebug({
+      url: error.url,
+      status: error.status,
+      snippet: error.snippet,
+      hint: "Check Cloud Run env vars + server route",
+    });
   } finally {
     UI.setLoading(loginBtn, false);
   }
@@ -554,33 +700,73 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
 
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((btn) => btn.classList.remove("active"));
-    tab.classList.add("active");
     const target = tab.dataset.tab;
-    dashboardPanel.hidden = target !== "dashboard";
-    menuPanel.hidden = target !== "menu";
-    ordersPanel.hidden = target !== "orders";
-    profilePanel.hidden = target !== "profile";
+    setActiveTab(target);
   });
 });
 
 itemsList.addEventListener("click", (event) => {
-  const itemId = event.target.dataset.edit;
+  const editId = event.target.dataset.edit;
+  const toggleId = event.target.dataset.toggle;
+  const archiveId = event.target.dataset.archive;
+  const itemId = editId || toggleId || archiveId;
   if (!itemId) return;
   const item = state.items.find((entry) => entry.item_id === itemId);
   if (!item) return;
-  document.getElementById("itemId").value = item.item_id || "";
-  document.getElementById("itemTitle").value = item.title || "";
-  document.getElementById("itemDescription").value = item.description || "";
-  document.getElementById("itemCategory").value = item.category || "";
-  document.getElementById("itemPrice").value = item.price || "";
-  document.getElementById("itemFeatured").checked = !!item.featured;
-  document.getElementById("itemImageUrl").value = item.image_url || "";
-  document.getElementById("itemVideoUrl").value = item.video_url || "";
-  document.getElementById("customLabel").value = "";
-  updateLabelSelection(item.labels || []);
-  setAvailabilityFromStatus(item.status || "available");
-  renderMediaPreview(item.image_url, item.video_url);
+  if (editId) {
+    document.getElementById("itemId").value = item.item_id || "";
+    document.getElementById("itemTitle").value = item.title || "";
+    document.getElementById("itemDescription").value = item.description || "";
+    document.getElementById("itemCategory").value = item.category || "";
+    document.getElementById("itemPrice").value = item.price || "";
+    document.getElementById("itemFeatured").checked = !!item.featured;
+    document.getElementById("itemImageUrl").value = item.image_url || "";
+    document.getElementById("itemVideoUrl").value = item.video_url || "";
+    document.getElementById("customLabel").value = "";
+    updateLabelSelection(item.labels || []);
+    setAvailabilityFromStatus(item.status || "available");
+    renderMediaPreview(item.image_url, item.video_url);
+    return;
+  }
+  if (toggleId) {
+    const nextStatus = item.status === "sold_out" ? "available" : "sold_out";
+    Api.merchant
+      .updateItem(item.item_id, { status: nextStatus })
+      .then((data) => {
+        const existingIndex = state.items.findIndex(
+          (entry) => entry.item_id === data.item.item_id
+        );
+        if (existingIndex >= 0) {
+          state.items[existingIndex] = data.item;
+        }
+        renderItemsList();
+        renderKpis();
+      })
+      .catch((error) => {
+        if (!handleAuthError(error)) {
+          UI.toast(error.message, "error");
+        }
+      });
+  }
+  if (archiveId) {
+    Api.merchant
+      .hideItem(item.item_id)
+      .then((data) => {
+        const existingIndex = state.items.findIndex(
+          (entry) => entry.item_id === data.item.item_id
+        );
+        if (existingIndex >= 0) {
+          state.items[existingIndex] = data.item;
+        }
+        renderItemsList();
+        renderKpis();
+      })
+      .catch((error) => {
+        if (!handleAuthError(error)) {
+          UI.toast(error.message, "error");
+        }
+      });
+  }
 });
 
 const getSelectedLabels = () => {
@@ -669,9 +855,21 @@ const handleUpload = async () => {
     UI.toast("Select a file to upload", "error");
     return;
   }
+  const nextFile = files[0];
+  const isVideo = nextFile.type.startsWith("video/");
+  const existingImage = document.getElementById("itemImageUrl").value.trim();
+  const existingVideo = document.getElementById("itemVideoUrl").value.trim();
+  if (!isVideo && existingImage) {
+    UI.toast("Only one image is allowed per item.", "error");
+    return;
+  }
+  if (isVideo && existingVideo) {
+    UI.toast("Only one video is allowed per item.", "error");
+    return;
+  }
   const itemId = document.getElementById("itemId").value.trim() || "general";
   const formData = new FormData();
-  formData.append("files", files[0]);
+  formData.append("files", nextFile);
   formData.append("itemId", itemId);
   try {
     UI.setLoading(uploadBtn, true);
@@ -681,7 +879,7 @@ const handleUpload = async () => {
       UI.toast("Upload failed", "error");
       return;
     }
-    if (files[0].type.startsWith("video/")) {
+    if (nextFile.type.startsWith("video/")) {
       document.getElementById("itemVideoUrl").value = url;
     } else {
       document.getElementById("itemImageUrl").value = url;
@@ -707,11 +905,59 @@ uploadInput.addEventListener("change", () => {
   }
 });
 
-ordersList.addEventListener("change", async (event) => {
-  if (!event.target.dataset.status) return;
+const openOrderDrawer = (order) => {
+  state.activeOrder = order;
+  if (!order) return;
+  drawerOrderId.textContent = `Order ${order.request_id}`;
+  drawerOrderMeta.textContent = `${order.customer_name} · ${Formatters.dateTime(
+    order.created_at
+  )}`;
+  drawerCustomer.innerHTML = `
+    <h4>Customer</h4>
+    <div class="drawer-meta">
+      <span>${order.customer_phone || "No phone"}</span>
+      <span>${order.fulfillment_type || "pickup"} · ${order.parish || "—"}</span>
+    </div>
+  `;
+  const items = order.items_json || [];
+  drawerItems.innerHTML = `
+    <h4>Items</h4>
+    <div class="drawer-items">
+      ${items.map((item) => `<div>${item.qty || 1}x ${item.title}</div>`).join("")}
+    </div>
+  `;
+  drawerNotes.innerHTML = order.notes
+    ? `<h4>Notes</h4><p class="muted">${order.notes}</p>`
+    : "";
+  const total =
+    order.subtotal ||
+    items.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
+  const phone = order.customer_phone ? order.customer_phone.replace(/\D/g, "") : "";
+  const message = `Hi ${order.customer_name}, this is ${state.profile?.name}.`;
+  const whatsappMessage = `${message} Order ${order.request_id}: ${items
+    .map((item) => `${item.qty || 1}x ${item.title}`)
+    .join(", ")}. Total: ${Formatters.money(total)}`;
+  drawerWhatsappBtn.href = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`
+    : "#";
+  drawerWhatsappBtn.setAttribute("aria-disabled", phone ? "false" : "true");
+  orderDrawer.classList.add("show");
+  orderDrawer.setAttribute("aria-hidden", "false");
+  orderBackdrop.classList.add("show");
+};
+
+const closeDrawer = () => {
+  orderDrawer.classList.remove("show");
+  orderDrawer.setAttribute("aria-hidden", "true");
+  orderBackdrop.classList.remove("show");
+  state.activeOrder = null;
+};
+
+const updateActiveOrderStatus = async (status) => {
+  if (!state.activeOrder) return;
   try {
-    const data = await Api.merchant.updateOrderStatus(event.target.dataset.status, {
-      status: event.target.value,
+    const data = await Api.merchant.updateOrderStatus(state.activeOrder.request_id, {
+      status,
     });
     const orderIndex = state.orders.findIndex(
       (order) => order.request_id === data.order.request_id
@@ -725,12 +971,29 @@ ordersList.addEventListener("change", async (event) => {
     renderOrders();
     renderKpis();
     renderAttention();
+    openOrderDrawer(data.order);
   } catch (error) {
     if (!handleAuthError(error)) {
       UI.toast(error.message, "error");
     }
   }
+};
+
+ordersList.addEventListener("click", (event) => {
+  const openId = event.target.dataset.open;
+  if (!openId) return;
+  const order = state.orders.find((entry) => entry.request_id === openId);
+  if (order) {
+    openOrderDrawer(order);
+  }
 });
+
+closeOrderDrawer.addEventListener("click", closeDrawer);
+orderBackdrop.addEventListener("click", closeDrawer);
+
+markContactedBtn.addEventListener("click", () => updateActiveOrderStatus("confirmed"));
+markReadyBtn.addEventListener("click", () => updateActiveOrderStatus("ready"));
+markClosedBtn.addEventListener("click", () => updateActiveOrderStatus("completed"));
 
 document
   .getElementById("saveProfileBtn")
@@ -781,11 +1044,21 @@ document.getElementById("menuSearch").addEventListener("input", renderItemsList)
   document.getElementById(id).addEventListener("change", renderItemsList);
 });
 
+orderSearch.addEventListener("input", renderOrders);
+orderStatusFilter.addEventListener("change", renderOrders);
+
 menuSort.addEventListener("change", (event) => {
   event.target.dataset.auto = "false";
 });
 
+window.addEventListener("hashchange", () => {
+  const target = window.location.hash.replace("#", "") || "dashboard";
+  setActiveTab(target, { updateHash: false });
+});
+
 const boot = async () => {
+  const initialTab = window.location.hash.replace("#", "") || "dashboard";
+  setActiveTab(initialTab, { updateHash: false });
   if (localStorage.getItem("merchant_token")) {
     loginView.hidden = true;
     dashboardView.hidden = false;

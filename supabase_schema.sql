@@ -34,7 +34,7 @@ create table if not exists menu_items (
   description text,
   category text not null,
   price numeric,
-  labels jsonb,
+  labels jsonb default '[]'::jsonb,
   featured boolean default false,
   status text not null default 'available',
   image_url text,
@@ -63,6 +63,14 @@ create table if not exists order_requests (
   source text default 'storefront',
   created_at timestamptz default now()
 );
+
+alter table menu_items
+  add constraint menu_items_status_check
+  check (status in ('available', 'limited', 'sold_out', 'hidden'));
+
+alter table order_requests
+  add constraint order_requests_status_check
+  check (status in ('new', 'confirmed', 'preparing', 'ready', 'completed', 'canceled'));
 
 create table if not exists audit_events (
   id uuid primary key default gen_random_uuid(),

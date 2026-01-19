@@ -3,13 +3,69 @@ const Api = (() => {
 
   const getToken = (key) => localStorage.getItem(key);
 
+  const buildRequestError = ({ message, status, url, snippet, isNonJson }) => {
+    const error = new Error(message);
+    error.status = status;
+    error.url = url;
+    error.snippet = snippet;
+    error.isNonJson = isNonJson;
+    return error;
+  };
+
+  const parseResponse = async (response, url) => {
+    const contentType = response.headers.get("content-type") || "";
+    const rawText = await response.text();
+    const isJson = contentType.includes("application/json");
+
+    if (!rawText) {
+      if (!response.ok) {
+        throw buildRequestError({
+          message: `Request failed (${response.status})`,
+          status: response.status,
+          url,
+          snippet: "",
+          isNonJson: !isJson,
+        });
+      }
+      return { data: null };
+    }
+
+    if (!isJson) {
+      throw buildRequestError({
+        message: `Request failed (${response.status}). Server returned non-JSON response.`,
+        status: response.status,
+        url,
+        snippet: rawText.slice(0, 200),
+        isNonJson: true,
+      });
+    }
+
+    try {
+      return { data: JSON.parse(rawText) };
+    } catch (error) {
+      throw buildRequestError({
+        message: `Invalid JSON response (${response.status}).`,
+        status: response.status,
+        url,
+        snippet: rawText.slice(0, 200),
+        isNonJson: false,
+      });
+    }
+  };
+
   const request = async (url, options = {}) => {
     const response = await fetch(`${base}${url}`, options);
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Request failed");
+    const { data } = await parseResponse(response, `${base}${url}`);
+    if (!response.ok || (data && data.ok === false)) {
+      throw buildRequestError({
+        message: data?.error || `Request failed (${response.status})`,
+        status: response.status,
+        url: `${base}${url}`,
+        snippet: "",
+        isNonJson: false,
+      });
     }
-    return data;
+    return data || { ok: true };
   };
 
   const withAuth = (token) => (options = {}) => ({
@@ -122,11 +178,17 @@ const Api = (() => {
           },
           body: formData,
         });
-        const data = await response.json();
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Upload failed");
+        const { data } = await parseResponse(response, "/api/media/upload");
+        if (!response.ok || (data && data.ok === false)) {
+          throw buildRequestError({
+            message: data?.error || `Upload failed (${response.status})`,
+            status: response.status,
+            url: "/api/media/upload",
+            snippet: "",
+            isNonJson: false,
+          });
         }
-        return data;
+        return data || { ok: true };
       },
     },
     admin: {
