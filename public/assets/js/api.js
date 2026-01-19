@@ -131,7 +131,7 @@ const Api = (() => {
         ),
       summary: () =>
         request(
-          "/api/admin/stores/summary",
+          "/api/admin/summary",
           withAuth(getToken("admin_token"))({ method: "GET" })
         ),
     },

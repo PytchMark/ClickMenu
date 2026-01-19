@@ -322,14 +322,17 @@ app.get("/api/admin/orders", requireAdmin, async (req, res) => {
   }
 });
 
-app.get("/api/admin/stores/summary", requireAdmin, async (req, res) => {
+const sendAdminSummary = async (req, res) => {
   try {
     const summary = await supabase.getSummary(req.query.month);
     return res.json({ ok: true, summary });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
-});
+};
+
+app.get("/api/admin/summary", requireAdmin, sendAdminSummary);
+app.get("/api/admin/stores/summary", requireAdmin, sendAdminSummary);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
