@@ -221,9 +221,12 @@ app.post("/api/merchant/login", async (req, res) => {
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
     console.info("Merchant profile found", { storeId: profile.store_id });
-    if (profile.status === "paused") {
-      console.warn("Merchant login blocked - status paused", { identifier: lookup });
-      return res.status(403).json({ ok: false, error: "Store is paused" });
+    if (profile.status !== "active") {
+      console.warn("Merchant login blocked - status not active", {
+        identifier: lookup,
+        status: profile.status,
+      });
+      return res.status(403).json({ ok: false, error: "Store is not active" });
     }
     const token = signToken({ role: "merchant", storeId: profile.store_id });
     console.info("Merchant token issued", { storeId: profile.store_id });

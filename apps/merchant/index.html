@@ -380,33 +380,34 @@
             <!-- /merchant-panels -->
           </div>
         </div>
+        <!-- Order drawer -->
+        <div id="orderDrawer" class="order-drawer" aria-hidden="true">
+          <div class="order-drawer__header">
+            <div>
+              <div id="drawerOrderId" class="drawer-title"></div>
+              <div id="drawerOrderMeta" class="muted"></div>
+            </div>
+            <button id="closeOrderDrawer" class="btn btn-ghost" type="button">Close</button>
+          </div>
+
+          <div class="order-drawer__content">
+            <div id="drawerCustomer"></div>
+            <div id="drawerItems"></div>
+            <div id="drawerNotes"></div>
+          </div>
+
+          <div class="order-drawer__footer">
+            <a id="drawerWhatsappBtn" class="btn btn-ghost" target="_blank" rel="noopener">
+              WhatsApp customer
+            </a>
+            <button id="markContactedBtn" class="btn btn-ghost" type="button">Mark contacted</button>
+            <button id="markReadyBtn" class="btn btn-primary" type="button">Mark ready</button>
+            <button id="markClosedBtn" class="btn btn-danger" type="button">Close order</button>
+          </div>
+        </div>
+        <div id="orderBackdrop" class="order-backdrop" aria-hidden="true"></div>
       </section>
     </main>
-
-    <!-- Order drawer -->
-    <div id="orderDrawer" class="order-drawer" aria-hidden="true">
-      <div class="order-drawer__header">
-        <div>
-          <div id="drawerOrderId" class="drawer-title"></div>
-          <div id="drawerOrderMeta" class="muted"></div>
-        </div>
-        <button id="closeOrderDrawer" class="btn btn-ghost" type="button">Close</button>
-      </div>
-
-      <div class="order-drawer__content">
-        <div id="drawerCustomer"></div>
-        <div id="drawerItems"></div>
-        <div id="drawerNotes"></div>
-      </div>
-
-      <div class="order-drawer__footer">
-        <a id="drawerWhatsappBtn" class="btn btn-ghost" target="_blank" rel="noopener">WhatsApp customer</a>
-        <button id="markContactedBtn" class="btn btn-ghost" type="button">Mark contacted</button>
-        <button id="markReadyBtn" class="btn btn-primary" type="button">Mark ready</button>
-        <button id="markClosedBtn" class="btn btn-danger" type="button">Close order</button>
-      </div>
-    </div>
-    <div id="orderBackdrop" class="order-backdrop" aria-hidden="true"></div>
 
     <!-- Scripts: load ONCE, and in correct order -->
     <script src="/public/assets/js/api.js" defer></script>
