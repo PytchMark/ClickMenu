@@ -773,7 +773,8 @@ loginBtn.addEventListener("click", async () => {
   } catch (error) {
     const message = getLoginErrorMessage(error);
     setInlineError(message);
-    UI.toast(message, "error");
+    loginView.hidden = false;
+    dashboardView.hidden = true;
     setLoginDebug({
       url: error.url,
       status: error.status,
