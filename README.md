@@ -65,8 +65,16 @@ Optional:
 - `BRAND_NAME`
 - `SUPABASE_DB_URL` (optional, only if used)
 
+Stripe (required for subscriptions):
+
+- `STRIPE_SECRET_KEY` (sk_test_... or sk_live_...)
+- `STRIPE_WEBHOOK_SECRET` (whsec_...)
+- `STRIPE_PRICE_ID_PRO` (price_... for Pro plan)
+- `STRIPE_PRICE_ID_BUSINESS` (price_... for Business plan)
+
 If `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` is missing, the server runs in mock mode with sample data.
 If `JWT_SECRET` is missing in production, the server exits with an error so tokens are never issued without a secret.
+If Stripe keys are missing, subscription features will be disabled but the app will still function in free mode.
 
 ## Admin Portal CSP Notes
 
