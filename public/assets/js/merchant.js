@@ -125,19 +125,25 @@ const SECTION_STORAGE_KEY = "merchant_active_section";
 
 const setSection = (section) => {
   if (!panelMap[section]) return;
+  
+  // Update sidebar active state
   document
     .querySelectorAll(".sidebar-link")
     .forEach((btn) => btn.classList.remove("active"));
   const nextLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
   if (nextLink) nextLink.classList.add("active");
 
+  // Hide all panels
   document.querySelectorAll(".panel-section").forEach((panel) => {
-    panel.hidden = true;
     panel.classList.remove("is-active");
   });
+  
+  // Show selected panel
   const nextPanel = panelMap[section];
-  nextPanel.hidden = false;
-  nextPanel.classList.add("is-active");
+  if (nextPanel) {
+    nextPanel.classList.add("is-active");
+  }
+  
   state.activeSection = section;
   localStorage.setItem(SECTION_STORAGE_KEY, section);
 };
