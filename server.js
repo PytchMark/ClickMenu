@@ -13,6 +13,7 @@ const {
 } = require("./services/auth");
 const { buildMerchantAnalytics } = require("./services/analytics");
 const supabase = require("./services/supabase");
+const billing = require("./services/billing");
 const stripe = require("./services/stripe");
 
 const app = express();
