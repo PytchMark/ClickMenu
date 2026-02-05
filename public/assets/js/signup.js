@@ -163,7 +163,7 @@ step2Form.addEventListener('submit', async (e) => {
 // Step 3: Plan Selection
 function selectPlan(plan) {
   signupState.selectedPlan = plan;
-  completeSi gnup();
+  completeSignup();
 }
 
 async function completeSignup() {
