@@ -15,9 +15,65 @@ const mockState = {
   profiles: [
     {
       id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      name: "Kingston Taste Kitchen",
+      status: "active",
+      plan: "pro",
+      subscription_status: "active",
+      whatsapp: "+18765551234",
+      profile_email: "hello@kingstontaste.com",
+      password: "demo123",
+      logo_url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=400&q=80",
+      business_address: "123 Hope Road",
+      parish: "Kingston",
+      owner_name: "Marcus Thompson",
+      owner_phone: "+18765551234",
+      owner_email: "marcus@kingstontaste.com",
+      cuisine_type: "Caribbean Fusion",
+      hours: "Mon-Sat: 11am-10pm, Sun: 12pm-9pm",
+      about: "Experience authentic Caribbean flavors with a modern twist.",
+      instagram: "@kingstontaste",
+      tiktok: "@kingstontaste",
+      pickup_enabled: true,
+      delivery_enabled: true,
+      authorized: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "SPICE2",
+      name: "Island Spice Grill",
+      status: "active",
+      plan: "business",
+      subscription_status: "active",
+      whatsapp: "+18765555678",
+      profile_email: "orders@islandspice.com",
+      password: "demo456",
+      logo_url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80",
+      business_address: "456 Market Street",
+      parish: "Montego Bay",
+      owner_name: "Sarah Williams",
+      owner_phone: "+18765555678",
+      owner_email: "sarah@islandspice.com",
+      cuisine_type: "Jamaican BBQ",
+      hours: "Daily: 10am-11pm",
+      about: "Fire up your taste buds with our signature jerk recipes.",
+      instagram: "@islandspice",
+      tiktok: "@islandspicegrill",
+      pickup_enabled: true,
+      delivery_enabled: true,
+      authorized: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
       store_id: "TACOS01",
       name: "Luna Tacos",
       status: "active",
+      plan: "free",
+      subscription_status: "active",
       whatsapp: "+15551234567",
       profile_email: "hello@lunatacos.example",
       password: "tacos123",
@@ -40,6 +96,89 @@ const mockState = {
     },
   ],
   menu_items: [
+    // Kingston Taste Kitchen items
+    {
+      id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      item_id: "ITEM-001",
+      title: "Jerk Chicken Paradise",
+      description: "Succulent chicken marinated for 24 hours in our secret jerk blend.",
+      category: "Lunch",
+      price: 18.99,
+      status: "available",
+      featured: true,
+      labels: ["Popular", "Signature"],
+      image_url: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      item_id: "ITEM-002",
+      title: "Curry Goat Supreme",
+      description: "Tender goat meat slow-cooked in aromatic curry spices.",
+      category: "Dinner",
+      price: 22.50,
+      status: "available",
+      featured: true,
+      labels: ["Top Pick"],
+      image_url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      item_id: "ITEM-003",
+      title: "Ackee & Saltfish Perfection",
+      description: "Jamaica's national dish done right!",
+      category: "Breakfast",
+      price: 16.99,
+      status: "available",
+      featured: false,
+      labels: ["Traditional"],
+      image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    // Island Spice Grill items
+    {
+      id: crypto.randomUUID(),
+      store_id: "SPICE2",
+      item_id: "ITEM-101",
+      title: "Jerk Pork Platter",
+      description: "Fall-off-the-bone pork shoulder rubbed with traditional jerk seasoning.",
+      category: "Lunch",
+      price: 20.99,
+      status: "available",
+      featured: true,
+      labels: ["Signature", "Spicy"],
+      image_url: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "SPICE2",
+      item_id: "ITEM-102",
+      title: "BBQ Ribs Island Style",
+      description: "Tender baby back ribs glazed with our secret tamarind BBQ sauce.",
+      category: "Dinner",
+      price: 24.50,
+      status: "available",
+      featured: true,
+      labels: ["Popular", "Best Seller"],
+      image_url: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=800&q=80",
+      video_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    // TACOS01 items (existing)
     {
       id: crypto.randomUUID(),
       store_id: "TACOS01",
@@ -74,6 +213,27 @@ const mockState = {
     },
   ],
   order_requests: [
+    {
+      id: crypto.randomUUID(),
+      request_id: "ORD-20240205-001",
+      store_id: "TASTE1",
+      status: "new",
+      customer_name: "John Davis",
+      customer_phone: "+18765559999",
+      customer_email: "john@example.com",
+      notes: "Please make it extra spicy!",
+      items_json: [
+        { itemId: "ITEM-001", title: "Jerk Chicken Paradise", qty: 2, price: 18.99 },
+      ],
+      fulfillment_type: "pickup",
+      parish: "Kingston",
+      delivery_address: "123 Hope Road",
+      delivery_notes: null,
+      preferred_time: "ASAP",
+      subtotal: 37.98,
+      source: "storefront",
+      created_at: new Date(Date.now() - 30 * 60000).toISOString(),
+    },
     {
       id: crypto.randomUUID(),
       request_id: "ORD-DEMO-0001",
@@ -938,6 +1098,112 @@ const getAdminAnalytics = async () => {
 const uploadMedia = async ({ storeId, itemId, files }) =>
   uploadFiles({ storeId, itemId, files });
 
+// Subscription management functions
+const updateSubscriptionInfo = async (storeId, updates) => {
+  if (!hasSupabase()) {
+    const index = mockState.profiles.findIndex((profile) => profile.store_id === storeId);
+    if (index < 0) return null;
+    mockState.profiles[index] = { ...mockState.profiles[index], ...updates };
+    return mockState.profiles[index];
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("store_id", storeId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const getDailySpecials = async (storeId) => {
+  if (!hasSupabase()) {
+    // Mock: return empty for now
+    return [];
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const { data, error } = await supabase
+    .from("daily_specials")
+    .select("*")
+    .eq("store_id", storeId)
+    .eq("display_date", today)
+    .eq("active", true)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+const upsertDailySpecial = async (storeId, payload) => {
+  if (!hasSupabase()) {
+    return { id: crypto.randomUUID(), store_id: storeId, ...payload };
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const record = {
+    store_id: storeId,
+    item_id: payload.item_id,
+    title: payload.title,
+    description: payload.description || null,
+    price: payload.price,
+    image_url: payload.image_url || null,
+    active: payload.active ?? true,
+    display_date: today,
+    updated_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabase
+    .from("daily_specials")
+    .upsert(record, { onConflict: "store_id,item_id,display_date" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const deleteDailySpecial = async (storeId, itemId) => {
+  if (!hasSupabase()) {
+    return { success: true };
+  }
+  const { error } = await supabase
+    .from("daily_specials")
+    .delete()
+    .eq("store_id", storeId)
+    .eq("item_id", itemId);
+  if (error) throw error;
+  return { success: true };
+};
+
+const validateStoreId = (storeId) => {
+  // Must be max 6 characters, start with capital letter, contain at least one number
+  const regex = /^[A-Z][A-Z0-9]{0,5}$/;
+  if (!regex.test(storeId)) {
+    return {
+      valid: false,
+      error: 'Store ID must start with a capital letter, be max 6 characters, and contain at least one number'
+    };
+  }
+  // Check if contains at least one number
+  if (!/\d/.test(storeId)) {
+    return {
+      valid: false,
+      error: 'Store ID must contain at least one number'
+    };
+  }
+  return { valid: true };
+};
+
+const checkStoreIdAvailable = async (storeId) => {
+  if (!hasSupabase()) {
+    const exists = mockState.profiles.some(p => p.store_id === storeId);
+    return !exists;
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("store_id")
+    .eq("store_id", storeId)
+    .maybeSingle();
+  if (error) throw error;
+  return !data; // Available if no data found
+};
+
 module.exports = {
   hasSupabase,
   getStoreProfile,
@@ -964,4 +1230,10 @@ module.exports = {
   bulkResetPasscodes,
   getAdminAnalytics,
   uploadMedia,
+  updateSubscriptionInfo,
+  getDailySpecials,
+  upsertDailySpecial,
+  deleteDailySpecial,
+  validateStoreId,
+  checkStoreIdAvailable,
 };
