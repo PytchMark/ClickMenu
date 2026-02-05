@@ -764,18 +764,31 @@ loginBtn.addEventListener("click", async () => {
     setInlineError();
     setLoginDebug();
     UI.setLoading(loginBtn, true);
+    
     const data = await Api.merchant.login({
       identifier: document.getElementById("loginId").value.trim(),
       passcode: document.getElementById("loginPass").value.trim(),
     });
+    
+    // Store token
     localStorage.setItem("merchant_token", data.token);
     if (data.merchant?.store_id) {
       localStorage.setItem("merchant_store_id", data.merchant.store_id);
     }
+    
+    // Set profile from login response
+    state.profile = data.merchant;
+    
+    // Show dashboard
     loginView.hidden = true;
     dashboardView.hidden = false;
+    
+    // Set active section
     setSection(getStoredSection());
+    
+    // Load dashboard data
     await loadDashboard(state.profile);
+    
   } catch (error) {
     const message = getLoginErrorMessage(error);
     setInlineError(message);
