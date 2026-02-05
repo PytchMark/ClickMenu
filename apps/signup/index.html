@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Become a ClickMenu Merchant</title>
+    <link rel="stylesheet" href="/public/assets/css/signup.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="signup-body">
+    <div class="background-texture"></div>
+
+    <main class="signup-shell">
+      <!-- Hero Section -->
+      <section class="hero-section" id="heroSection">
+        <div class="hero-content">
+          <div class="hero-logo">CM</div>
+          <h1 class="hero-title">Turn Your Menu Into Sales</h1>
+          <p class="hero-subtitle">
+            Join hundreds of restaurants using ClickMenu to receive orders from social media, WhatsApp, and beyond.
+            No website needed. No payment processor required. Just instant order requests from hungry customers.
+          </p>
+          <button class="btn btn-hero" data-testid="get-started-btn" onclick="showSignupForm()">Get Started Free</button>
+          <div class="hero-trust">
+            <span>✓ Free forever plan</span>
+            <span>✓ No credit card required</span>
+            <span>✓ Setup in 5 minutes</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signup Form Section -->
+      <section class="signup-section glass-card" id="signupSection" hidden>
+        <div class="signup-header">
+          <h2>Create Your Merchant Account</h2>
+          <p class="muted">Get your clickable menu live in minutes</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="steps-indicator">
+          <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">Business Info</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">Store ID</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-label">Choose Plan</div>
+          </div>
+        </div>
+
+        <!-- Step 1: Business Info -->
+        <form id="step1Form" class="signup-form">
+          <div class="form-grid">
+            <label class="field field-full">
+              Restaurant / Business Name *
+              <input id="businessName" type="text" required placeholder="Island Spice Grill" />
+            </label>
+
+            <label class="field">
+              Contact Email *
+              <input id="contactEmail" type="email" required placeholder="hello@yourbusiness.com" />
+            </label>
+
+            <label class="field">
+              WhatsApp Number
+              <input id="whatsappNumber" type="tel" placeholder="+1 876 555 1234" />
+            </label>
+
+            <label class="field">
+              Owner Name *
+              <input id="ownerName" type="text" required placeholder="Your name" />
+            </label>
+
+            <label class="field">
+              Owner Phone *
+              <input id="ownerPhone" type="tel" required placeholder="+1 876 555 5678" />
+            </label>
+
+            <label class="field">
+              Parish / Location *
+              <input id="parish" type="text" required placeholder="Kingston" />
+            </label>
+
+            <label class="field">
+              Cuisine Type
+              <input id="cuisineType" type="text" placeholder="Caribbean Fusion" />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="showHero()">Back</button>
+            <button type="submit" class="btn btn-primary">Continue</button>
+          </div>
+        </form>
+
+        <!-- Step 2: Store ID & Password -->
+        <form id="step2Form" class="signup-form" hidden>
+          <div class="info-card">
+            <strong>Create Your Store ID</strong>
+            <p>Your Store ID is your unique identifier. Requirements:</p>
+            <ul>
+              <li>Maximum 6 characters</li>
+              <li>Must start with a capital letter</li>
+              <li>Must include at least one number</li>
+              <li>Example: TASTE1, SPICE2, GRILL9</li>
+            </ul>
+          </div>
+
+          <div class="form-grid">
+            <label class="field">
+              Store ID *
+              <input 
+                id="storeId" 
+                type="text" 
+                required 
+                maxlength="6"
+                placeholder="SPICE1" 
+                style="text-transform: uppercase;"
+              />
+              <span id="storeIdFeedback" class="field-feedback"></span>
+            </label>
+
+            <label class="field">
+              Passcode *
+              <input id="passcode" type="password" required placeholder="Create secure passcode" />
+            </label>
+
+            <label class="field field-full">
+              Confirm Passcode *
+              <input id="passcodeConfirm" type="password" required placeholder="Confirm passcode" />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="goToStep(1)">Back</button>
+            <button type="submit" class="btn btn-primary">Continue</button>
+          </div>
+        </form>
+
+        <!-- Step 3: Plan Selection -->
+        <form id="step3Form" class="signup-form" hidden>
+          <div class="plans-grid">
+            <!-- Free Plan -->
+            <div class="plan-card" data-plan="free">
+              <div class="plan-badge">Always Free</div>
+              <h3 class="plan-name">Free</h3>
+              <div class="plan-price">
+                <span class="price-amount">$0</span>
+                <span class="price-period">/month</span>
+              </div>
+              <ul class="plan-features">
+                <li>✓ Up to 10 menu items</li>
+                <li>✓ Order request management</li>
+                <li>✓ WhatsApp integration</li>
+                <li>✓ Basic analytics</li>
+                <li>✓ Shareable menu link</li>
+              </ul>
+              <button type="button" class="btn btn-secondary" onclick="selectPlan('free')">Start Free</button>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="plan-card plan-recommended" data-plan="pro">
+              <div class="plan-badge">Recommended</div>
+              <h3 class="plan-name">Pro</h3>
+              <div class="plan-price">
+                <span class="price-amount">$29</span>
+                <span class="price-period">/month</span>
+              </div>
+              <ul class="plan-features">
+                <li>✓ <strong>Unlimited</strong> menu items</li>
+                <li>✓ Daily specials & live menu</li>
+                <li>✓ Featured item labels</li>
+                <li>✓ Advanced analytics</li>
+                <li>✓ Priority support</li>
+                <li>✓ Digital display mode</li>
+              </ul>
+              <button type="button" class="btn btn-primary" onclick="selectPlan('pro')">Start Pro Trial</button>
+            </div>
+
+            <!-- Business Plan -->
+            <div class="plan-card" data-plan="business">
+              <div class="plan-badge">Best Value</div>
+              <h3 class="plan-name">Business</h3>
+              <div class="plan-price">
+                <span class="price-amount">$99</span>
+                <span class="price-period">/month</span>
+              </div>
+              <ul class="plan-features">
+                <li>✓ Everything in Pro</li>
+                <li>✓ Multi-location support</li>
+                <li>✓ Custom branding</li>
+                <li>✓ Premium analytics</li>
+                <li>✓ Dedicated manager</li>
+                <li>✓ API access</li>
+              </ul>
+              <button type="button" class="btn btn-primary" onclick="selectPlan('business')">Start Business</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="goToStep(2)">Back</button>
+          </div>
+        </form>
+
+        <!-- Loading State -->
+        <div id="processingState" class="processing-state" hidden>
+          <div class="spinner"></div>
+          <h3>Setting up your account...</h3>
+          <p class="muted">This will only take a moment</p>
+        </div>
+      </section>
+
+      <!-- Success Section -->
+      <section class="success-section glass-card" id="successSection" hidden>
+        <div class="success-icon">✓</div>
+        <h2>Welcome to ClickMenu!</h2>
+        <p class="muted">Your merchant account has been created successfully.</p>
+
+        <div class="credentials-card">
+          <h3>Your Login Credentials</h3>
+          <div class="credential-row">
+            <span class="credential-label">Store ID:</span>
+            <strong id="successStoreId">-</strong>
+          </div>
+          <div class="credential-row">
+            <span class="credential-label">Email:</span>
+            <strong id="successEmail">-</strong>
+          </div>
+          <p class="helper">Please save these credentials. You'll need them to log in.</p>
+        </div>
+
+        <div class="next-steps">
+          <h3>Next Steps:</h3>
+          <ol>
+            <li>Add your menu items</li>
+            <li>Customize your store profile</li>
+            <li>Share your menu link on social media</li>
+            <li>Start receiving orders!</li>
+          </ol>
+        </div>
+
+        <a href="/merchant" class="btn btn-hero">Go to Merchant Portal</a>
+      </section>
+    </main>
+
+    <script src="/public/assets/js/config.js"></script>
+    <script src="/public/assets/js/signup.js"></script>
+  </body>
+</html>
