@@ -1204,6 +1204,123 @@ const checkStoreIdAvailable = async (storeId) => {
   return !data; // Available if no data found
 };
 
+const generateStoreId = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let id = '';
+  for (let i = 0; i < 6; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+};
+
+const createMerchantProfile = async (payload) => {
+  if (!hasSupabase()) {
+    // Mock mode
+    const storeId = payload.storeId || generateStoreId();
+    const profile = {
+      id: crypto.randomUUID(),
+      store_id: storeId,
+      name: payload.name,
+      whatsapp: payload.whatsapp,
+      profile_email: payload.profile_email,
+      password: payload.passcode,
+      parish: payload.parish,
+      cuisine_type: payload.cuisine,
+      about: payload.description || '',
+      logo_url: payload.logo_url || null,
+      status: 'pending_payment',
+      plan_tier: payload.planTier || 'plan1',
+      max_items: payload.max_items || 6,
+      max_images_per_item: payload.max_images_per_item || 3,
+      max_videos_per_item: payload.max_videos_per_item || 0,
+      addon_live_menu: payload.addonLiveMenu || false,
+      addon_pos_waitlist: payload.addonPosWaitlist || false,
+      authorized: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    mockState.profiles.push(profile);
+    return { storeId: profile.store_id, profile };
+  }
+
+  // Generate storeId if not provided
+  let storeId = payload.storeId;
+  if (!storeId) {
+    // Try up to 5 times to generate unique ID
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateStoreId();
+      const available = await checkStoreIdAvailable(candidate);
+      if (available) {
+        storeId = candidate;
+        break;
+      }
+    }
+    if (!storeId) {
+      throw new Error('Could not generate unique store ID');
+    }
+  } else {
+    // Validate provided storeId is available
+    const available = await checkStoreIdAvailable(storeId);
+    if (!available) {
+      throw new Error('Store ID already taken');
+    }
+  }
+
+  const record = {
+    store_id: storeId,
+    name: payload.name,
+    whatsapp: payload.whatsapp,
+    profile_email: payload.profile_email,
+    password: payload.passcode,
+    parish: payload.parish,
+    cuisine_type: payload.cuisine,
+    about: payload.description || '',
+    logo_url: payload.logo_url || null,
+    status: 'pending_payment',
+    plan_tier: payload.planTier || 'plan1',
+    max_items: payload.max_items,
+    max_images_per_item: payload.max_images_per_item,
+    max_videos_per_item: payload.max_videos_per_item,
+    addon_live_menu: payload.addonLiveMenu || false,
+    addon_pos_waitlist: payload.addonPosWaitlist || false,
+    authorized: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert(record)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return { storeId: data.store_id, profile: data };
+};
+
+const activateMerchantPlan = async (storeId, updates) => {
+  if (!hasSupabase()) {
+    const profile = mockState.profiles.find(p => p.store_id === storeId);
+    if (profile) {
+      Object.assign(profile, updates);
+    }
+    return profile;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("store_id", storeId)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 module.exports = {
   hasSupabase,
   getStoreProfile,
@@ -1236,4 +1353,6 @@ module.exports = {
   deleteDailySpecial,
   validateStoreId,
   checkStoreIdAvailable,
+  createMerchantProfile,
+  activateMerchantPlan,
 };

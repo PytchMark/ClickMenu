@@ -13,6 +13,7 @@ const {
 } = require("./services/auth");
 const { buildMerchantAnalytics } = require("./services/analytics");
 const supabase = require("./services/supabase");
+const billing = require("./services/billing");
 const stripe = require("./services/stripe");
 
 const app = express();
@@ -205,6 +206,137 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
+
+// ============ BILLING & ONBOARDING ENDPOINTS ============
+
+// Public: Merchant Signup
+app.post("/api/public/merchant/signup", async (req, res) => {
+  try {
+    const {
+      storeId,
+      name,
+      whatsapp,
+      profile_email,
+      parish,
+      cuisine,
+      description,
+      logo_url,
+      passcode,
+      planTier,
+      addonLiveMenu,
+      addonPosWaitlist,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !whatsapp || !profile_email || !passcode || !planTier) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing required fields: name, whatsapp, profile_email, passcode, planTier",
+      });
+    }
+
+    // Get plan config and limits
+    const planConfig = billing.getPlanConfig(planTier);
+    const payload = {
+      storeId: storeId || null,
+      name,
+      whatsapp,
+      profile_email,
+      parish,
+      cuisine,
+      description,
+      logo_url,
+      passcode,
+      planTier,
+      max_items: planConfig.max_items,
+      max_images_per_item: planConfig.max_images_per_item,
+      max_videos_per_item: planConfig.max_videos_per_item,
+      addonLiveMenu: addonLiveMenu || false,
+      addonPosWaitlist: addonPosWaitlist || false,
+    };
+
+    const result = await supabase.createMerchantProfile(payload);
+
+    return res.json({
+      ok: true,
+      storeId: result.storeId,
+      profile: result.profile,
+    });
+  } catch (error) {
+    console.error("Merchant signup error:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+});
+
+// Billing: Create Stripe Checkout Session
+app.post("/api/billing/create-checkout-session", async (req, res) => {
+  try {
+    const { storeId, planTier } = req.body;
+
+    if (!storeId || !planTier) {
+      return res.status(400).json({
+        ok: false,
+        error: "storeId and planTier are required",
+      });
+    }
+
+    const result = await billing.createCheckoutSession({ storeId, planTier });
+
+    // Return result as-is (handles both success and fallback)
+    return res.json(result);
+  } catch (error) {
+    console.error("Create checkout error:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+});
+
+// Billing: Stripe Webhook
+app.post("/api/billing/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature) {
+      console.log('Webhook: No signature header');
+      return res.status(400).json({ error: 'No signature' });
+    }
+
+    const result = await billing.handleWebhook(req.body, signature);
+
+    if (result.mode === 'placeholder') {
+      return res.json({ received: true, mode: 'placeholder' });
+    }
+
+    // Process the event
+    const event = result.event;
+    console.log(`Webhook: ${event.type}`);
+
+    if (event.type === 'checkout.session.completed') {
+      const update = billing.processCheckoutComplete(event);
+      if (update) {
+        await supabase.activateMerchantPlan(update.storeId, {
+          status: update.status,
+          plan_tier: update.planTier,
+          stripe_customer_id: update.stripeCustomerId,
+          stripe_subscription_id: update.stripeSubscriptionId,
+        });
+        console.log(`Activated merchant: ${update.storeId} on ${update.planTier}`);
+      }
+    }
+
+    return res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// ============ MERCHANT ENDPOINTS ============
 
 app.post("/api/merchant/login", async (req, res) => {
   try {

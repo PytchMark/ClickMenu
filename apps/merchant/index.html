@@ -6,6 +6,7 @@
     <title>ClickMenu Merchant Portal</title>
 
     <link rel="stylesheet" href="/public/assets/css/merchant.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -122,32 +123,40 @@
                   </div>
                 </div>
 
-                <div id="kpiRow" class="kpi-row"></div>
+                <div id="kpiRow" class="kpi-row">
+                  <!-- KPIs will be dynamically inserted -->
+                </div>
 
                 <div class="dashboard-grid">
                   <div class="glass-card">
-                    <h3>Needs attention</h3>
+                    <h3>Quick Start Checklist</h3>
+                    <p class="muted" style="font-size: 0.85rem; margin: 8px 0 16px;">Complete these steps to get your store ready</p>
                     <ul id="attentionList" class="checklist"></ul>
                   </div>
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Orders pulse</h3>
-                      <span id="ordersPulse" class="pill">—</span>
+                      <h3>Orders Over Time</h3>
+                      <span id="ordersPulse" class="pill">Last 7 days</span>
                     </div>
-                    <div id="ordersTrendChart" class="chart"></div>
-                    <div id="ordersTrendLegend" class="chart-legend"></div>
+                    <canvas id="ordersLineChart" style="max-height: 200px;"></canvas>
                   </div>
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Fulfillment mix</h3>
+                      <h3>Top Menu Items</h3>
+                      <span class="pill">By requests</span>
                     </div>
-                    <div id="fulfillmentMixChart" class="chart"></div>
-                    <div id="fulfillmentMixLegend" class="chart-legend"></div>
+                    <canvas id="topItemsChart" style="max-height: 200px;"></canvas>
                   </div>
 
-                  <div class="glass-card" id="storefrontPreview"></div>
+                  <div class="glass-card">
+                    <div class="chart-head">
+                      <h3>Fulfillment Split</h3>
+                      <span class="pill">Pickup vs Delivery</span>
+                    </div>
+                    <canvas id="fulfillmentDonutChart" style="max-height: 200px;"></canvas>
+                  </div>
                 </div>
               </section>
 
@@ -358,17 +367,53 @@
               <section id="settingsPanel" class="panel-section glass-card" data-panel="settings" hidden>
                 <div class="panel-header">
                   <div>
-                    <h2>Settings</h2>
-                    <p class="muted">Session management and refresh controls.</p>
+                    <h2>Settings & Help</h2>
+                    <p class="muted">Session management, refresh controls, and quick start guide.</p>
                   </div>
                 </div>
 
                 <div class="settings-grid">
                   <div class="glass-card">
+                    <h3>📚 Quick Start Guide</h3>
+                    <p class="muted" style="margin: 8px 0 16px;">Get up and running in minutes</p>
+                    <div style="display: grid; gap: 12px;">
+                      <div style="padding: 12px; border-left: 3px solid rgba(255, 59, 48, 0.6); background: rgba(255, 255, 255, 0.04); border-radius: 8px;">
+                        <strong style="display: block; margin-bottom: 4px;">1. Add Your First Item</strong>
+                        <small style="color: rgba(255, 255, 255, 0.7);">Go to Menu Manager → Fill in Item ID, Title, Description, Category, and Price → Save</small>
+                      </div>
+                      <div style="padding: 12px; border-left: 3px solid rgba(255, 59, 48, 0.6); background: rgba(255, 255, 255, 0.04); border-radius: 8px;">
+                        <strong style="display: block; margin-bottom: 4px;">2. Upload Images</strong>
+                        <small style="color: rgba(255, 255, 255, 0.7);">Select your item → Upload image → Image will be stored automatically</small>
+                      </div>
+                      <div style="padding: 12px; border-left: 3px solid rgba(255, 59, 48, 0.6); background: rgba(255, 255, 255, 0.04); border-radius: 8px;">
+                        <strong style="display: block; margin-bottom: 4px;">3. Share Your Storefront</strong>
+                        <small style="color: rgba(255, 255, 255, 0.7);">Copy your storefront link from Dashboard → Share on WhatsApp, social media, or your website</small>
+                      </div>
+                      <div style="padding: 12px; border-left: 3px solid rgba(255, 59, 48, 0.6); background: rgba(255, 255, 255, 0.04); border-radius: 8px;">
+                        <strong style="display: block; margin-bottom: 4px;">4. Handle Orders</strong>
+                        <small style="color: rgba(255, 255, 255, 0.7);">Check Orders Inbox regularly → Mark orders as contacted/ready → Use WhatsApp button to communicate</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="glass-card">
+                    <h3>💡 Pro Tips</h3>
+                    <p class="muted" style="margin: 8px 0 16px;">Maximize your success</p>
+                    <ul style="padding-left: 20px; color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                      <li>Use high-quality food photos - they increase orders by 40%</li>
+                      <li>Mark your best sellers as "Featured" to highlight them</li>
+                      <li>Respond to orders within 15 minutes for best customer satisfaction</li>
+                      <li>Update availability status when items run out</li>
+                      <li>Complete your profile to appear more trustworthy</li>
+                    </ul>
+                  </div>
+
+                  <div class="glass-card">
                     <h3>Data</h3>
                     <p class="muted">Refresh dashboard data.</p>
                     <button id="settingsRefreshBtn" class="btn btn-ghost" type="button">Refresh data</button>
                   </div>
+
                   <div class="glass-card">
                     <h3>Session</h3>
                     <p class="muted">Log out from the merchant portal.</p>
@@ -413,6 +458,7 @@
     <script src="/public/assets/js/api.js" defer></script>
     <script src="/public/assets/js/formatters.js" defer></script>
     <script src="/public/assets/js/ui.js" defer></script>
+    <script src="/public/assets/js/analytics.js" defer></script>
     <script src="/public/assets/js/merchant.js" defer></script>
   </body>
 </html>

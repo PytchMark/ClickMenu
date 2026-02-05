@@ -463,7 +463,18 @@ const renderItemsList = () => {
   menuCount.textContent = `${filtered.length} item${filtered.length === 1 ? "" : "s"}`;
 
   if (filtered.length === 0) {
-    itemsList.innerHTML = `<div class="empty-state">No menu items yet — publish your first dish in 60 seconds.</div>`;
+    itemsList.innerHTML = `
+      <div class="empty-state">
+        <div style="font-size: 4rem; margin-bottom: 16px;">🍽️</div>
+        <h3 style="margin: 0 0 8px; font-size: 1.3rem;">No menu items yet</h3>
+        <p style="margin: 0 0 20px; color: rgba(255, 255, 255, 0.6);">
+          Add your first bestseller to start receiving orders!
+        </p>
+        <button class="btn btn-primary" onclick="showCreateItemModal()" style="margin-top: 12px;">
+          + Add First Item
+        </button>
+      </div>
+    `;
     return;
   }
 
@@ -543,7 +554,18 @@ const renderOrders = () => {
   });
 
   if (filteredOrders.length === 0) {
-    ordersList.innerHTML = `<div class="empty-state">No orders match this view yet.</div>`;
+    const hasAnyOrders = state.orders.length > 0;
+    ordersList.innerHTML = hasAnyOrders
+      ? `<div class="empty-state">No orders match your filters.</div>`
+      : `
+          <div class="empty-state">
+            <div style="font-size: 4rem; margin-bottom: 16px;">📦</div>
+            <h3 style="margin: 0 0 8px; font-size: 1.3rem;">No orders yet</h3>
+            <p style="margin: 0; color: rgba(255, 255, 255, 0.6);">
+              Orders will appear here when customers place them through your storefront.
+            </p>
+          </div>
+        `;
     return;
   }
 
@@ -743,16 +765,15 @@ const loadDashboard = async (profileOverride = null) => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
-  const analyticsData = await Api.merchant.analytics();
-  state.analytics = analyticsData.analytics;
-
   buildRequestCounts();
   resolveMenuSort();
-  renderKpis();
+
+  // Render analytics with Chart.js
+  if (typeof Analytics !== 'undefined') {
+    Analytics.render(state.orders, state.items);
+  }
+
   renderAttention();
-  renderStorefrontPreview();
-  renderOrdersTrend();
-  renderFulfillmentMix();
   renderItemsList();
   renderOrders();
   setProfileForm();
