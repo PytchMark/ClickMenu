@@ -125,19 +125,25 @@ const SECTION_STORAGE_KEY = "merchant_active_section";
 
 const setSection = (section) => {
   if (!panelMap[section]) return;
+  
+  // Update sidebar active state
   document
     .querySelectorAll(".sidebar-link")
     .forEach((btn) => btn.classList.remove("active"));
   const nextLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
   if (nextLink) nextLink.classList.add("active");
 
+  // Hide all panels
   document.querySelectorAll(".panel-section").forEach((panel) => {
-    panel.hidden = true;
     panel.classList.remove("is-active");
   });
+  
+  // Show selected panel
   const nextPanel = panelMap[section];
-  nextPanel.hidden = false;
-  nextPanel.classList.add("is-active");
+  if (nextPanel) {
+    nextPanel.classList.add("is-active");
+  }
+  
   state.activeSection = section;
   localStorage.setItem(SECTION_STORAGE_KEY, section);
 };
@@ -758,18 +764,31 @@ loginBtn.addEventListener("click", async () => {
     setInlineError();
     setLoginDebug();
     UI.setLoading(loginBtn, true);
+    
     const data = await Api.merchant.login({
       identifier: document.getElementById("loginId").value.trim(),
       passcode: document.getElementById("loginPass").value.trim(),
     });
+    
+    // Store token
     localStorage.setItem("merchant_token", data.token);
     if (data.merchant?.store_id) {
       localStorage.setItem("merchant_store_id", data.merchant.store_id);
     }
+    
+    // Set profile from login response
+    state.profile = data.merchant;
+    
+    // Show dashboard
     loginView.hidden = true;
     dashboardView.hidden = false;
+    
+    // Set active section
     setSection(getStoredSection());
+    
+    // Load dashboard data
     await loadDashboard(state.profile);
+    
   } catch (error) {
     const message = getLoginErrorMessage(error);
     setInlineError(message);
@@ -1183,21 +1202,34 @@ menuSort.addEventListener("change", (event) => {
 });
 
 const boot = async () => {
+  // Start with login view visible, dashboard hidden
   loginView.hidden = false;
   dashboardView.hidden = true;
+  
+  // Initialize dashboard section (but don't show yet)
   setSection("dashboard");
+  
+  // Check for existing token
   const token = localStorage.getItem("merchant_token");
   if (!token) return;
+  
   try {
     const profileData = await Api.merchant.me();
     if (!profileData?.profile) {
       resetToLogin();
       return;
     }
+    
     state.profile = profileData.profile;
+    
+    // Hide login, show dashboard
     loginView.hidden = true;
     dashboardView.hidden = false;
+    
+    // Restore last active section
     setSection(getStoredSection());
+    
+    // Load dashboard data
     await loadDashboard(state.profile);
   } catch (error) {
     if (!handleAuthError(error)) {
