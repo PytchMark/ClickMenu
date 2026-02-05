@@ -380,6 +380,192 @@ app.post("/api/merchant/profile", requireMerchant, async (req, res) => {
   }
 });
 
+// Stripe & Subscription endpoints
+app.post("/api/billing/create-checkout-session", async (req, res) => {
+  try {
+    const { plan, storeId, email } = req.body;
+    
+    if (!plan || !storeId || !email) {
+      return res.status(400).json({ ok: false, error: "plan, storeId, and email required" });
+    }
+
+    if (!stripe.hasStripe()) {
+      return res.status(503).json({ ok: false, error: "Stripe not configured" });
+    }
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const session = await stripe.createCheckoutSession({
+      plan,
+      storeId,
+      email,
+      successUrl: `${origin}/merchant?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancelUrl: `${origin}/merchant-signup?canceled=true`,
+    });
+
+    return res.json({ ok: true, sessionId: session.sessionId, url: session.url });
+  } catch (error) {
+    console.error('Checkout session error:', error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/billing/create-portal-session", requireMerchant, async (req, res) => {
+  try {
+    const profile = await supabase.getStoreProfile(req.user.storeId);
+    if (!profile || !profile.stripe_customer_id) {
+      return res.status(404).json({ ok: false, error: "No billing information found" });
+    }
+
+    if (!stripe.hasStripe()) {
+      return res.status(503).json({ ok: false, error: "Stripe not configured" });
+    }
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const session = await stripe.createBillingPortalSession({
+      customerId: profile.stripe_customer_id,
+      returnUrl: `${origin}/merchant`,
+    });
+
+    return res.json({ ok: true, url: session.url });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/billing/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+  const signature = req.headers['stripe-signature'];
+  
+  if (!stripe.hasStripe()) {
+    return res.status(503).send('Stripe not configured');
+  }
+
+  try {
+    const event = await stripe.handleWebhookEvent(req.body, signature);
+    
+    console.log('Webhook event received:', event.type);
+
+    // Handle subscription events
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const storeId = session.metadata?.store_id;
+        if (storeId && session.subscription) {
+          await supabase.updateSubscriptionInfo(storeId, {
+            stripe_subscription_id: session.subscription,
+            stripe_customer_id: session.customer,
+          });
+        }
+        break;
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const { storeId, updates } = stripe.processSubscriptionEvent(event);
+        if (storeId) {
+          await supabase.updateSubscriptionInfo(storeId, updates);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const storeId = subscription.metadata?.store_id;
+        if (storeId) {
+          await supabase.updateSubscriptionInfo(storeId, {
+            subscription_status: 'canceled',
+            plan: 'free',
+          });
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const subscription = invoice.subscription;
+        if (subscription) {
+          const sub = await stripe.getSubscription(subscription);
+          const storeId = sub.metadata?.store_id;
+          if (storeId) {
+            await supabase.updateSubscriptionInfo(storeId, {
+              subscription_status: 'past_due',
+            });
+          }
+        }
+        break;
+      }
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+});
+
+// Public: Check Store ID availability
+app.post("/api/public/check-store-id", async (req, res) => {
+  try {
+    const { storeId } = req.body;
+    if (!storeId) {
+      return res.status(400).json({ ok: false, error: "storeId required" });
+    }
+
+    const validation = supabase.validateStoreId(storeId);
+    if (!validation.valid) {
+      return res.json({ ok: true, available: false, error: validation.error });
+    }
+
+    const available = await supabase.checkStoreIdAvailable(storeId);
+    return res.json({ ok: true, available });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// Daily Specials endpoints (Pro+ feature)
+app.get("/api/merchant/daily-specials", requireMerchant, async (req, res) => {
+  try {
+    const specials = await supabase.getDailySpecials(req.user.storeId);
+    return res.json({ ok: true, specials });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/merchant/daily-specials", requireMerchant, async (req, res) => {
+  try {
+    // Check if merchant has Pro+ plan
+    const profile = await supabase.getStoreProfile(req.user.storeId);
+    if (!profile || !['pro', 'business'].includes(profile.plan)) {
+      return res.status(403).json({ ok: false, error: "This feature requires Pro or Business plan" });
+    }
+
+    const special = await supabase.upsertDailySpecial(req.user.storeId, req.body);
+    return res.json({ ok: true, special });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.delete("/api/merchant/daily-specials/:itemId", requireMerchant, async (req, res) => {
+  try {
+    await supabase.deleteDailySpecial(req.user.storeId, req.params.itemId);
+    return res.json({ ok: true });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// Public: Get daily specials for a store
+app.get("/api/public/store/:storeId/daily-specials", async (req, res) => {
+  try {
+    const specials = await supabase.getDailySpecials(req.params.storeId);
+    return res.json({ ok: true, specials });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 app.post("/api/media/upload", requireMerchant, upload.array("files", 5), async (req, res) => {
   try {
     const files = req.files || [];
