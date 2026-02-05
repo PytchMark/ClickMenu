@@ -13,6 +13,7 @@ const {
 } = require("./services/auth");
 const { buildMerchantAnalytics } = require("./services/analytics");
 const supabase = require("./services/supabase");
+const stripe = require("./services/stripe");
 
 const app = express();
 const upload = multer({ limits: { fileSize: 8 * 1024 * 1024 } });
