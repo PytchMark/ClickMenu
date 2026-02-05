@@ -554,7 +554,18 @@ const renderOrders = () => {
   });
 
   if (filteredOrders.length === 0) {
-    ordersList.innerHTML = `<div class="empty-state">No orders match this view yet.</div>`;
+    const hasAnyOrders = state.orders.length > 0;
+    ordersList.innerHTML = hasAnyOrders
+      ? `<div class="empty-state">No orders match your filters.</div>`
+      : `
+          <div class="empty-state">
+            <div style="font-size: 4rem; margin-bottom: 16px;">📦</div>
+            <h3 style="margin: 0 0 8px; font-size: 1.3rem;">No orders yet</h3>
+            <p style="margin: 0; color: rgba(255, 255, 255, 0.6);">
+              Orders will appear here when customers place them through your storefront.
+            </p>
+          </div>
+        `;
     return;
   }
 
