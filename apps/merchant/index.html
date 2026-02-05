@@ -123,32 +123,40 @@
                   </div>
                 </div>
 
-                <div id="kpiRow" class="kpi-row"></div>
+                <div id="kpiRow" class="kpi-row">
+                  <!-- KPIs will be dynamically inserted -->
+                </div>
 
                 <div class="dashboard-grid">
                   <div class="glass-card">
-                    <h3>Needs attention</h3>
+                    <h3>Quick Start Checklist</h3>
+                    <p class="muted" style="font-size: 0.85rem; margin: 8px 0 16px;">Complete these steps to get your store ready</p>
                     <ul id="attentionList" class="checklist"></ul>
                   </div>
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Orders pulse</h3>
-                      <span id="ordersPulse" class="pill">—</span>
+                      <h3>Orders Over Time</h3>
+                      <span id="ordersPulse" class="pill">Last 7 days</span>
                     </div>
-                    <div id="ordersTrendChart" class="chart"></div>
-                    <div id="ordersTrendLegend" class="chart-legend"></div>
+                    <canvas id="ordersLineChart" style="max-height: 200px;"></canvas>
                   </div>
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Fulfillment mix</h3>
+                      <h3>Top Menu Items</h3>
+                      <span class="pill">By requests</span>
                     </div>
-                    <div id="fulfillmentMixChart" class="chart"></div>
-                    <div id="fulfillmentMixLegend" class="chart-legend"></div>
+                    <canvas id="topItemsChart" style="max-height: 200px;"></canvas>
                   </div>
 
-                  <div class="glass-card" id="storefrontPreview"></div>
+                  <div class="glass-card">
+                    <div class="chart-head">
+                      <h3>Fulfillment Split</h3>
+                      <span class="pill">Pickup vs Delivery</span>
+                    </div>
+                    <canvas id="fulfillmentDonutChart" style="max-height: 200px;"></canvas>
+                  </div>
                 </div>
               </section>
 
