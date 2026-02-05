@@ -1189,21 +1189,34 @@ menuSort.addEventListener("change", (event) => {
 });
 
 const boot = async () => {
+  // Start with login view visible, dashboard hidden
   loginView.hidden = false;
   dashboardView.hidden = true;
+  
+  // Initialize dashboard section (but don't show yet)
   setSection("dashboard");
+  
+  // Check for existing token
   const token = localStorage.getItem("merchant_token");
   if (!token) return;
+  
   try {
     const profileData = await Api.merchant.me();
     if (!profileData?.profile) {
       resetToLogin();
       return;
     }
+    
     state.profile = profileData.profile;
+    
+    // Hide login, show dashboard
     loginView.hidden = true;
     dashboardView.hidden = false;
+    
+    // Restore last active section
     setSection(getStoredSection());
+    
+    // Load dashboard data
     await loadDashboard(state.profile);
   } catch (error) {
     if (!handleAuthError(error)) {
