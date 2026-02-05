@@ -26,7 +26,40 @@ Visit:
 
 - Storefront: http://localhost:8080/storefront
 - Merchant portal: http://localhost:8080/merchant
+- Merchant signup: http://localhost:8080/merchant-signup
 - Admin console: http://localhost:8080/admin
+
+## New Features (v2.0)
+
+### Subscription System
+
+ClickMenu now offers three subscription tiers:
+
+1. **Free** ($0/month) - Up to 10 items, basic features
+2. **Pro** ($29/month) - Unlimited items, daily specials, live menu
+3. **Business** ($99/month) - Multi-location, premium analytics, API access
+
+See [SUBSCRIPTION_SETUP.md](docs/SUBSCRIPTION_SETUP.md) for complete setup instructions.
+
+### Self-Service Onboarding
+
+- Merchants can sign up at `/merchant-signup`
+- Choose custom Store ID (max 6 chars, capital start, includes number)
+- Select subscription plan
+- Automated Stripe checkout for paid plans
+
+### Live Menu Features (Pro+)
+
+- Daily specials management
+- Rotating menu items
+- Digital display mode for restaurant screens
+- Today's special pricing
+
+### GitHub Pages Support
+
+- Automatic mock mode on `github.io` domains
+- Two demo merchants with full feature sets
+- Test without backend setup
 
 ## Environment Variables
 
