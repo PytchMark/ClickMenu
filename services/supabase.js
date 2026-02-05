@@ -938,6 +938,112 @@ const getAdminAnalytics = async () => {
 const uploadMedia = async ({ storeId, itemId, files }) =>
   uploadFiles({ storeId, itemId, files });
 
+// Subscription management functions
+const updateSubscriptionInfo = async (storeId, updates) => {
+  if (!hasSupabase()) {
+    const index = mockState.profiles.findIndex((profile) => profile.store_id === storeId);
+    if (index < 0) return null;
+    mockState.profiles[index] = { ...mockState.profiles[index], ...updates };
+    return mockState.profiles[index];
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("store_id", storeId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const getDailySpecials = async (storeId) => {
+  if (!hasSupabase()) {
+    // Mock: return empty for now
+    return [];
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const { data, error } = await supabase
+    .from("daily_specials")
+    .select("*")
+    .eq("store_id", storeId)
+    .eq("display_date", today)
+    .eq("active", true)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+const upsertDailySpecial = async (storeId, payload) => {
+  if (!hasSupabase()) {
+    return { id: crypto.randomUUID(), store_id: storeId, ...payload };
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const record = {
+    store_id: storeId,
+    item_id: payload.item_id,
+    title: payload.title,
+    description: payload.description || null,
+    price: payload.price,
+    image_url: payload.image_url || null,
+    active: payload.active ?? true,
+    display_date: today,
+    updated_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabase
+    .from("daily_specials")
+    .upsert(record, { onConflict: "store_id,item_id,display_date" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+const deleteDailySpecial = async (storeId, itemId) => {
+  if (!hasSupabase()) {
+    return { success: true };
+  }
+  const { error } = await supabase
+    .from("daily_specials")
+    .delete()
+    .eq("store_id", storeId)
+    .eq("item_id", itemId);
+  if (error) throw error;
+  return { success: true };
+};
+
+const validateStoreId = (storeId) => {
+  // Must be max 6 characters, start with capital letter, contain at least one number
+  const regex = /^[A-Z][A-Z0-9]{0,5}$/;
+  if (!regex.test(storeId)) {
+    return {
+      valid: false,
+      error: 'Store ID must start with a capital letter, be max 6 characters, and contain at least one number'
+    };
+  }
+  // Check if contains at least one number
+  if (!/\d/.test(storeId)) {
+    return {
+      valid: false,
+      error: 'Store ID must contain at least one number'
+    };
+  }
+  return { valid: true };
+};
+
+const checkStoreIdAvailable = async (storeId) => {
+  if (!hasSupabase()) {
+    const exists = mockState.profiles.some(p => p.store_id === storeId);
+    return !exists;
+  }
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("store_id")
+    .eq("store_id", storeId)
+    .maybeSingle();
+  if (error) throw error;
+  return !data; // Available if no data found
+};
+
 module.exports = {
   hasSupabase,
   getStoreProfile,
@@ -964,4 +1070,10 @@ module.exports = {
   bulkResetPasscodes,
   getAdminAnalytics,
   uploadMedia,
+  updateSubscriptionInfo,
+  getDailySpecials,
+  upsertDailySpecial,
+  deleteDailySpecial,
+  validateStoreId,
+  checkStoreIdAvailable,
 };
