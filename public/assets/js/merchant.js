@@ -743,16 +743,15 @@ const loadDashboard = async (profileOverride = null) => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
-  const analyticsData = await Api.merchant.analytics();
-  state.analytics = analyticsData.analytics;
-
   buildRequestCounts();
   resolveMenuSort();
-  renderKpis();
+
+  // Render analytics with Chart.js
+  if (typeof Analytics !== 'undefined') {
+    Analytics.render(state.orders, state.items);
+  }
+
   renderAttention();
-  renderStorefrontPreview();
-  renderOrdersTrend();
-  renderFulfillmentMix();
   renderItemsList();
   renderOrders();
   setProfileForm();
