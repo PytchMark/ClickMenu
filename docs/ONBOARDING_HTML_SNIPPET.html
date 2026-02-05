@@ -1,0 +1,185 @@
+<!-- Add this to storefront/index.html in the <head> section -->
+<link rel="stylesheet" href="/public/assets/css/onboarding.css" />
+
+<!-- Add this before closing </body> tag -->
+<script src="/public/assets/js/onboarding.js"></script>
+
+<!-- Add this button to the hero section or header -->
+<button id="becomeMerchantBtn" style="
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 59, 48, 0.6);
+  background: linear-gradient(120deg, rgba(255, 59, 48, 0.9), rgba(255, 107, 74, 0.7));
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.3);
+">
+  🚀 Become a Merchant
+</button>
+
+<!-- Add this modal HTML anywhere in the body (preferably before closing </body>) -->
+<div id="onboardingBackdrop" class="onboarding-backdrop">
+  <div class="onboarding-modal">
+    <div class="modal-header">
+      <h2>Become a ClickMenu Merchant</h2>
+      <button id="onboardingCloseBtn" class="modal-close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="steps-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+
+      <!-- Step 1: Business Basics -->
+      <div class="onboarding-step active">
+        <h3 class="step-title">Business Basics</h3>
+        <p class="step-subtitle">Tell us about your restaurant or food business</p>
+        
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Business Name *</label>
+            <input type="text" id="onboardingName" placeholder="Island Spice Grill" required />
+          </div>
+          
+          <div class="form-field">
+            <label>WhatsApp Number *</label>
+            <input type="tel" id="onboardingWhatsapp" placeholder="+1 876 555 1234" required />
+          </div>
+          
+          <div class="form-field">
+            <label>Email Address *</label>
+            <input type="email" id="onboardingEmail" placeholder="hello@yourstore.com" required />
+          </div>
+          
+          <div class="form-field full">
+            <label>Parish / Location *</label>
+            <input type="text" id="onboardingParish" placeholder="Kingston" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Brand & Positioning -->
+      <div class="onboarding-step">
+        <h3 class="step-title">Brand & Positioning</h3>
+        <p class="step-subtitle">Help customers find and understand your cuisine</p>
+        
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Cuisine Type</label>
+            <input type="text" id="onboardingCuisine" placeholder="Caribbean Fusion, Jamaican BBQ, etc." />
+          </div>
+          
+          <div class="form-field full">
+            <label>Short Description</label>
+            <textarea id="onboardingDescription" placeholder="Tell customers what makes your food special..." rows="3"></textarea>
+            <span class="form-helper">This will appear on your storefront</span>
+          </div>
+          
+          <div class="form-field full">
+            <label>Logo URL (optional)</label>
+            <input type="url" id="onboardingLogoUrl" placeholder="https://example.com/logo.png" />
+            <span class="form-helper">You can upload this later</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Access -->
+      <div class="onboarding-step">
+        <h3 class="step-title">Secure Your Account</h3>
+        <p class="step-subtitle">Create your login credentials</p>
+        
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Store ID (optional)</label>
+            <input type="text" id="onboardingStoreId" placeholder="Leave empty to auto-generate" maxlength="8" style="text-transform: uppercase;" />
+            <span class="form-helper">6-8 characters. Leave empty and we'll create one for you.</span>
+          </div>
+          
+          <div class="form-field full">
+            <label>Passcode *</label>
+            <input type="password" id="onboardingPasscode" placeholder="Create a secure passcode" required minlength="6" />
+            <span class="form-helper">Minimum 6 characters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Plan Selection -->
+      <div class="onboarding-step">
+        <h3 class="step-title">Choose Your Plan</h3>
+        <p class="step-subtitle">Select the plan that fits your business</p>
+        
+        <div class="plan-cards">
+          <div class="plan-card selected" data-plan="plan1">
+            <div class="plan-name">Starter</div>
+            <div class="plan-trial">14 Days Free Trial</div>
+            <ul class="plan-features">
+              <li>Up to 6 menu items</li>
+              <li>3 images per item</li>
+              <li>Add your logo</li>
+              <li>Basic management</li>
+            </ul>
+          </div>
+
+          <div class="plan-card" data-plan="plan2">
+            <div class="plan-badge">Popular</div>
+            <div class="plan-name">Growth</div>
+            <div class="plan-trial">17 Days Free Trial</div>
+            <ul class="plan-features">
+              <li>Up to 33 menu items</li>
+              <li>6 images, 2 videos per item</li>
+              <li>Catering booking</li>
+              <li>Featured tags</li>
+            </ul>
+          </div>
+
+          <div class="plan-card" data-plan="plan3">
+            <div class="plan-badge">Best Value</div>
+            <div class="plan-name">Unlimited</div>
+            <div class="plan-trial">Premium</div>
+            <ul class="plan-features">
+              <li><strong>Unlimited</strong> items</li>
+              <li>9 images, 6 videos</li>
+              <li>Custom storefront</li>
+              <li>Priority support</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="addon-section">
+          <h4>Add-ons (Optional)</h4>
+          
+          <label class="addon-toggle">
+            <input type="checkbox" id="addonLiveMenu" />
+            <div class="addon-info">
+              <strong>Live Menu</strong>
+              <small>Daily specials and rotating menu items</small>
+            </div>
+          </label>
+
+          <label class="addon-toggle">
+            <input type="checkbox" id="addonPosWaitlist" />
+            <div class="addon-info">
+              <strong>POS System Waitlist</strong>
+              <small>Get early access when we launch (Coming Soon)</small>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="onboardingPrevBtn" class="btn-onboarding btn-secondary" style="display: none;">
+        Previous
+      </button>
+      <button id="onboardingNextBtn" class="btn-onboarding btn-primary">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
