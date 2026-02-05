@@ -1353,4 +1353,6 @@ module.exports = {
   deleteDailySpecial,
   validateStoreId,
   checkStoreIdAvailable,
+  createMerchantProfile,
+  activateMerchantPlan,
 };
