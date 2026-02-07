@@ -33,7 +33,17 @@ const ensureSupabaseConfigured = (req, res, next) => {
   return res.status(503).json({ ok: false, error: "Supabase not configured" });
 };
 
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "media-src": ["'self'", "https://res.cloudinary.com", "data:"],
+      },
+    },
+  })
+);
 app.use(
   cors({
     origin: corsOrigins,
