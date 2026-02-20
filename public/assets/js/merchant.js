@@ -1073,7 +1073,7 @@ settingsRefreshBtn.addEventListener("click", async () => {
 });
 
 settingsLogoutBtn.addEventListener("click", () => {
-  resetToLogin();
+  resetToLanding();
 });
 
 document.querySelectorAll(".sidebar-link").forEach((link) => {
