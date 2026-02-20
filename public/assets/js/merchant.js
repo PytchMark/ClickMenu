@@ -679,7 +679,29 @@ const renderItemsList = () => {
 
   filtered.sort(sorters[sortMode] || sorters.alpha);
 
-  menuCount.textContent = `${filtered.length} item${filtered.length === 1 ? "" : "s"}`;
+  // Update menu count with plan limit
+  const planTier = state.profile?.plan_tier || 'plan1';
+  const plan = PLAN_CONFIG[planTier] || PLAN_CONFIG.plan1;
+  const totalItems = state.items.length;
+  
+  menuCount.textContent = `${totalItems} item${totalItems === 1 ? "" : "s"}`;
+  
+  const menuLimit = document.getElementById('menuLimit');
+  if (menuLimit) {
+    const limitText = plan.maxItems === 999 ? '/ unlimited' : `/ ${plan.maxItems} limit`;
+    menuLimit.textContent = limitText;
+    
+    // Add warning/danger classes based on usage
+    menuLimit.classList.remove('pill-warning', 'pill-danger');
+    if (plan.maxItems !== 999) {
+      const usagePercent = (totalItems / plan.maxItems) * 100;
+      if (usagePercent >= 100) {
+        menuLimit.classList.add('pill-danger');
+      } else if (usagePercent >= 80) {
+        menuLimit.classList.add('pill-warning');
+      }
+    }
+  }
 
   if (filtered.length === 0) {
     itemsList.innerHTML = `
