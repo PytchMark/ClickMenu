@@ -1,11 +1,18 @@
+// Views
+const landingView = document.getElementById("landingView");
 const loginView = document.getElementById("loginView");
+const signupView = document.getElementById("signupView");
 const dashboardView = document.getElementById("dashboardView");
+
+// Login elements
 const loginError = document.getElementById("loginError");
 const loginDebug = document.getElementById("loginDebug");
 const loginDebugEndpoint = document.getElementById("loginDebugEndpoint");
 const loginDebugStatus = document.getElementById("loginDebugStatus");
 const loginDebugSnippet = document.getElementById("loginDebugSnippet");
 const loginDebugHint = document.getElementById("loginDebugHint");
+
+// Dashboard elements
 const storeName = document.getElementById("storeName");
 const storeStatus = document.getElementById("storeStatus");
 const storeLogo = document.getElementById("storeLogo");
