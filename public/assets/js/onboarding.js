@@ -190,7 +190,11 @@ const OnboardingModal = (() => {
 
   const init = () => {
     const openBtn = document.getElementById('becomeMerchantBtn');
-    if (openBtn) openBtn.addEventListener('click', showModal);
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        window.location.href = '/marketing/merchant';
+      });
+    }
 
     const closeBtn = document.getElementById('onboardingCloseBtn');
     if (closeBtn) closeBtn.addEventListener('click', hideModal);
