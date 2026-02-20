@@ -6,36 +6,47 @@ let stripe = null;
 const PLAN_CONFIGS = {
   plan1: {
     name: 'Starter',
-    trial_days: 14,
-    max_items: 6,
+    price: 1900, // $19/mo in cents
+    trial_days: 30,
+    max_items: 5,
     max_images_per_item: 3,
     max_videos_per_item: 0,
-    features: ['Add Logo', 'Basic Menu Management', '14-Day Free Trial'],
+    features: [
+      'Max 5 menu items',
+      'Up to 3 images per listing',
+      '30-day free trial',
+      'WhatsApp + request cart',
+      'Basic stats',
+    ],
   },
   plan2: {
     name: 'Growth',
-    trial_days: 17,
+    price: 3600, // $36/mo in cents
+    trial_days: 0,
     max_items: 33,
     max_images_per_item: 6,
     max_videos_per_item: 2,
     features: [
-      'Everything in Starter',
-      'Catering Booking Option',
-      'Featured/Special Tags',
-      '17-Day Free Trial',
+      'Max 33 menu items',
+      'Up to 6 images per listing',
+      'Up to 2 videos per listing',
+      'Advanced stats',
+      'Delivery settings',
     ],
   },
   plan3: {
-    name: 'Unlimited',
+    name: 'Pro',
+    price: 7900, // $79/mo in cents
     trial_days: 0,
     max_items: 999999,
-    max_images_per_item: 9,
-    max_videos_per_item: 6,
+    max_images_per_item: 20,
+    max_videos_per_item: 10,
     features: [
-      'Everything in Growth',
-      'Unlimited Menu Items',
-      'Customizable Menu/Storefront',
-      'Priority Support',
+      'Unlimited items',
+      'Unlimited media (reasonable cap)',
+      'Full analytics',
+      'Priority support',
+      'Multi-branch coming soon',
     ],
   },
 };
