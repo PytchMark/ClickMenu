@@ -23,21 +23,27 @@
     <main class="merchant-shell">
       <!-- LANDING PAGE -->
       <section id="landingView" class="landing-view" aria-label="Merchant landing">
-        <!-- Sticky Header -->
-        <header class="landing-header">
+        <!-- Floating Glass Navbar -->
+        <header class="landing-header" data-testid="landing-navbar">
           <div class="landing-header-inner">
             <div class="landing-logo">
-              <img src="https://res.cloudinary.com/dd8pjjxsm/image/upload/v1771556041/IMG-20260219-WA0080_msvwo2.jpg" alt="ClickMenu" class="logo-img" />
+              <img data-brand-logo src="https://res.cloudinary.com/dd8pjjxsm/image/upload/v1771556041/IMG-20260219-WA0080_msvwo2.jpg" alt="ClickMenuJA" class="logo-img" />
+              <span class="logo-text" data-brand-name>ClickMenuJA</span>
             </div>
-            <nav class="landing-nav">
-              <a href="#features" class="nav-link">Features</a>
-              <a href="#pricing" class="nav-link">Pricing</a>
-              <a href="#faq" class="nav-link">FAQ</a>
+            <nav class="landing-nav" id="navMenu">
+              <a href="#features" class="nav-link" data-testid="nav-features">Features</a>
+              <a href="#pricing" class="nav-link" data-testid="nav-pricing">Pricing</a>
+              <a href="#faq" class="nav-link" data-testid="nav-faq">FAQ</a>
             </nav>
             <div class="landing-actions">
-              <button id="showLoginBtn" class="btn btn-ghost" data-testid="merchant-login-btn">Merchant Login</button>
+              <button id="showLoginBtn" class="btn btn-ghost" data-testid="merchant-login-btn">
+                <i class="fas fa-sign-in-alt"></i> Merchant Login
+              </button>
               <button id="showSignupBtn" class="btn btn-primary" data-testid="become-merchant-btn">Become a Merchant</button>
             </div>
+            <button class="hamburger-btn" id="hamburgerBtn" data-testid="hamburger-btn" aria-label="Toggle menu">
+              <i class="fas fa-bars"></i>
+            </button>
           </div>
         </header>
 
