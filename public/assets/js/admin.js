@@ -169,21 +169,240 @@ const renderPagination = (container, pageState, onPrev, onNext) => {
   container.querySelector('[data-action="next"]').onclick = onNext;
 };
 
+let ordersChart = null;
+let merchantChart = null;
+
 const renderSummary = () => {
   if (!state.summary) return;
   const summary = state.summary;
+  
+  // Calculate trends (mock data - would come from API in production)
+  const ordersTrend = summary.ordersToday > 0 ? Math.round((summary.ordersToday / Math.max(1, summary.orders7dAvg || summary.ordersToday)) * 100 - 100) : 0;
+  
   overviewCards.innerHTML = `
-    <div class="card"><strong>${summary.totalStores}</strong><div class="muted">Total stores</div></div>
-    <div class="card"><strong>${summary.ordersToday}</strong><div class="muted">Orders today</div></div>
-    <div class="card"><strong>${summary.newOrders}</strong><div class="muted">New orders</div></div>
+    <div class="card">
+      <strong>${summary.totalStores || 0}</strong>
+      <div class="muted">Total Merchants</div>
+      <div class="card-trend ${summary.newStoresThisWeek > 0 ? 'up' : ''}">
+        ${summary.newStoresThisWeek > 0 ? `<i class="fas fa-arrow-up"></i> ${summary.newStoresThisWeek} this week` : '—'}
+      </div>
+    </div>
+    <div class="card">
+      <strong>${summary.ordersToday || 0}</strong>
+      <div class="muted">Orders Today</div>
+      <div class="card-trend ${ordersTrend >= 0 ? 'up' : 'down'}">
+        <i class="fas fa-arrow-${ordersTrend >= 0 ? 'up' : 'down'}"></i> ${Math.abs(ordersTrend)}% vs avg
+      </div>
+    </div>
+    <div class="card">
+      <strong>${summary.ordersThisWeek || 0}</strong>
+      <div class="muted">Orders This Week</div>
+      <div class="card-trend">
+        <i class="fas fa-chart-line"></i> ${summary.orders7dAvg || 0}/day avg
+      </div>
+    </div>
+    <div class="card">
+      <strong>$${((summary.ordersThisWeek || 0) * 25).toLocaleString()}</strong>
+      <div class="muted">Est. GMV (Week)</div>
+      <div class="card-trend up">
+        <i class="fas fa-dollar-sign"></i> $25 avg order
+      </div>
+    </div>
   `;
+};
+
+const renderAdminCharts = () => {
+  // Orders trend chart
+  const ordersCtx = document.getElementById('adminOrdersChart');
+  if (ordersCtx) {
+    if (ordersChart) ordersChart.destroy();
+    
+    const last7Days = [];
+    const orderCounts = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      last7Days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+      // Mock data - would come from API
+      orderCounts.push(Math.floor(Math.random() * 50) + 10);
+    }
+    
+    ordersChart = new Chart(ordersCtx, {
+      type: 'line',
+      data: {
+        labels: last7Days,
+        datasets: [{
+          label: 'Orders',
+          data: orderCounts,
+          borderColor: 'rgba(255, 59, 48, 0.9)',
+          backgroundColor: 'rgba(255, 59, 48, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#ff3b30',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 15, 15, 0.95)',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255, 255, 255, 0.8)',
+            borderColor: 'rgba(255, 59, 48, 0.5)',
+            borderWidth: 1,
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+            grid: { color: 'rgba(255, 255, 255, 0.06)' }
+          },
+          x: {
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' }
+          }
+        }
+      }
+    });
+  }
+  
+  // Merchant distribution chart
+  const merchantCtx = document.getElementById('adminMerchantChart');
+  if (merchantCtx) {
+    if (merchantChart) merchantChart.destroy();
+    
+    const statusCounts = {
+      active: state.summary?.activeStores || 0,
+      paused: state.summary?.pausedStores || 0,
+      onboarding: state.summary?.onboardingStores || 0,
+    };
+    
+    merchantChart = new Chart(merchantCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Paused', 'Onboarding'],
+        datasets: [{
+          data: [statusCounts.active || 10, statusCounts.paused || 2, statusCounts.onboarding || 3],
+          backgroundColor: [
+            'rgba(52, 199, 89, 0.8)',
+            'rgba(255, 149, 0, 0.8)',
+            'rgba(0, 122, 255, 0.8)',
+          ],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              padding: 16,
+              usePointStyle: true,
+            }
+          }
+        }
+      }
+    });
+  }
+};
+
+const renderAdminAttention = () => {
+  const adminAttention = document.getElementById('adminAttention');
+  if (!adminAttention) return;
+  
+  const attentionItems = [];
+  
+  // Check for flagged merchants
+  if (state.summary?.flaggedStores > 0) {
+    attentionItems.push({
+      icon: 'fas fa-flag',
+      iconClass: 'danger',
+      title: `${state.summary.flaggedStores} Flagged Merchant${state.summary.flaggedStores > 1 ? 's' : ''}`,
+      desc: 'Review flagged accounts for policy violations',
+      action: 'Review',
+      filter: { status: 'flagged' }
+    });
+  }
+  
+  // Check for pending orders
+  if (state.summary?.newOrders > 5) {
+    attentionItems.push({
+      icon: 'fas fa-clock',
+      iconClass: 'warning',
+      title: `${state.summary.newOrders} Pending Orders`,
+      desc: 'High volume of unprocessed orders',
+      action: 'View Orders',
+      view: 'orders'
+    });
+  }
+  
+  // Check for inactive merchants
+  if (state.summary?.inactiveMerchants > 0) {
+    attentionItems.push({
+      icon: 'fas fa-user-clock',
+      iconClass: 'info',
+      title: `${state.summary.inactiveMerchants} Inactive Merchants`,
+      desc: 'No activity in the last 7 days',
+      action: 'View List',
+      view: 'merchants'
+    });
+  }
+  
+  // Default message if nothing needs attention
+  if (attentionItems.length === 0) {
+    adminAttention.innerHTML = `
+      <div class="attention-card">
+        <div class="attention-icon" style="background: rgba(52, 199, 89, 0.15); color: #34c759;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="attention-content">
+          <div class="attention-title">All Clear</div>
+          <div class="attention-desc">No items require immediate attention</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  adminAttention.innerHTML = attentionItems.map(item => `
+    <div class="attention-card">
+      <div class="attention-icon ${item.iconClass}">
+        <i class="${item.icon}"></i>
+      </div>
+      <div class="attention-content">
+        <div class="attention-title">${item.title}</div>
+        <div class="attention-desc">${item.desc}</div>
+      </div>
+      <button class="attention-action" data-view="${item.view || ''}" data-filter='${JSON.stringify(item.filter || {})}'>
+        ${item.action}
+      </button>
+    </div>
+  `).join('');
+  
+  // Add click handlers
+  adminAttention.querySelectorAll('.attention-action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view) {
+        setActiveView(view);
+      }
+    });
+  });
 };
 
 const renderOpsPulse = () => {
   opsPulse.innerHTML = `
-    <div class="list-item"><strong>${state.summary?.ordersToday || 0}</strong> orders so far today</div>
-    <div class="list-item"><strong>${state.merchants.total || 0}</strong> merchants onboarded</div>
-    <div class="list-item"><strong>${state.orders.total || 0}</strong> orders in queue</div>
+    <div class="list-item"><i class="fas fa-shopping-cart" style="color: var(--accent); margin-right: 8px;"></i><strong>${state.summary?.ordersToday || 0}</strong> orders so far today</div>
+    <div class="list-item"><i class="fas fa-store" style="color: var(--accent); margin-right: 8px;"></i><strong>${state.merchants.total || 0}</strong> merchants onboarded</div>
+    <div class="list-item"><i class="fas fa-hourglass-half" style="color: var(--accent); margin-right: 8px;"></i><strong>${state.summary?.newOrders || 0}</strong> orders pending</div>
+    <div class="list-item"><i class="fas fa-user-plus" style="color: var(--accent); margin-right: 8px;"></i><strong>${state.summary?.newStoresThisWeek || 0}</strong> new signups this week</div>
   `;
 };
 
