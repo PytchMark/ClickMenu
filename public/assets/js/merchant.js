@@ -1020,8 +1020,7 @@ loginBtn.addEventListener("click", async () => {
     state.profile = data.merchant;
     
     // Show dashboard
-    loginView.hidden = true;
-    dashboardView.hidden = false;
+    showView('dashboard');
     
     // Set active section
     setSection(getStoredSection());
@@ -1032,8 +1031,6 @@ loginBtn.addEventListener("click", async () => {
   } catch (error) {
     const message = getLoginErrorMessage(error);
     setInlineError(message);
-    loginView.hidden = false;
-    dashboardView.hidden = true;
     setLoginDebug({
       url: error.url,
       status: error.status,
@@ -1050,7 +1047,7 @@ const settingsRefreshBtn = document.getElementById("settingsRefreshBtn");
 const settingsLogoutBtn = document.getElementById("settingsLogoutBtn");
 
 logoutBtn.addEventListener("click", () => {
-  resetToLogin();
+  resetToLanding();
 });
 
 document.getElementById("refreshBtn").addEventListener("click", async () => {
