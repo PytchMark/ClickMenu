@@ -991,6 +991,224 @@ body.merchant-body {
   gap: 20px;
 }
 
+/* Billing Panel Styles */
+.billing-content {
+  display: grid;
+  gap: 24px;
+}
+
+.billing-plan-card {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 107, 74, 0.08));
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.current-plan {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.current-plan h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.plan-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff3b30, #ff6b4a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.plan-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(52, 199, 89, 0.2);
+  color: #34c759;
+}
+
+.plan-details {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.95rem;
+}
+
+.detail-row span {
+  color: var(--muted);
+}
+
+.plan-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Usage Stats */
+.billing-usage {
+  padding: 20px;
+}
+
+.billing-usage h3 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.usage-stat {
+  display: grid;
+  gap: 8px;
+}
+
+.usage-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.usage-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.usage-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff3b30, #ff6b4a);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.usage-count {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.usage-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Plan Comparison */
+.billing-plans {
+  padding: 20px;
+}
+
+.billing-plans h3 {
+  margin: 0 0 20px;
+  font-size: 1rem;
+}
+
+.plans-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.plan-option {
+  position: relative;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.plan-option:hover {
+  border-color: rgba(255, 59, 48, 0.4);
+  transform: translateY(-2px);
+}
+
+.plan-option.recommended {
+  border-color: rgba(255, 59, 48, 0.5);
+  background: rgba(255, 59, 48, 0.08);
+}
+
+.plan-option .plan-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ff3b30, #ff6b4a);
+  color: #fff;
+}
+
+.plan-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.plan-tier {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.plan-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.plan-price small {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.plan-features li i {
+  color: #34c759;
+  font-size: 0.75rem;
+}
+
+.plan-select-btn {
+  width: 100%;
+}
+
 /* Responsive */
 @media (max-width: 960px) {
   .merchant-layout {
