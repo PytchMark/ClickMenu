@@ -1331,6 +1331,23 @@ saveItemBtn.addEventListener("click", async () => {
     return;
   }
 
+  // Check plan limits for new items
+  const existingItem = state.items.find(item => item.item_id === payload.item_id);
+  if (!existingItem) {
+    const planTier = state.profile?.plan_tier || 'plan1';
+    const plan = PLAN_CONFIG[planTier] || PLAN_CONFIG.plan1;
+    if (state.items.length >= plan.maxItems) {
+      UI.toast(`You've reached your ${plan.name} plan limit of ${plan.maxItems} items. Upgrade to add more.`, 'error');
+      // Highlight billing tab
+      const billingLink = document.querySelector('.sidebar-link[data-section="billing"]');
+      if (billingLink) {
+        billingLink.style.animation = 'pulse 0.5s ease 3';
+        setTimeout(() => billingLink.style.animation = '', 1500);
+      }
+      return;
+    }
+  }
+
   try {
     UI.setLoading(saveItemBtn, true);
     const data = await Api.merchant.saveItem(payload);
@@ -1343,6 +1360,7 @@ saveItemBtn.addEventListener("click", async () => {
     buildRequestCounts();
     renderItemsList();
     renderKpis();
+    renderBillingPanel(); // Update usage stats
     UI.toast("Item saved", "success");
   } catch (error) {
     if (!handleAuthError(error)) {
