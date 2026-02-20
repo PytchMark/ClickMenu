@@ -39,7 +39,10 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
+        "img-src": ["'self'", "https://res.cloudinary.com", "data:", "https:"],
         "media-src": ["'self'", "https://res.cloudinary.com", "data:"],
+        "font-src": ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       },
     },
   })
