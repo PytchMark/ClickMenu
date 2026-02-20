@@ -1770,3 +1770,31 @@ document.querySelectorAll('.faq-question').forEach((btn) => {
 
 clearItemForm();
 boot();
+
+/* ── Scroll Reveal Observer ── */
+const revealSections = document.querySelectorAll('.reveal-section');
+if (revealSections.length && typeof IntersectionObserver !== 'undefined') {
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('is-visible');
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealSections.forEach((s) => revealObs.observe(s));
+}
+
+/* ── Hamburger Toggle ── */
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+if (hamburgerBtn) {
+  hamburgerBtn.addEventListener('click', () => {
+    const navMenu = document.getElementById('navMenu');
+    const actions = document.querySelector('.landing-actions');
+    if (navMenu) navMenu.classList.toggle('mobile-open');
+    if (actions) actions.classList.toggle('mobile-open');
+    hamburgerBtn.querySelector('i').classList.toggle('fa-bars');
+    hamburgerBtn.querySelector('i').classList.toggle('fa-times');
+  });
+}
+
