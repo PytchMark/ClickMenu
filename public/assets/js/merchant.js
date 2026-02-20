@@ -336,6 +336,7 @@ const panelMap = {
   menu: menuPanel,
   orders: ordersPanel,
   profile: profilePanel,
+  billing: billingPanel,
   settings: settingsPanel,
 };
 
