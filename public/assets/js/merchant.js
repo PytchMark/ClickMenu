@@ -1798,3 +1798,29 @@ if (hamburgerBtn) {
   });
 }
 
+
+
+// Extra landing interactions
+const logisticsSignupBtn = document.getElementById('logisticsSignupBtn');
+if (logisticsSignupBtn) {
+  logisticsSignupBtn.addEventListener('click', () => showView('signup'));
+}
+
+const heroMockup = document.querySelector('.hero-mockup');
+const landingHeader = document.querySelector('.landing-header');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (!reduceMotion) {
+  window.addEventListener('scroll', () => {
+    const y = Math.min(window.scrollY, 320);
+    if (heroMockup) {
+      heroMockup.style.transform = `translateY(${y * 0.06}px)`;
+    }
+    if (landingHeader) {
+      landingHeader.style.background = y > 24 ? 'rgba(255,255,255,0.94)' : 'rgba(255,255,255,0.82)';
+      landingHeader.style.boxShadow = y > 24
+        ? '0 12px 36px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05)'
+        : '';
+    }
+  }, { passive: true });
+}

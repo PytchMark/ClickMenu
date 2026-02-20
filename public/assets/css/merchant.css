@@ -355,6 +355,10 @@ body.merchant-body {
 .btn-secondary-hero i { margin-right: 6px; }
 .btn-hero i { margin-right: 6px; }
 
+.cta-loop {
+  animation: ctaBob 2.8s ease-in-out infinite;
+}
+
 .hero-trust {
   display: flex;
   gap: 24px;
@@ -521,6 +525,104 @@ body.merchant-body {
   position: relative;
   z-index: 1;
 }
+
+
+.reveal-section .feature-card,
+.reveal-section .pricing-card,
+.reveal-section .showcase-card,
+.reveal-section .metric-card {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-section.is-visible .feature-card,
+.reveal-section.is-visible .pricing-card,
+.reveal-section.is-visible .showcase-card,
+.reveal-section.is-visible .metric-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-section.is-visible .feature-card:nth-child(2),
+.reveal-section.is-visible .pricing-card:nth-child(2),
+.reveal-section.is-visible .showcase-card:nth-child(2),
+.reveal-section.is-visible .metric-card:nth-child(2) { transition-delay: 0.08s; }
+.reveal-section.is-visible .feature-card:nth-child(3),
+.reveal-section.is-visible .pricing-card:nth-child(3),
+.reveal-section.is-visible .showcase-card:nth-child(3),
+.reveal-section.is-visible .metric-card:nth-child(3) { transition-delay: 0.16s; }
+
+/* Showcase */
+.showcase-section { background: #fff; }
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+.showcase-card {
+  background: #fff;
+  border: 1px solid var(--mk-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.showcase-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+}
+.showcase-card img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  display: block;
+}
+.showcase-content { padding: 20px 22px 24px; }
+.showcase-content h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.showcase-content p { color: var(--mk-text-muted); line-height: 1.6; }
+
+/* Logistics */
+.logistics-section {
+  background: linear-gradient(180deg, var(--mk-surface) 0%, #fff 100%);
+}
+.logistics-wrap {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+  align-items: stretch;
+}
+.logistics-pill {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(225,29,72,0.18);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.logistics-list { list-style: none; margin: 20px 0 26px; display: grid; gap: 10px; }
+.logistics-list li { display: flex; gap: 10px; align-items: flex-start; color: var(--mk-text); }
+.logistics-list i { color: var(--success); margin-top: 4px; }
+.logistics-panel {
+  border-radius: var(--radius-lg);
+  background: #fff;
+  border: 1px solid var(--mk-border);
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+.metric-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--mk-border);
+  background: var(--mk-surface);
+  padding: 16px;
+}
+.metric-card strong { display:block; font-size: 1.2rem; margin-bottom: 5px; }
+.metric-card span { color: var(--mk-text-muted); font-size: 0.9rem; }
 
 /* Pricing */
 .pricing-section {
@@ -1871,6 +1973,12 @@ body.merchant-body {
   50% { opacity: 0.5; transform: scale(1.05); }
 }
 
+@keyframes ctaBob {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-4px); }
+  70% { transform: translateY(1px); }
+}
+
 /* Section reveal on scroll */
 .reveal-section {
   opacity: 0;
@@ -1940,6 +2048,7 @@ body.merchant-body {
 
 @media (max-width: 768px) {
   .pricing-grid { grid-template-columns: 1fr; }
+  .logistics-wrap { grid-template-columns: 1fr; }
   .signup-plans { grid-template-columns: 1fr; }
   .wizard-steps { flex-wrap: wrap; gap: 8px; }
   .wizard-line { display: none; }
@@ -1954,4 +2063,5 @@ body.merchant-body {
     transition-duration: 0.01ms !important;
   }
   .reveal-section { opacity: 1; transform: none; }
+  .cta-loop { animation: none !important; }
 }

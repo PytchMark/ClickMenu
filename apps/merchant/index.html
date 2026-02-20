@@ -32,6 +32,8 @@
             </div>
             <nav class="landing-nav" id="navMenu">
               <a href="#features" class="nav-link" data-testid="nav-features">Features</a>
+              <a href="#showcase" class="nav-link">Showcase</a>
+              <a href="#logistics" class="nav-link">Logistics</a>
               <a href="#pricing" class="nav-link" data-testid="nav-pricing">Pricing</a>
               <a href="#faq" class="nav-link" data-testid="nav-faq">FAQ</a>
             </nav>
@@ -63,7 +65,7 @@
               No coding. No middlemen. Just results.
             </p>
             <div class="hero-cta">
-              <button id="heroSignupBtn" class="btn btn-hero" data-testid="hero-signup-btn">
+              <button id="heroSignupBtn" class="btn btn-hero cta-loop" data-testid="hero-signup-btn">
                 <i class="fas fa-rocket"></i>
                 Start Free Trial
               </button>
@@ -125,6 +127,69 @@
             </div>
           </div>
         </section>
+
+        <!-- Product Showcase -->
+        <section id="showcase" class="landing-section showcase-section reveal-section">
+          <div class="section-header">
+            <h2 class="section-title">See Your Merchant Experience</h2>
+            <p class="section-subtitle">From your menu studio to live order management, every step is built for speed.</p>
+          </div>
+          <div class="showcase-grid">
+            <article class="showcase-card reveal-section">
+              <img src="https://res.cloudinary.com/dd8pjjxsm/image/upload/v1770270558/ChatGPT_Image_Feb_5_2026_12_46_26_AM_mij3uw.png" alt="Merchant dashboard analytics screenshot" loading="lazy" />
+              <div class="showcase-content">
+                <h3>Live Operations Dashboard</h3>
+                <p>Monitor incoming requests, top items, and fulfillment flow from one clean command center.</p>
+              </div>
+            </article>
+            <article class="showcase-card reveal-section">
+              <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1200&q=80" alt="Mobile order confirmation workflow" loading="lazy" />
+              <div class="showcase-content">
+                <h3>Mobile-Ready Order Workflow</h3>
+                <p>Accept, update, and close requests quickly with status controls built for busy kitchens.</p>
+              </div>
+            </article>
+            <article class="showcase-card reveal-section">
+              <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80" alt="Menu content management interface" loading="lazy" />
+              <div class="showcase-content">
+                <h3>Menu Management Studio</h3>
+                <p>Upload visuals, tune pricing, and publish updates instantly so your storefront stays fresh.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Logistics Support -->
+        <section id="logistics" class="landing-section logistics-section reveal-section">
+          <div class="logistics-wrap">
+            <div>
+              <span class="logistics-pill"><i class="fas fa-truck-fast"></i> Islandwide Delivery Support</span>
+              <h2 class="section-title">Local Delivery Partners Ready To Serve Your Business</h2>
+              <p class="section-subtitle">We now support merchant access to trusted local delivery partners, giving you islandwide logistics coverage for pickup handoff and doorstep delivery coordination.</p>
+              <ul class="logistics-list">
+                <li><i class="fas fa-check-circle"></i> Access partner riders across major parishes</li>
+                <li><i class="fas fa-check-circle"></i> Coordinate fulfillment with clear pickup and drop-off instructions</li>
+                <li><i class="fas fa-check-circle"></i> Scale from neighborhood orders to islandwide delivery windows</li>
+              </ul>
+              <button id="logisticsSignupBtn" class="btn btn-primary cta-loop">Get Delivery-Ready</button>
+            </div>
+            <div class="logistics-panel">
+              <div class="metric-card">
+                <strong>14</strong>
+                <span>Parishes supported</span>
+              </div>
+              <div class="metric-card">
+                <strong>Local Partners</strong>
+                <span>Built for Jamaican roads and routes</span>
+              </div>
+              <div class="metric-card">
+                <strong>Pickup + Dropoff</strong>
+                <span>Flexible handoff for kitchens of all sizes</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
 
         <!-- Pricing Section -->
         <section id="pricing" class="landing-section pricing-section reveal-section" data-testid="pricing-section">
