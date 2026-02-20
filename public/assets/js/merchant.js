@@ -58,6 +58,8 @@ const markContactedBtn = document.getElementById("markContactedBtn");
 const markReadyBtn = document.getElementById("markReadyBtn");
 const markClosedBtn = document.getElementById("markClosedBtn");
 
+const billingPanel = document.getElementById("billingPanel");
+
 const state = {
   profile: null,
   items: [],
@@ -68,6 +70,25 @@ const state = {
   scrollPositions: {},
   activeSection: "dashboard",
   sectionTimeouts: {},
+  // Signup wizard state
+  signupStep: 1,
+  signupData: {
+    storeName: '',
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: '',
+    whatsapp: '',
+    parish: '',
+    address: '',
+    cuisine: '',
+    logoUrl: '',
+    coverUrl: '',
+    bio: '',
+    passcode: '',
+    plan: 'plan1',
+    addonLiveMenu: false,
+    addonPosWaitlist: false,
+  },
 };
 
 menuSort.dataset.auto = "true";
