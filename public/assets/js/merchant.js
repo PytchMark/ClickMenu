@@ -99,10 +99,200 @@ const isAuthError = (error) =>
 const resetToLogin = () => {
   localStorage.removeItem("merchant_token");
   localStorage.removeItem("merchant_store_id");
-  loginView.hidden = false;
-  dashboardView.hidden = true;
+  showView('login');
   loginDebug.hidden = true;
   loginDebug.open = false;
+};
+
+// ============ VIEW NAVIGATION ============
+const showView = (view) => {
+  // Hide all views
+  landingView.hidden = true;
+  loginView.hidden = true;
+  signupView.hidden = true;
+  dashboardView.hidden = true;
+  
+  // Show selected view
+  switch(view) {
+    case 'landing':
+      landingView.hidden = false;
+      break;
+    case 'login':
+      loginView.hidden = false;
+      break;
+    case 'signup':
+      signupView.hidden = false;
+      setSignupStep(1);
+      break;
+    case 'dashboard':
+      dashboardView.hidden = false;
+      break;
+  }
+};
+
+const resetToLanding = () => {
+  localStorage.removeItem("merchant_token");
+  localStorage.removeItem("merchant_store_id");
+  showView('landing');
+};
+
+// ============ SIGNUP WIZARD ============
+const setSignupStep = (step) => {
+  state.signupStep = step;
+  
+  // Update step indicators
+  document.querySelectorAll('.wizard-step').forEach((el) => {
+    const stepNum = parseInt(el.dataset.step);
+    el.classList.remove('active', 'completed');
+    if (stepNum === step) {
+      el.classList.add('active');
+    } else if (stepNum < step) {
+      el.classList.add('completed');
+    }
+  });
+  
+  // Update panels
+  document.querySelectorAll('.wizard-panel').forEach((panel) => {
+    const panelNum = parseInt(panel.dataset.panel);
+    panel.classList.toggle('active', panelNum === step);
+  });
+};
+
+const validateSignupStep = (step) => {
+  if (step === 1) {
+    const name = document.getElementById('signupStoreName').value.trim();
+    const ownerName = document.getElementById('signupOwnerName').value.trim();
+    const email = document.getElementById('signupOwnerEmail').value.trim();
+    const phone = document.getElementById('signupOwnerPhone').value.trim();
+    const whatsapp = document.getElementById('signupWhatsapp').value.trim();
+    const parish = document.getElementById('signupParish').value;
+    
+    if (!name || !ownerName || !email || !phone || !whatsapp || !parish) {
+      UI.toast('Please fill in all required fields', 'error');
+      return false;
+    }
+    
+    // Email validation
+    if (!email.includes('@')) {
+      UI.toast('Please enter a valid email address', 'error');
+      return false;
+    }
+    
+    // Save to state
+    state.signupData.storeName = name;
+    state.signupData.ownerName = ownerName;
+    state.signupData.ownerEmail = email;
+    state.signupData.ownerPhone = phone;
+    state.signupData.whatsapp = whatsapp;
+    state.signupData.parish = parish;
+    state.signupData.address = document.getElementById('signupAddress').value.trim();
+    state.signupData.cuisine = document.getElementById('signupCuisine').value.trim();
+    
+    return true;
+  }
+  
+  if (step === 2) {
+    const passcode = document.getElementById('signupPasscode').value;
+    
+    if (passcode.length < 6) {
+      UI.toast('Passcode must be at least 6 characters', 'error');
+      return false;
+    }
+    
+    // Save to state
+    state.signupData.logoUrl = document.getElementById('signupLogoUrl').value.trim();
+    state.signupData.coverUrl = document.getElementById('signupCoverUrl').value.trim();
+    state.signupData.bio = document.getElementById('signupBio').value.trim();
+    state.signupData.passcode = passcode;
+    
+    return true;
+  }
+  
+  return true;
+};
+
+const submitSignup = async () => {
+  // Get selected plan and addons
+  const selectedPlan = document.querySelector('.signup-plan-card.selected');
+  state.signupData.plan = selectedPlan ? selectedPlan.dataset.plan : 'plan1';
+  state.signupData.addonLiveMenu = document.getElementById('addonLiveMenu')?.checked || false;
+  state.signupData.addonPosWaitlist = document.getElementById('addonPosWaitlist')?.checked || false;
+  
+  const submitBtn = document.getElementById('signupSubmit');
+  
+  try {
+    UI.setLoading(submitBtn, true);
+    
+    const payload = {
+      name: state.signupData.storeName,
+      whatsapp: state.signupData.whatsapp,
+      profile_email: state.signupData.ownerEmail,
+      parish: state.signupData.parish,
+      cuisine: state.signupData.cuisine,
+      description: state.signupData.bio,
+      logo_url: state.signupData.logoUrl,
+      passcode: state.signupData.passcode,
+      planTier: state.signupData.plan,
+      owner_name: state.signupData.ownerName,
+      owner_phone: state.signupData.ownerPhone,
+      business_address: state.signupData.address,
+      addonLiveMenu: state.signupData.addonLiveMenu,
+      addonPosWaitlist: state.signupData.addonPosWaitlist,
+    };
+    
+    const response = await fetch('/api/public/merchant/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || 'Signup failed');
+    }
+    
+    // Show success step
+    setSignupStep(4);
+    
+    // Populate success info
+    document.getElementById('successStoreId').textContent = data.storeId || '—';
+    document.getElementById('successEmail').textContent = state.signupData.ownerEmail;
+    
+    // Store credentials for dashboard redirect
+    state.signupData.createdStoreId = data.storeId;
+    
+  } catch (error) {
+    UI.toast(error.message || 'Signup failed', 'error');
+  } finally {
+    UI.setLoading(submitBtn, false);
+  }
+};
+
+const goToDashboardAfterSignup = async () => {
+  // Try to login with the created credentials
+  try {
+    const loginData = await Api.merchant.login({
+      identifier: state.signupData.createdStoreId || state.signupData.ownerEmail,
+      passcode: state.signupData.passcode,
+    });
+    
+    localStorage.setItem('merchant_token', loginData.token);
+    if (loginData.merchant?.store_id) {
+      localStorage.setItem('merchant_store_id', loginData.merchant.store_id);
+    }
+    
+    state.profile = loginData.merchant;
+    showView('dashboard');
+    setSection(getStoredSection());
+    await loadDashboard(state.profile);
+    
+  } catch (error) {
+    // If auto-login fails, go to login view
+    UI.toast('Please login with your new credentials', 'info');
+    showView('login');
+    document.getElementById('loginId').value = state.signupData.createdStoreId || state.signupData.ownerEmail;
+  }
 };
 
 const handleAuthError = (error) => {
