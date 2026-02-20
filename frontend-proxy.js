@@ -2,7 +2,10 @@
 const http = require('http');
 const httpProxy = require('http-proxy');
 
-const proxy = httpProxy.createProxyServer({});
+const proxy = httpProxy.createProxyServer({
+  xfwd: true, // Add X-Forwarded headers
+});
+
 const PORT = 3000;
 const BACKEND = 'http://127.0.0.1:8001';
 
@@ -14,6 +17,11 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Frontend proxy listening on port ${PORT}, forwarding to ${BACKEND}`);
+// Handle WebSocket upgrades
+server.on('upgrade', (req, socket, head) => {
+  proxy.ws(req, socket, head, { target: BACKEND });
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Frontend proxy listening on 0.0.0.0:${PORT}, forwarding to ${BACKEND}`);
 });
