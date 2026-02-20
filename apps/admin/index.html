@@ -70,16 +70,33 @@
         <div class="filter-row hidden" id="filterRow"></div>
 
         <section class="view active" id="view-overview">
-          <div class="grid-3" id="overviewCards"></div>
+          <div class="grid-4" id="overviewCards"></div>
+          
+          <div class="overview-charts">
+            <div class="panel chart-panel">
+              <h3><i class="fas fa-chart-line"></i> Orders Trend (7 days)</h3>
+              <canvas id="adminOrdersChart" height="200"></canvas>
+            </div>
+            <div class="panel chart-panel">
+              <h3><i class="fas fa-chart-pie"></i> Merchant Distribution</h3>
+              <canvas id="adminMerchantChart" height="200"></canvas>
+            </div>
+          </div>
+          
           <div class="panel split">
             <div>
-              <h3>Ops pulse</h3>
+              <h3><i class="fas fa-bolt"></i> Ops Pulse</h3>
               <div class="list" id="opsPulse"></div>
             </div>
             <div>
-              <h3>Recent orders</h3>
+              <h3><i class="fas fa-clock"></i> Recent Orders</h3>
               <div class="list" id="overviewOrders"></div>
             </div>
+          </div>
+          
+          <div class="panel">
+            <h3><i class="fas fa-exclamation-triangle"></i> Needs Attention</h3>
+            <div class="attention-grid" id="adminAttention"></div>
           </div>
         </section>
 
