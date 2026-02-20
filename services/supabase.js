@@ -859,10 +859,47 @@ const getAdminOrders = async ({
 const getSummary = async () => {
   const ordersData = await getAdminOrders({ limit: 500, offset: 0 });
   const storesData = await getAdminStores({ limit: 500, offset: 0 });
-  const summary = summarizeOrders(ordersData.orders || ordersData);
+  const orders = ordersData.orders || ordersData;
+  const stores = storesData.stores || storesData;
+  
+  const summary = summarizeOrders(orders);
+  
+  // Count stores by status
+  let activeStores = 0;
+  let pausedStores = 0;
+  let onboardingStores = 0;
+  let flaggedStores = 0;
+  let newStoresThisWeek = 0;
+  let inactiveMerchants = 0;
+  
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  
+  stores.forEach(store => {
+    const status = (store.status || 'active').toLowerCase();
+    if (status === 'active') activeStores++;
+    else if (status === 'paused') pausedStores++;
+    else if (status === 'onboarding') onboardingStores++;
+    else if (status === 'flagged') flaggedStores++;
+    
+    // Check if created this week
+    const createdAt = new Date(store.created_at);
+    if (createdAt >= weekAgo) newStoresThisWeek++;
+    
+    // Check for inactive (no orders in 7 days)
+    const lastActive = store.last_active ? new Date(store.last_active) : null;
+    if (!lastActive || lastActive < weekAgo) inactiveMerchants++;
+  });
+  
   return {
     ...summary,
-    totalStores: (storesData.stores || storesData).length,
+    totalStores: stores.length,
+    activeStores,
+    pausedStores,
+    onboardingStores,
+    flaggedStores,
+    newStoresThisWeek,
+    inactiveMerchants,
   };
 };
 
