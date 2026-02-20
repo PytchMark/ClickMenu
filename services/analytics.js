@@ -3,15 +3,29 @@ const startOfDay = () => {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 };
 
+const startOfWeek = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  return new Date(now.setDate(diff));
+};
+
 const summarizeOrders = (orders) => {
   const todayStart = startOfDay();
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+  
   let todayCount = 0;
   let newCount = 0;
+  let weekCount = 0;
 
   orders.forEach((order) => {
     const created = new Date(order.created_at);
     if (created >= todayStart) {
       todayCount += 1;
+    }
+    if (created >= weekStart) {
+      weekCount += 1;
     }
     if (order.status === "new") {
       newCount += 1;
@@ -21,6 +35,8 @@ const summarizeOrders = (orders) => {
   return {
     ordersToday: todayCount,
     newOrders: newCount,
+    ordersThisWeek: weekCount,
+    orders7dAvg: Math.round(weekCount / 7),
   };
 };
 
