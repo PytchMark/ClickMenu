@@ -1,4 +1,4 @@
--- ClickMenu Billing & Plans Schema Update
+-- QuickMenuJA Billing & Plans Schema Update
 -- Run this SQL in your Supabase SQL Editor
 
 -- Add billing and plan-related columns to profiles table

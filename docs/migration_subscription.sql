@@ -1,4 +1,4 @@
--- ClickMenu Subscription System Migration
+-- QuickMenuJA Subscription System Migration
 -- Run this SQL in your Supabase SQL editor
 
 -- 1. Add subscription-related columns to profiles table

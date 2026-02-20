@@ -1138,7 +1138,7 @@ bulkExportBtn.addEventListener("click", () => {
   const blob = new Blob([csv], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `clickmenu-merchants-selected-${Date.now()}.csv`;
+  link.download = `quickmenuja-merchants-selected-${Date.now()}.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 });
@@ -1386,7 +1386,7 @@ const exportCsv = () => {
   const blob = new Blob([csv], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `clickmenu-${state.view}-${Date.now()}.csv`;
+  link.download = `quickmenuja-${state.view}-${Date.now()}.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 };

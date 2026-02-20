@@ -1,6 +1,6 @@
-# ClickMenu
+# QuickMenuJA
 
-ClickMenu is a viral-first, zero-friction clickable menu + order request system that converts social traffic into real orders without forcing restaurants to build a website or integrate payments.
+QuickMenuJA is a viral-first, zero-friction clickable menu + order request system that converts social traffic into real orders without forcing restaurants to build a website or integrate payments.
 
 ## Features
 
@@ -33,7 +33,7 @@ Visit:
 
 ### Subscription System
 
-ClickMenu now offers three subscription tiers:
+QuickMenuJA now offers three subscription tiers:
 
 1. **Free** ($0/month) - Up to 10 items, basic features
 2. **Pro** ($29/month) - Unlimited items, daily specials, live menu
@@ -319,7 +319,7 @@ Copy `.env.example` to `.env` and configure the following:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DEFAULT_HERO_VIDEO_URL` | No | Default hero video for storefront |
-| `BRAND_NAME` | No | Custom brand name (default: ClickMenu) |
+| `BRAND_NAME` | No | Custom brand name (default: QuickMenuJA) |
 
 ### Build and Test Locally
 

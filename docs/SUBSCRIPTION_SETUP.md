@@ -1,8 +1,8 @@
-# ClickMenu Subscription System Setup Guide
+# QuickMenuJA Subscription System Setup Guide
 
 ## Overview
 
-ClickMenu now includes a complete subscription-based SaaS system powered by Stripe. This guide covers setup, configuration, and usage.
+QuickMenuJA now includes a complete subscription-based SaaS system powered by Stripe. This guide covers setup, configuration, and usage.
 
 ## Features Added
 
@@ -94,12 +94,12 @@ Check that these columns exist in `profiles`:
 2. Create two products:
 
 **Pro Plan:**
-- Name: ClickMenu Pro
+- Name: QuickMenuJA Pro
 - Price: $29/month (recurring)
 - Copy the Price ID (starts with `price_`)
 
 **Business Plan:**
-- Name: ClickMenu Business
+- Name: QuickMenuJA Business
 - Price: $99/month (recurring)
 - Copy the Price ID
 
