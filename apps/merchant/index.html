@@ -10,17 +10,287 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
 
   <body class="merchant-body">
     <div class="background-texture"></div>
 
     <main class="merchant-shell">
+      <!-- LANDING PAGE -->
+      <section id="landingView" class="landing-view" aria-label="Merchant landing">
+        <!-- Sticky Header -->
+        <header class="landing-header">
+          <div class="landing-header-inner">
+            <div class="landing-logo">
+              <span class="logo-mark">CM</span>
+              <span class="logo-text">ClickMenu</span>
+            </div>
+            <nav class="landing-nav">
+              <a href="#features" class="nav-link">Features</a>
+              <a href="#pricing" class="nav-link">Pricing</a>
+              <a href="#faq" class="nav-link">FAQ</a>
+            </nav>
+            <div class="landing-actions">
+              <button id="showLoginBtn" class="btn btn-ghost" data-testid="merchant-login-btn">Merchant Login</button>
+              <button id="showSignupBtn" class="btn btn-primary" data-testid="become-merchant-btn">Become a Merchant</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="landing-hero">
+          <div class="hero-content">
+            <div class="hero-badge">
+              <i class="fas fa-bolt"></i>
+              Now accepting merchants in Jamaica
+            </div>
+            <h1 class="hero-title">
+              Turn Your Menu Into
+              <span class="hero-highlight">Real Orders</span>
+            </h1>
+            <p class="hero-subtitle">
+              Get a beautiful digital menu, receive order requests via WhatsApp, and manage everything from one dashboard. 
+              No coding. No middlemen. Just results.
+            </p>
+            <div class="hero-cta">
+              <button id="heroSignupBtn" class="btn btn-hero" data-testid="hero-signup-btn">
+                <i class="fas fa-rocket"></i>
+                Start Free Trial
+              </button>
+              <button id="heroLoginBtn" class="btn btn-secondary-hero" data-testid="hero-login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Merchant Login
+              </button>
+            </div>
+            <div class="hero-trust">
+              <div class="trust-item"><i class="fas fa-check-circle"></i> 30-day free trial</div>
+              <div class="trust-item"><i class="fas fa-check-circle"></i> No credit card required</div>
+              <div class="trust-item"><i class="fas fa-check-circle"></i> Setup in 5 minutes</div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-mockup">
+              <img src="https://res.cloudinary.com/dd8pjjxsm/image/upload/v1770270558/ChatGPT_Image_Feb_5_2026_12_46_26_AM_mij3uw.png" alt="ClickMenu Dashboard Preview" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="landing-section features-section">
+          <div class="section-header">
+            <h2 class="section-title">Everything You Need to Grow</h2>
+            <p class="section-subtitle">Powerful tools designed for food businesses in Jamaica</p>
+          </div>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-utensils"></i></div>
+              <h3>Inventory Manager</h3>
+              <p>Add items with photos, videos, pricing, and labels. Mark items as featured, limited, or sold out instantly.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-inbox"></i></div>
+              <h3>Order Inbox</h3>
+              <p>Receive and manage order requests in real-time. Track status from new to completed with one click.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+              <h3>Analytics Dashboard</h3>
+              <p>See what's selling, track trends, and identify your top performers with beautiful charts.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-truck"></i></div>
+              <h3>Delivery + Pickup</h3>
+              <p>Let customers choose pickup or delivery. Capture parish, address, and special instructions.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fab fa-whatsapp"></i></div>
+              <h3>WhatsApp Ordering</h3>
+              <p>Customers can send orders directly to your WhatsApp. Quick responses, no app downloads needed.</p>
+            </div>
+            <div class="feature-card coming-soon">
+              <div class="feature-icon"><i class="fas fa-cash-register"></i></div>
+              <h3>POS Integration</h3>
+              <p>Coming soon! Connect your point-of-sale system for seamless inventory sync.</p>
+              <span class="coming-badge">Coming Soon</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="landing-section pricing-section">
+          <div class="section-header">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <p class="section-subtitle">Choose the plan that fits your business</p>
+          </div>
+          <div class="pricing-grid">
+            <!-- Starter Plan -->
+            <div class="pricing-card" data-plan="plan1">
+              <div class="plan-header">
+                <h3 class="plan-name">Starter</h3>
+                <div class="plan-price">
+                  <span class="price-currency">$</span>
+                  <span class="price-amount">19</span>
+                  <span class="price-period">/mo</span>
+                </div>
+                <div class="plan-trial">30-day free trial</div>
+              </div>
+              <ul class="plan-features">
+                <li><i class="fas fa-check"></i> Max 5 menu items</li>
+                <li><i class="fas fa-check"></i> Up to 3 images per item</li>
+                <li><i class="fas fa-check"></i> WhatsApp + request cart</li>
+                <li><i class="fas fa-check"></i> Basic stats</li>
+                <li><i class="fas fa-check"></i> Email support</li>
+              </ul>
+              <button class="btn btn-plan" data-plan="plan1" data-testid="select-plan1-btn">Start Free Trial</button>
+            </div>
+
+            <!-- Growth Plan -->
+            <div class="pricing-card featured" data-plan="plan2">
+              <div class="popular-badge">Most Popular</div>
+              <div class="plan-header">
+                <h3 class="plan-name">Growth</h3>
+                <div class="plan-price">
+                  <span class="price-currency">$</span>
+                  <span class="price-amount">36</span>
+                  <span class="price-period">/mo</span>
+                </div>
+              </div>
+              <ul class="plan-features">
+                <li><i class="fas fa-check"></i> Max 33 menu items</li>
+                <li><i class="fas fa-check"></i> Up to 6 images per item</li>
+                <li><i class="fas fa-check"></i> Up to 2 videos per item</li>
+                <li><i class="fas fa-check"></i> Advanced stats</li>
+                <li><i class="fas fa-check"></i> Delivery settings</li>
+                <li><i class="fas fa-check"></i> Priority support</li>
+              </ul>
+              <button class="btn btn-plan btn-primary" data-plan="plan2" data-testid="select-plan2-btn">Get Started</button>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card" data-plan="plan3">
+              <div class="plan-header">
+                <h3 class="plan-name">Pro</h3>
+                <div class="plan-price">
+                  <span class="price-currency">$</span>
+                  <span class="price-amount">79</span>
+                  <span class="price-period">/mo</span>
+                </div>
+              </div>
+              <ul class="plan-features">
+                <li><i class="fas fa-check"></i> Unlimited menu items</li>
+                <li><i class="fas fa-check"></i> Unlimited media</li>
+                <li><i class="fas fa-check"></i> Full analytics suite</li>
+                <li><i class="fas fa-check"></i> Priority support</li>
+                <li><i class="fas fa-check"></i> Multi-branch (coming soon)</li>
+                <li><i class="fas fa-check"></i> Custom branding</li>
+              </ul>
+              <button class="btn btn-plan" data-plan="plan3" data-testid="select-plan3-btn">Get Started</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="landing-section faq-section">
+          <div class="section-header">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+          </div>
+          <div class="faq-grid">
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>How does ClickMenu work?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>ClickMenu gives you a digital storefront where customers can browse your menu and send order requests. Orders come directly to your dashboard and WhatsApp. You confirm and fulfill - no middleman fees.</p>
+              </div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Do I need technical skills?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Not at all! If you can use WhatsApp, you can use ClickMenu. Setup takes about 5 minutes - just add your business info and menu items.</p>
+              </div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>How do payments work?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>ClickMenu is for order requests - customers pay you directly (cash on delivery, bank transfer, etc). We don't process payments, so you keep 100% of your sales.</p>
+              </div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Can I cancel anytime?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Yes! No long-term contracts. Cancel anytime from your billing settings. Your data remains accessible for 30 days after cancellation.</p>
+              </div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What's included in the free trial?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>The Starter plan includes a 30-day free trial with full access to all Starter features. No credit card required to start.</p>
+              </div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Do you support multiple locations?</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Multi-branch support is coming soon on the Pro plan! For now, each location needs a separate account.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+          <div class="footer-content">
+            <div class="footer-brand">
+              <div class="landing-logo">
+                <span class="logo-mark">CM</span>
+                <span class="logo-text">ClickMenu</span>
+              </div>
+              <p>Empowering food businesses in Jamaica with digital ordering tools.</p>
+            </div>
+            <div class="footer-links">
+              <div class="footer-column">
+                <h4>Product</h4>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+              </div>
+              <div class="footer-column">
+                <h4>Support</h4>
+                <a href="mailto:support@clickmenu.com">Contact Us</a>
+                <a href="#">Help Center</a>
+              </div>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2026 ClickMenu. All rights reserved.</p>
+          </div>
+        </footer>
+      </section>
+
       <!-- LOGIN -->
-      <section id="loginView" class="login-view" aria-label="Merchant login">
+      <section id="loginView" class="login-view" hidden aria-label="Merchant login">
+        <button id="backToLandingFromLogin" class="back-button" data-testid="back-to-landing-btn">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
         <div class="glass-card login-card">
           <div class="login-brand">Merchant Access</div>
           <h1>Welcome back</h1>
@@ -28,17 +298,21 @@
 
           <label class="field">
             Store ID or email
-            <input id="loginId" type="text" placeholder="TACOS01 or hello@store.com" autocomplete="username" />
+            <input id="loginId" type="text" placeholder="TACOS01 or hello@store.com" autocomplete="username" data-testid="login-id-input" />
           </label>
 
           <label class="field">
             Passcode
-            <input id="loginPass" type="password" placeholder="••••••" autocomplete="current-password" />
+            <input id="loginPass" type="password" placeholder="••••••" autocomplete="current-password" data-testid="login-pass-input" />
           </label>
 
           <div id="loginError" class="inline-message" role="alert" aria-live="polite"></div>
 
-          <button id="loginBtn" class="btn btn-primary" type="button">Login</button>
+          <button id="loginBtn" class="btn btn-primary" type="button" data-testid="login-submit-btn">Login</button>
+
+          <div class="login-footer">
+            <p class="helper">Don't have an account? <a href="#" id="switchToSignupFromLogin">Become a Merchant</a></p>
+          </div>
 
           <!-- Optional diagnostics: merchant.js can toggle this on failure -->
           <details id="loginDebug" class="login-debug" hidden>
@@ -65,7 +339,228 @@
         </div>
       </section>
 
-      <!-- APP -->
+      <!-- SIGNUP WIZARD -->
+      <section id="signupView" class="signup-view" hidden aria-label="Merchant signup">
+        <button id="backToLandingFromSignup" class="back-button" data-testid="back-to-landing-signup-btn">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <div class="glass-card signup-card">
+          <div class="signup-header">
+            <div class="signup-brand">Join ClickMenu</div>
+            <h1>Create Your Merchant Account</h1>
+          </div>
+
+          <!-- Step Indicator -->
+          <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+              <div class="step-number">1</div>
+              <div class="step-label">Business</div>
+            </div>
+            <div class="wizard-line"></div>
+            <div class="wizard-step" data-step="2">
+              <div class="step-number">2</div>
+              <div class="step-label">Branding</div>
+            </div>
+            <div class="wizard-line"></div>
+            <div class="wizard-step" data-step="3">
+              <div class="step-number">3</div>
+              <div class="step-label">Plan</div>
+            </div>
+            <div class="wizard-line"></div>
+            <div class="wizard-step" data-step="4">
+              <div class="step-number">4</div>
+              <div class="step-label">Complete</div>
+            </div>
+          </div>
+
+          <!-- Step 1: Business Basics -->
+          <div class="wizard-panel active" data-panel="1">
+            <h2>Business Basics</h2>
+            <p class="helper">Tell us about your food business</p>
+            <div class="form-grid">
+              <label class="field field-full">
+                Store Name *
+                <input id="signupStoreName" type="text" placeholder="Island Spice Grill" required data-testid="signup-store-name" />
+              </label>
+              <label class="field">
+                Owner Name *
+                <input id="signupOwnerName" type="text" placeholder="Your name" required data-testid="signup-owner-name" />
+              </label>
+              <label class="field">
+                Owner Email *
+                <input id="signupOwnerEmail" type="email" placeholder="you@example.com" required data-testid="signup-owner-email" />
+              </label>
+              <label class="field">
+                Owner Phone *
+                <input id="signupOwnerPhone" type="tel" placeholder="+1 876 555 1234" required data-testid="signup-owner-phone" />
+              </label>
+              <label class="field">
+                WhatsApp Number *
+                <input id="signupWhatsapp" type="tel" placeholder="+1 876 555 1234" required data-testid="signup-whatsapp" />
+              </label>
+              <label class="field">
+                Business Parish *
+                <select id="signupParish" required data-testid="signup-parish">
+                  <option value="">Select parish</option>
+                  <option value="Kingston">Kingston</option>
+                  <option value="St. Andrew">St. Andrew</option>
+                  <option value="St. Thomas">St. Thomas</option>
+                  <option value="Portland">Portland</option>
+                  <option value="St. Mary">St. Mary</option>
+                  <option value="St. Ann">St. Ann</option>
+                  <option value="Trelawny">Trelawny</option>
+                  <option value="St. James">St. James</option>
+                  <option value="Hanover">Hanover</option>
+                  <option value="Westmoreland">Westmoreland</option>
+                  <option value="St. Elizabeth">St. Elizabeth</option>
+                  <option value="Manchester">Manchester</option>
+                  <option value="Clarendon">Clarendon</option>
+                  <option value="St. Catherine">St. Catherine</option>
+                </select>
+              </label>
+              <label class="field field-full">
+                Business Address
+                <input id="signupAddress" type="text" placeholder="123 Main Street" data-testid="signup-address" />
+              </label>
+              <label class="field">
+                Cuisine Type
+                <input id="signupCuisine" type="text" placeholder="Caribbean Fusion" data-testid="signup-cuisine" />
+              </label>
+            </div>
+            <div class="wizard-actions">
+              <div></div>
+              <button id="signupNext1" class="btn btn-primary" type="button" data-testid="signup-next-1">Continue <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 2: Branding -->
+          <div class="wizard-panel" data-panel="2">
+            <h2>Branding</h2>
+            <p class="helper">Make your storefront stand out</p>
+            <div class="form-grid">
+              <label class="field field-full">
+                Logo URL (optional)
+                <input id="signupLogoUrl" type="url" placeholder="https://example.com/logo.png" data-testid="signup-logo" />
+                <span class="field-helper">You can upload this later in your dashboard</span>
+              </label>
+              <label class="field field-full">
+                Cover Image URL (optional)
+                <input id="signupCoverUrl" type="url" placeholder="https://example.com/cover.jpg" data-testid="signup-cover" />
+              </label>
+              <label class="field field-full">
+                Short Business Bio
+                <textarea id="signupBio" rows="3" placeholder="Tell customers what makes your food special..." data-testid="signup-bio"></textarea>
+                <span class="field-helper">This will appear on your public storefront</span>
+              </label>
+              <label class="field field-full">
+                Passcode *
+                <input id="signupPasscode" type="password" placeholder="Create a secure passcode (min 6 chars)" required minlength="6" data-testid="signup-passcode" />
+                <span class="field-helper">You'll use this to log in to your merchant dashboard</span>
+              </label>
+            </div>
+            <div class="wizard-actions">
+              <button id="signupBack2" class="btn btn-ghost" type="button"><i class="fas fa-arrow-left"></i> Back</button>
+              <button id="signupNext2" class="btn btn-primary" type="button" data-testid="signup-next-2">Continue <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 3: Plan Selection -->
+          <div class="wizard-panel" data-panel="3">
+            <h2>Choose Your Plan</h2>
+            <p class="helper">Select the plan that fits your business</p>
+            <div class="signup-plans">
+              <div class="signup-plan-card selected" data-plan="plan1">
+                <div class="plan-header">
+                  <h3>Starter</h3>
+                  <div class="plan-price">$19<span>/mo</span></div>
+                  <div class="plan-trial-badge">30-day free trial</div>
+                </div>
+                <ul>
+                  <li><i class="fas fa-check"></i> Max 5 items</li>
+                  <li><i class="fas fa-check"></i> 3 images per item</li>
+                  <li><i class="fas fa-check"></i> WhatsApp ordering</li>
+                  <li><i class="fas fa-check"></i> Basic stats</li>
+                </ul>
+              </div>
+              <div class="signup-plan-card" data-plan="plan2">
+                <div class="popular-tag">Most Popular</div>
+                <div class="plan-header">
+                  <h3>Growth</h3>
+                  <div class="plan-price">$36<span>/mo</span></div>
+                </div>
+                <ul>
+                  <li><i class="fas fa-check"></i> Max 33 items</li>
+                  <li><i class="fas fa-check"></i> 6 images, 2 videos</li>
+                  <li><i class="fas fa-check"></i> Advanced stats</li>
+                  <li><i class="fas fa-check"></i> Delivery settings</li>
+                </ul>
+              </div>
+              <div class="signup-plan-card" data-plan="plan3">
+                <div class="plan-header">
+                  <h3>Pro</h3>
+                  <div class="plan-price">$79<span>/mo</span></div>
+                </div>
+                <ul>
+                  <li><i class="fas fa-check"></i> Unlimited items</li>
+                  <li><i class="fas fa-check"></i> Unlimited media</li>
+                  <li><i class="fas fa-check"></i> Full analytics</li>
+                  <li><i class="fas fa-check"></i> Priority support</li>
+                </ul>
+              </div>
+            </div>
+            <div class="addon-section">
+              <h4>Add-ons (Optional)</h4>
+              <label class="addon-toggle">
+                <input type="checkbox" id="addonLiveMenu" />
+                <div class="addon-info">
+                  <strong>Live Menu Sync</strong>
+                  <span>Daily specials and rotating menu items</span>
+                </div>
+                <span class="addon-coming">Coming Soon</span>
+              </label>
+              <label class="addon-toggle">
+                <input type="checkbox" id="addonPosWaitlist" />
+                <div class="addon-info">
+                  <strong>POS Integration Waitlist</strong>
+                  <span>Get early access when we launch</span>
+                </div>
+                <span class="addon-coming">Coming Soon</span>
+              </label>
+            </div>
+            <div class="wizard-actions">
+              <button id="signupBack3" class="btn btn-ghost" type="button"><i class="fas fa-arrow-left"></i> Back</button>
+              <button id="signupSubmit" class="btn btn-primary" type="button" data-testid="signup-submit">Complete Signup <i class="fas fa-check"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 4: Success -->
+          <div class="wizard-panel" data-panel="4">
+            <div class="signup-success">
+              <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+              <h2>Welcome to ClickMenu!</h2>
+              <p class="helper">Your merchant account has been created successfully.</p>
+              <div class="credentials-card">
+                <h3>Your Login Credentials</h3>
+                <div class="credential-row">
+                  <span>Store ID:</span>
+                  <strong id="successStoreId">—</strong>
+                  <button class="copy-btn" data-copy="storeId"><i class="fas fa-copy"></i></button>
+                </div>
+                <div class="credential-row">
+                  <span>Email:</span>
+                  <strong id="successEmail">—</strong>
+                </div>
+                <p class="warning-text"><i class="fas fa-exclamation-triangle"></i> Save these credentials now! You'll need them to log in.</p>
+              </div>
+              <div class="wizard-actions">
+                <button id="goToDashboard" class="btn btn-primary" data-testid="go-to-dashboard-btn">Go to Dashboard <i class="fas fa-arrow-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- APP / DASHBOARD -->
       <section id="dashboardView" class="dashboard-view" hidden aria-label="Merchant dashboard">
         <div class="merchant-layout">
           <!-- Sidebar -->
@@ -75,19 +570,29 @@
               <div>ClickMenu Merchant</div>
             </div>
 
-            <!-- IMPORTANT: one active link at boot -->
             <nav class="sidebar-nav" role="navigation">
               <button class="sidebar-link active" type="button" data-section="dashboard" aria-current="page">
-                Dashboard
+                <i class="fas fa-home"></i> Dashboard
               </button>
-              <button class="sidebar-link" type="button" data-section="menu">Menu Manager</button>
-              <button class="sidebar-link" type="button" data-section="orders">Orders Inbox</button>
-              <button class="sidebar-link" type="button" data-section="profile">Profile</button>
-              <button class="sidebar-link" type="button" data-section="settings">Settings</button>
+              <button class="sidebar-link" type="button" data-section="menu">
+                <i class="fas fa-utensils"></i> Menu Manager
+              </button>
+              <button class="sidebar-link" type="button" data-section="orders">
+                <i class="fas fa-inbox"></i> Orders Inbox
+              </button>
+              <button class="sidebar-link" type="button" data-section="profile">
+                <i class="fas fa-user"></i> Profile
+              </button>
+              <button class="sidebar-link" type="button" data-section="billing">
+                <i class="fas fa-credit-card"></i> Billing
+              </button>
+              <button class="sidebar-link" type="button" data-section="settings">
+                <i class="fas fa-cog"></i> Settings
+              </button>
             </nav>
 
             <div class="sidebar-footer">
-              <button id="logoutBtn" class="btn btn-ghost" type="button">Logout</button>
+              <button id="logoutBtn" class="btn btn-ghost" type="button"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
           </aside>
 
@@ -106,9 +611,9 @@
               </div>
             </header>
 
-            <!-- PANELS WRAPPER (makes panel switching predictable) -->
+            <!-- PANELS WRAPPER -->
             <div class="merchant-panels" id="merchantPanels">
-              <!-- Dashboard -->
+              <!-- Dashboard Panel -->
               <section id="dashboardPanel" class="panel-section glass-card" data-panel="dashboard">
                 <div class="panel-header">
                   <div>
@@ -116,9 +621,9 @@
                     <p class="muted">Daily performance & store readiness.</p>
                   </div>
                   <div class="panel-actions">
-                    <button id="refreshBtn" class="btn btn-ghost" type="button">Refresh</button>
+                    <button id="refreshBtn" class="btn btn-ghost" type="button"><i class="fas fa-sync"></i> Refresh</button>
                     <a id="viewStorefrontBtn" class="btn btn-primary" href="#" target="_blank" rel="noreferrer">
-                      View storefront
+                      <i class="fas fa-external-link-alt"></i> View Storefront
                     </a>
                   </div>
                 </div>
@@ -129,14 +634,14 @@
 
                 <div class="dashboard-grid">
                   <div class="glass-card">
-                    <h3>Quick Start Checklist</h3>
+                    <h3><i class="fas fa-tasks"></i> Quick Start Checklist</h3>
                     <p class="muted" style="font-size: 0.85rem; margin: 8px 0 16px;">Complete these steps to get your store ready</p>
                     <ul id="attentionList" class="checklist"></ul>
                   </div>
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Orders Over Time</h3>
+                      <h3><i class="fas fa-chart-bar"></i> Orders Over Time</h3>
                       <span id="ordersPulse" class="pill">Last 7 days</span>
                     </div>
                     <canvas id="ordersLineChart" style="max-height: 200px;"></canvas>
@@ -144,7 +649,7 @@
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Top Menu Items</h3>
+                      <h3><i class="fas fa-fire"></i> Top Menu Items</h3>
                       <span class="pill">By requests</span>
                     </div>
                     <canvas id="topItemsChart" style="max-height: 200px;"></canvas>
@@ -152,7 +657,7 @@
 
                   <div class="glass-card">
                     <div class="chart-head">
-                      <h3>Fulfillment Split</h3>
+                      <h3><i class="fas fa-truck"></i> Fulfillment Split</h3>
                       <span class="pill">Pickup vs Delivery</span>
                     </div>
                     <canvas id="fulfillmentDonutChart" style="max-height: 200px;"></canvas>
@@ -160,11 +665,11 @@
                 </div>
               </section>
 
-              <!-- Menu -->
+              <!-- Menu Panel -->
               <section id="menuPanel" class="panel-section glass-card" data-panel="menu" hidden>
                 <div class="panel-header">
                   <div>
-                    <h2>Menu Manager</h2>
+                    <h2><i class="fas fa-utensils"></i> Menu Manager</h2>
                     <p class="muted">Create, edit, and manage your menu inventory.</p>
                   </div>
                   <div class="pill" id="menuCount">0 items</div>
@@ -185,7 +690,7 @@
                         <input id="itemTitle" type="text" placeholder="Signature dish" />
                       </label>
 
-                      <label class="field">
+                      <label class="field field-full">
                         Description
                         <textarea id="itemDescription" rows="3"></textarea>
                       </label>
@@ -251,12 +756,12 @@
                     <!-- Media upload -->
                     <div class="media-uploader">
                       <input id="uploadInput" type="file" accept="image/*,video/*" />
-                      <button id="uploadBtn" class="btn btn-ghost" type="button">Upload media</button>
+                      <button id="uploadBtn" class="btn btn-ghost" type="button"><i class="fas fa-upload"></i> Upload media</button>
                     </div>
                     <div id="mediaPreview" class="media-preview"></div>
 
                     <div class="panel-actions">
-                      <button id="saveItemBtn" class="btn btn-primary" type="button">Save item</button>
+                      <button id="saveItemBtn" class="btn btn-primary" type="button"><i class="fas fa-save"></i> Save item</button>
                       <button id="resetItemBtn" class="btn btn-ghost" type="button">Clear</button>
                       <button id="hideItemBtn" class="btn btn-danger" type="button">Archive item</button>
                     </div>
@@ -295,11 +800,11 @@
                 </div>
               </section>
 
-              <!-- Orders -->
+              <!-- Orders Panel -->
               <section id="ordersPanel" class="panel-section glass-card" data-panel="orders" hidden>
                 <div class="panel-header">
                   <div>
-                    <h2>Orders Inbox</h2>
+                    <h2><i class="fas fa-inbox"></i> Orders Inbox</h2>
                     <p class="muted">Track live customer requests and fulfillment status.</p>
                   </div>
                   <div class="pill">New orders: <span id="newOrdersCount">0</span></div>
@@ -319,11 +824,11 @@
                 <div id="ordersList" class="list"></div>
               </section>
 
-              <!-- Profile -->
+              <!-- Profile Panel -->
               <section id="profilePanel" class="panel-section glass-card" data-panel="profile" hidden>
                 <div class="panel-header">
                   <div>
-                    <h2>Profile</h2>
+                    <h2><i class="fas fa-user"></i> Profile</h2>
                     <p class="muted">Manage your storefront profile and contact info.</p>
                   </div>
 
@@ -343,7 +848,7 @@
                   <label class="field">WhatsApp <input id="profileWhatsapp" type="text" /></label>
                   <label class="field">Email <input id="profileEmail" type="email" /></label>
                   <label class="field">Cuisine <input id="profileCuisine" type="text" /></label>
-                  <label class="field">Description <textarea id="profileDescription" rows="3"></textarea></label>
+                  <label class="field field-full">Description <textarea id="profileDescription" rows="3"></textarea></label>
                   <label class="field">Hours <input id="profileHours" type="text" /></label>
                   <label class="field">Address <input id="businessAddress" type="text" /></label>
                   <label class="field">Parish <input id="businessParish" type="text" /></label>
@@ -357,24 +862,62 @@
                 </div>
 
                 <div class="panel-actions">
-                  <button id="saveProfileBtn" class="btn btn-primary" type="button">Save profile</button>
+                  <button id="saveProfileBtn" class="btn btn-primary" type="button"><i class="fas fa-save"></i> Save profile</button>
                 </div>
 
                 <ul id="completionChecklist" class="checklist"></ul>
               </section>
 
-              <!-- Settings -->
+              <!-- Billing Panel -->
+              <section id="billingPanel" class="panel-section glass-card" data-panel="billing" hidden>
+                <div class="panel-header">
+                  <div>
+                    <h2><i class="fas fa-credit-card"></i> Billing</h2>
+                    <p class="muted">Manage your subscription and payment details.</p>
+                  </div>
+                </div>
+
+                <div class="billing-content">
+                  <div class="billing-plan-card">
+                    <div class="current-plan">
+                      <h3>Current Plan</h3>
+                      <div class="plan-name" id="billingPlanName">Starter</div>
+                      <div class="plan-status" id="billingPlanStatus">Active</div>
+                    </div>
+                    <div class="plan-details">
+                      <div class="detail-row">
+                        <span>Monthly Price:</span>
+                        <strong id="billingPlanPrice">$19/mo</strong>
+                      </div>
+                      <div class="detail-row">
+                        <span>Next Billing Date:</span>
+                        <strong id="billingNextDate">—</strong>
+                      </div>
+                      <div class="detail-row">
+                        <span>Menu Item Limit:</span>
+                        <strong id="billingItemLimit">5 items</strong>
+                      </div>
+                    </div>
+                    <div class="plan-actions">
+                      <button id="upgradePlanBtn" class="btn btn-primary"><i class="fas fa-arrow-up"></i> Upgrade Plan</button>
+                      <button id="manageBillingBtn" class="btn btn-ghost"><i class="fas fa-cog"></i> Manage Billing</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Settings Panel -->
               <section id="settingsPanel" class="panel-section glass-card" data-panel="settings" hidden>
                 <div class="panel-header">
                   <div>
-                    <h2>Settings & Help</h2>
+                    <h2><i class="fas fa-cog"></i> Settings & Help</h2>
                     <p class="muted">Session management, refresh controls, and quick start guide.</p>
                   </div>
                 </div>
 
                 <div class="settings-grid">
                   <div class="glass-card">
-                    <h3>📚 Quick Start Guide</h3>
+                    <h3><i class="fas fa-book"></i> Quick Start Guide</h3>
                     <p class="muted" style="margin: 8px 0 16px;">Get up and running in minutes</p>
                     <div style="display: grid; gap: 12px;">
                       <div style="padding: 12px; border-left: 3px solid rgba(255, 59, 48, 0.6); background: rgba(255, 255, 255, 0.04); border-radius: 8px;">
@@ -397,7 +940,7 @@
                   </div>
 
                   <div class="glass-card">
-                    <h3>💡 Pro Tips</h3>
+                    <h3><i class="fas fa-lightbulb"></i> Pro Tips</h3>
                     <p class="muted" style="margin: 8px 0 16px;">Maximize your success</p>
                     <ul style="padding-left: 20px; color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
                       <li>Use high-quality food photos - they increase orders by 40%</li>
@@ -409,13 +952,13 @@
                   </div>
 
                   <div class="glass-card">
-                    <h3>Data</h3>
+                    <h3><i class="fas fa-sync"></i> Data</h3>
                     <p class="muted">Refresh dashboard data.</p>
                     <button id="settingsRefreshBtn" class="btn btn-ghost" type="button">Refresh data</button>
                   </div>
 
                   <div class="glass-card">
-                    <h3>Session</h3>
+                    <h3><i class="fas fa-sign-out-alt"></i> Session</h3>
                     <p class="muted">Log out from the merchant portal.</p>
                     <button id="settingsLogoutBtn" class="btn btn-danger" type="button">Logout</button>
                   </div>
@@ -443,7 +986,7 @@
 
           <div class="order-drawer__footer">
             <a id="drawerWhatsappBtn" class="btn btn-ghost" target="_blank" rel="noopener">
-              WhatsApp customer
+              <i class="fab fa-whatsapp"></i> WhatsApp customer
             </a>
             <button id="markContactedBtn" class="btn btn-ghost" type="button">Mark contacted</button>
             <button id="markReadyBtn" class="btn btn-primary" type="button">Mark ready</button>
@@ -454,7 +997,7 @@
       </section>
     </main>
 
-    <!-- Scripts: load ONCE, and in correct order -->
+    <!-- Scripts -->
     <script src="/public/assets/js/api.js" defer></script>
     <script src="/public/assets/js/formatters.js" defer></script>
     <script src="/public/assets/js/ui.js" defer></script>
