@@ -271,38 +271,90 @@ curl -X POST http://localhost:8080/api/admin/login \
 
 ## Cloud Run (Docker) Deployment
 
-Required environment variables (see `.env.example`):
+### Required Environment Variables
 
-- `PORT` (Cloud Run sets this automatically; default is `8080`)
-- `NODE_ENV`
-- `CORS_ORIGINS`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_DB_URL`
-- `JWT_SECRET`
-- `ADMIN_USERNAME`
-- `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
-- `ADMIN_API_KEY`
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-- `CLOUDINARY_FOLDER`
-- `DEFAULT_HERO_VIDEO_URL`
-- `BRAND_NAME`
+Copy `.env.example` to `.env` and configure the following:
 
-Build and test locally:
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PORT` | Auto | Cloud Run sets this (default: 8080) |
+| `NODE_ENV` | Yes | Set to `production` |
+| `JWT_SECRET` | Yes | Secret for JWT tokens. Generate with `openssl rand -hex 32` |
+| `CORS_ORIGINS` | Yes | Comma-separated allowed origins |
+
+### Admin Authentication
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ADMIN_USERNAME` | Yes | Admin login username |
+| `ADMIN_EMAIL` | Optional | Alternative admin identifier |
+| `ADMIN_PASSWORD` | Yes | Admin login password |
+| `ADMIN_API_KEY` | Optional | API key for service-to-service calls |
+
+### Supabase (Database)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SUPABASE_URL` | Yes | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Service role key (not anon key) |
+| `SUPABASE_DB_URL` | Optional | Direct Postgres connection string |
+
+### Stripe (Subscriptions)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `STRIPE_SECRET_KEY` | Yes | Stripe secret key (sk_live_... or sk_test_...) |
+| `STRIPE_WEBHOOK_SECRET` | Yes | Webhook signing secret (whsec_...) |
+| `STRIPE_PRICE_ID_PLAN1` | Yes | Price ID for Starter plan ($19/mo) |
+| `STRIPE_PRICE_ID_PLAN2` | Yes | Price ID for Growth plan ($36/mo) |
+| `STRIPE_PRICE_ID_PLAN3` | Yes | Price ID for Pro plan ($79/mo) |
+| `PUBLIC_BASE_URL` | Yes | Your app's public URL for Stripe redirects |
+
+### Cloudinary (Media Uploads)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CLOUDINARY_CLOUD_NAME` | Yes | Your Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
+| `CLOUDINARY_FOLDER` | Optional | Upload folder template |
+
+### Optional Branding
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DEFAULT_HERO_VIDEO_URL` | No | Default hero video for storefront |
+| `BRAND_NAME` | No | Custom brand name (default: ClickMenu) |
+
+### Build and Test Locally
 
 ```bash
 docker build -t clickmenu .
 docker run -p 8080:8080 --env-file .env clickmenu
 ```
 
-Deploy to Cloud Run (high level):
+### Deploy to Cloud Run
 
 ```bash
+# Build and push to Container Registry
+gcloud builds submit --tag gcr.io/YOUR_PROJECT/clickmenu
+
+# Deploy to Cloud Run
+gcloud run deploy clickmenu \
+  --image gcr.io/YOUR_PROJECT/clickmenu \
+  --region YOUR_REGION \
+  --platform managed \
+  --allow-unauthenticated \
+  --set-env-vars "NODE_ENV=production,JWT_SECRET=your-secret,..."
+
+# Or deploy from source (auto-builds Dockerfile)
 gcloud run deploy clickmenu \
   --source . \
   --region YOUR_REGION \
   --allow-unauthenticated
 ```
+
+### Setting Environment Variables in Cloud Run Console
+
+1. Go to Cloud Run in Google Cloud Console
+2. Select your service
+3. Click "Edit & Deploy New Revision"
+4. Scroll to "Variables & Secrets"
+5. Add each environment variable from the tables above
+6. Click "Deploy"
+
