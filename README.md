@@ -358,3 +358,119 @@ gcloud run deploy clickmenu \
 5. Add each environment variable from the tables above
 6. Click "Deploy"
 
+
+
+---
+
+## UI/UX Changes (v2.1 — Premium SaaS Upgrade)
+
+### Marketing / Merchant Landing Page
+
+| Feature | Details |
+|---------|---------|
+| **Floating Glass Navbar** | Sticky pill-shaped bar with `backdrop-filter: blur(20px)`, translucent white bg, rounded corners, subtle shadow. Stays at top on scroll. |
+| **Brand Config** | Logo + brand name from env vars (`PUBLIC_BRAND_NAME`, `PUBLIC_BRAND_LOGO_URL`). Uses `data-brand-name` / `data-brand-logo` attributes. |
+| **White + Red Theme** | Marketing page shifted from dark to clean white surfaces with red accents (`#e11d48`). Better contrast, readability, and conversion orientation. |
+| **Hero Section** | Animated gradient + noise grid overlay (CSS-only, no video). `prefers-reduced-motion` disables animations. |
+| **Typography** | Plus Jakarta Sans (Google Fonts). Strong headline hierarchy, `letter-spacing: -0.03em`, clamp-based responsive sizing. |
+| **Micro-interactions** | Hover lift on cards (+translateY), glow shadows, focus-visible outlines, gloss sweep on CTA button, FAQ accordion. |
+| **Section Reveal** | Intersection Observer fade-in animation for Features, Pricing, FAQ sections. |
+| **Mobile Responsive** | Hamburger menu at 1024px. Mobile nav drawer with glass effect. Stacked hero, single-column pricing. |
+
+### Merchant Dashboard
+
+| Feature | Details |
+|---------|---------|
+| **Left Sidebar** | Sticky dark glass sidebar with brand logo, nav links, active state glow, logout button. |
+| **KPI Row** | 6 cards: Orders (7d), Revenue Est., Orders Today, Menu Items, Best Seller, Worst Seller. Font Awesome icons with colored backgrounds. |
+| **Charts** | Chart.js with gradient fills, rounded bars, smooth line tension. Orders trend (7d), Top items, Fulfillment split (doughnut). |
+| **Demo Mode** | If no real order data, generates randomized demo data with yellow "Demo Mode" badge. |
+| **Loading States** | Skeleton rows with shimmer animation. Error banners for API failures. |
+| **Empty States** | Centered icon + message for empty lists. |
+| **Toast System** | Bottom-right toasts with success/error/info variants. Auto-dismiss. |
+| **Sample Menu Item** | Auto-injects "Signature Jerk Chicken" if merchant inventory is empty (idempotent, one-time). |
+
+### Files Changed
+
+| File | What changed |
+|------|-------------|
+| `public/assets/css/merchant.css` | Complete rewrite — white+red marketing theme, dark dashboard, glass effects, animations |
+| `public/assets/js/analytics.js` | Better chart styling, demo data fallback, revenue KPI, best/worst seller |
+| `public/assets/js/config.js` | Brand config system — loads from `/api/config`, falls back to defaults |
+| `public/assets/js/ui.js` | Enhanced skeleton, error, and empty state helpers |
+| `apps/merchant/index.html` | Brand attributes, hamburger menu, reveal sections, sidebar brand |
+| `server.js` | Added `/api/config` endpoint, sample menu item injection |
+| `public/config.js` | GitHub Pages fallback config (committed defaults) |
+
+---
+
+## Brand Config (Cloud Run + GitHub Pages)
+
+### Cloud Run
+
+Set these env vars in your Cloud Run service:
+
+```
+PUBLIC_BRAND_NAME=YourBrandName
+PUBLIC_BRAND_LOGO_URL=https://example.com/logo.png
+```
+
+The frontend calls `/api/config` on load and applies branding to all `[data-brand-name]` and `[data-brand-logo]` elements.
+
+### GitHub Pages
+
+Since GitHub Pages can't read runtime env vars, a static fallback is provided:
+
+- `public/config.js` — committed with default values
+- Frontend checks `window.location.hostname` for `github.io` and skips the API call
+- Edit `public/config.js` to change the GitHub Pages defaults
+
+No secrets are exposed — only public brand config (name + logo URL).
+
+---
+
+## How to Test Locally + on Cloud Run
+
+### Local Testing
+
+```bash
+# Install dependencies
+npm install
+
+# Set env vars
+cp .env.example .env
+# Edit .env with your values
+
+# Start
+npm start
+
+# Visit
+open http://localhost:8080/merchant
+```
+
+### Cloud Run Testing
+
+```bash
+# Build
+gcloud builds submit --tag gcr.io/PROJECT/clickmenu
+
+# Deploy with brand config
+gcloud run deploy clickmenu \
+  --image gcr.io/PROJECT/clickmenu \
+  --set-env-vars "PUBLIC_BRAND_NAME=MyBrand,PUBLIC_BRAND_LOGO_URL=https://..."
+```
+
+---
+
+## Quick QA Checklist
+
+- [ ] **Navbar sticky + translucent** — Floating glass pill at top, stays on scroll
+- [ ] **Hero background loads fast** — CSS-only gradient+grid, no heavy assets
+- [ ] **Merchant dashboard navigation works** — Sidebar links switch panels
+- [ ] **Charts render** — Line chart, bar chart, doughnut chart visible (demo data if no orders)
+- [ ] **Sample item appears only once** — "Signature Jerk Chicken" injected only if inventory empty
+- [ ] **Mobile responsive** — Hamburger menu at 1024px, stacked layouts, no horizontal overflow
+- [ ] **Brand config works** — `/api/config` returns env var values, UI displays them
+- [ ] **No console spam** — No errors in browser console
+- [ ] **Loading states** — Skeleton loaders while fetching
+- [ ] **Toast notifications** — Success/error toasts appear bottom-right
