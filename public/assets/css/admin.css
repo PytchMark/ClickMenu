@@ -654,3 +654,153 @@ textarea:focus {
     justify-content: flex-start;
   }
 }
+
+/* Enhanced Dashboard */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--panel);
+  border-radius: 16px;
+  border: 1px solid var(--panel-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card strong {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, rgba(255, 107, 74, 0.9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card .card-trend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.card .card-trend.up {
+  color: #34c759;
+}
+
+.card .card-trend.down {
+  color: #ff3b30;
+}
+
+.overview-charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .overview-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-panel {
+  min-height: 280px;
+}
+
+.chart-panel h3 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-panel h3 i {
+  color: var(--accent);
+}
+
+.attention-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.attention-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.attention-card .attention-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+}
+
+.attention-card .attention-icon.warning {
+  background: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+}
+
+.attention-card .attention-icon.danger {
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+}
+
+.attention-card .attention-icon.info {
+  background: rgba(0, 122, 255, 0.15);
+  color: #007aff;
+}
+
+.attention-card .attention-content {
+  flex: 1;
+}
+
+.attention-card .attention-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.attention-card .attention-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.attention-card .attention-action {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.attention-card .attention-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
