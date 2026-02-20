@@ -403,9 +403,30 @@ app.get("/api/merchant/me", requireMerchant, async (req, res) => {
   return res.json({ ok: true, profile });
 });
 
+const SAMPLE_MENU_ITEM = {
+  item_id: "SAMPLE-001",
+  title: "Signature Jerk Chicken",
+  description: "Authentic Jamaican jerk chicken, slow-smoked over pimento wood. Served with rice & peas and festival.",
+  category: "Dinner",
+  price: 1500,
+  status: "available",
+  featured: true,
+  image_url: "https://res.cloudinary.com/dd8pjjxsm/image/upload/v1770270558/ChatGPT_Image_Feb_5_2026_12_46_26_AM_mij3uw.png",
+  labels: ["Top Pick", "New"],
+};
+
 const listMerchantMenu = async (req, res) => {
   try {
-    const items = await supabase.getMerchantItems(req.user.storeId);
+    let items = await supabase.getMerchantItems(req.user.storeId);
+    // Auto-inject sample menu item if inventory is empty
+    if (!items || items.length === 0) {
+      try {
+        await supabase.upsertMenuItem(req.user.storeId, SAMPLE_MENU_ITEM);
+        items = await supabase.getMerchantItems(req.user.storeId);
+      } catch (sampleErr) {
+        console.warn("Could not auto-inject sample item:", sampleErr.message);
+      }
+    }
     return res.json({ ok: true, items });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
