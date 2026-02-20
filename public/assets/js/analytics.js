@@ -1,63 +1,81 @@
-// Analytics Service for Merchant Dashboard
+// Analytics Service for Merchant Dashboard — Premium UI
 const Analytics = (() => {
   let ordersChart = null;
   let topItemsChart = null;
   let fulfillmentChart = null;
 
   const CHART_COLORS = {
-    red: 'rgba(255, 59, 48, 0.9)',
-    redLight: 'rgba(255, 107, 74, 0.7)',
+    red: 'rgba(225, 29, 72, 0.9)',
+    redLight: 'rgba(251, 113, 133, 0.7)',
+    redGlow: 'rgba(225, 29, 72, 0.35)',
     white: 'rgba(255, 255, 255, 0.8)',
     gray: 'rgba(255, 255, 255, 0.4)',
-    gradient1: 'rgba(255, 59, 48, 0.8)',
-    gradient2: 'rgba(255, 107, 74, 0.5)',
+    accent: '#e11d48',
+    accentSoft: '#fb7185',
   };
 
   const defaultChartOptions = {
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(15, 15, 15, 0.95)',
+        backgroundColor: 'rgba(10, 10, 11, 0.96)',
         titleColor: '#fff',
-        bodyColor: 'rgba(255, 255, 255, 0.8)',
-        borderColor: 'rgba(255, 59, 48, 0.5)',
+        titleFont: { weight: '700', family: "'Plus Jakarta Sans', sans-serif" },
+        bodyColor: 'rgba(255, 255, 255, 0.75)',
+        bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
+        borderColor: 'rgba(225, 29, 72, 0.4)',
         borderWidth: 1,
-        padding: 12,
+        padding: 14,
+        cornerRadius: 12,
         displayColors: false,
-        callbacks: {
-          title: (items) => items[0].label,
-          label: (item) => `${item.dataset.label}: ${item.formattedValue}`,
-        },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          color: 'rgba(255, 255, 255, 0.6)',
-          font: { size: 11 },
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.06)',
-          drawBorder: false,
-        },
+        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11, family: "'Plus Jakarta Sans'" } },
+        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
       },
       x: {
-        ticks: {
-          color: 'rgba(255, 255, 255, 0.6)',
-          font: { size: 11 },
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.04)',
-          drawBorder: false,
-        },
+        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11, family: "'Plus Jakarta Sans'" } },
+        grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
       },
     },
   };
+
+  // Demo data for when no real data exists
+  const DEMO_ORDERS = (() => {
+    const orders = [];
+    const items = [
+      { item_id: 'SAMPLE-001', title: 'Signature Jerk Chicken', qty: 3 },
+      { item_id: 'ITEM-002', title: 'Ackee & Saltfish', qty: 2 },
+      { item_id: 'ITEM-003', title: 'Festival', qty: 1 },
+      { item_id: 'ITEM-004', title: 'Rum Punch', qty: 2 },
+    ];
+    for (let d = 6; d >= 0; d--) {
+      const date = new Date();
+      date.setDate(date.getDate() - d);
+      const count = Math.floor(Math.random() * 5) + (d < 2 ? 3 : 1);
+      for (let j = 0; j < count; j++) {
+        const pick = items[Math.floor(Math.random() * items.length)];
+        orders.push({
+          created_at: date.toISOString(),
+          fulfillment_type: Math.random() > 0.4 ? 'pickup' : 'delivery',
+          items_json: [{ item_id: pick.item_id, qty: pick.qty }],
+        });
+      }
+    }
+    return orders;
+  })();
+
+  const DEMO_ITEMS = [
+    { item_id: 'SAMPLE-001', title: 'Signature Jerk Chicken' },
+    { item_id: 'ITEM-002', title: 'Ackee & Saltfish' },
+    { item_id: 'ITEM-003', title: 'Festival' },
+    { item_id: 'ITEM-004', title: 'Rum Punch' },
+  ];
 
   // Calculate KPIs from orders and items
   const calculateKPIs = (orders, items) => {
@@ -68,34 +86,32 @@ const Analytics = (() => {
     const ordersToday = orders.filter(o => new Date(o.created_at) >= todayStart);
     const ordersThisWeek = orders.filter(o => new Date(o.created_at) >= weekStart);
 
-    // Count requests per item
+    // Revenue estimate ($)
+    let revenueEst = 0;
+    ordersThisWeek.forEach(o => {
+      if (o.items_json && Array.isArray(o.items_json)) {
+        o.items_json.forEach(i => { revenueEst += (i.price || 1500) * (i.qty || 1); });
+      }
+    });
+
     const itemRequestCounts = {};
     orders.forEach(order => {
       if (order.items_json && Array.isArray(order.items_json)) {
         order.items_json.forEach(item => {
           const itemId = item.itemId || item.item_id;
-          if (itemId) {
-            itemRequestCounts[itemId] = (itemRequestCounts[itemId] || 0) + (item.qty || 1);
-          }
+          if (itemId) itemRequestCounts[itemId] = (itemRequestCounts[itemId] || 0) + (item.qty || 1);
         });
       }
     });
 
-    // Find top and worst performing items
     const itemsWithRequests = Object.entries(itemRequestCounts)
-      .map(([itemId, count]) => ({
-        itemId,
-        count,
-        item: items.find(i => i.item_id === itemId),
-      }))
+      .map(([itemId, count]) => ({ itemId, count, item: items.find(i => i.item_id === itemId) }))
       .filter(i => i.item);
-
     itemsWithRequests.sort((a, b) => b.count - a.count);
 
     const topItem = itemsWithRequests[0];
-    const worstItem = itemsWithRequests[itemsWithRequests.length - 1];
+    const worstItem = itemsWithRequests.length > 1 ? itemsWithRequests[itemsWithRequests.length - 1] : null;
 
-    // Fulfillment split
     const pickupOrders = orders.filter(o => o.fulfillment_type === 'pickup').length;
     const deliveryOrders = orders.filter(o => o.fulfillment_type === 'delivery').length;
     const totalFulfillment = pickupOrders + deliveryOrders;
@@ -103,6 +119,7 @@ const Analytics = (() => {
     return {
       ordersToday: ordersToday.length,
       ordersThisWeek: ordersThisWeek.length,
+      revenueEst,
       totalMenuItems: items.length,
       topItem: topItem ? { name: topItem.item.title, count: topItem.count } : null,
       worstItem: worstItem ? { name: worstItem.item.title, count: worstItem.count } : null,
@@ -111,6 +128,7 @@ const Analytics = (() => {
       pickupCount: pickupOrders,
       deliveryCount: deliveryOrders,
       itemRequestCounts,
+      isDemo: false,
     };
   };
 
@@ -120,116 +138,77 @@ const Analytics = (() => {
     if (!kpiRow) return;
 
     const cards = [
-      {
-        label: 'Orders Today',
-        value: kpis.ordersToday,
-        icon: '📦',
-      },
-      {
-        label: 'Orders This Week',
-        value: kpis.ordersThisWeek,
-        icon: '📊',
-      },
-      {
-        label: 'Total Menu Items',
-        value: kpis.totalMenuItems,
-        icon: '🍽️',
-      },
-      {
-        label: 'Top Seller',
-        value: kpis.topItem ? kpis.topItem.name : 'N/A',
-        subtext: kpis.topItem ? `${kpis.topItem.count} requests` : '',
-        icon: '⭐',
-      },
-      {
-        label: 'Needs Attention',
-        value: kpis.worstItem ? kpis.worstItem.name : 'N/A',
-        subtext: kpis.worstItem ? `${kpis.worstItem.count} requests` : '',
-        icon: '⚠️',
-      },
-      {
-        label: 'Pickup vs Delivery',
-        value: `${kpis.pickupRatio}% / ${kpis.deliveryRatio}%`,
-        icon: '🚗',
-      },
+      { label: 'Orders (7d)', value: kpis.ordersThisWeek, icon: 'fa-shopping-bag', color: '#e11d48' },
+      { label: 'Revenue Est.', value: `$${(kpis.revenueEst / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`, icon: 'fa-dollar-sign', color: '#22c55e' },
+      { label: 'Orders Today', value: kpis.ordersToday, icon: 'fa-bolt', color: '#f59e0b' },
+      { label: 'Menu Items', value: kpis.totalMenuItems, icon: 'fa-utensils', color: '#6366f1' },
+      { label: 'Best Seller', value: kpis.topItem ? kpis.topItem.name : 'N/A', subtext: kpis.topItem ? `${kpis.topItem.count} requests` : '', icon: 'fa-trophy', color: '#f43f5e' },
+      { label: 'Worst Seller', value: kpis.worstItem ? kpis.worstItem.name : 'N/A', subtext: kpis.worstItem ? `${kpis.worstItem.count} requests` : '', icon: 'fa-arrow-down', color: '#94a3b8' },
     ];
 
-    kpiRow.innerHTML = cards
-      .map(
-        (card) => `
-        <div class="kpi-card">
-          <div style="font-size: 2rem; margin-bottom: 8px;">${card.icon}</div>
-          <div class="muted" style="font-size: 0.8rem; margin-bottom: 4px;">${card.label}</div>
-          <strong style="font-size: 1.4rem; color: #ff6b4a;">${card.value}</strong>
-          ${card.subtext ? `<div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-top: 4px;">${card.subtext}</div>` : ''}
+    kpiRow.innerHTML = cards.map(card => `
+      <div class="kpi-card" data-testid="kpi-${card.label.toLowerCase().replace(/[^a-z0-9]/g, '-')}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:${card.color}22;color:${card.color};font-size:0.85rem;">
+            <i class="fas ${card.icon}"></i>
+          </div>
+          <span class="muted" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">${card.label}</span>
         </div>
-      `
-      )
-      .join('');
+        <strong>${card.value}</strong>
+        ${card.subtext ? `<span style="font-size:0.72rem;color:rgba(255,255,255,0.4);">${card.subtext}</span>` : ''}
+      </div>
+    `).join('');
+
+    if (kpis.isDemo) {
+      const badge = document.createElement('div');
+      badge.style.cssText = 'grid-column:1/-1;text-align:center;padding:8px;border-radius:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#f59e0b;font-size:0.78rem;font-weight:600;';
+      badge.innerHTML = '<i class="fas fa-info-circle"></i> Demo Mode — showing sample data. Real data will appear once you receive orders.';
+      kpiRow.appendChild(badge);
+    }
   };
 
-  // Render orders line chart (last 7 days)
+  // Render orders line chart
   const renderOrdersChart = (orders) => {
     const canvas = document.getElementById('ordersLineChart');
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
+    if (ordersChart) ordersChart.destroy();
 
-    // Destroy existing chart
-    if (ordersChart) {
-      ordersChart.destroy();
-    }
-
-    // Prepare data for last 7 days
     const days = [];
     const counts = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-
-      const dayOrders = orders.filter(o => {
-        const orderDate = new Date(o.created_at);
-        return orderDate >= dayStart && orderDate < dayEnd;
-      });
-
+      const dayEnd = new Date(dayStart.getTime() + 86400000);
       days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
-      counts.push(dayOrders.length);
+      counts.push(orders.filter(o => { const d = new Date(o.created_at); return d >= dayStart && d < dayEnd; }).length);
     }
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(225,29,72,0.3)');
+    gradient.addColorStop(1, 'rgba(225,29,72,0.02)');
 
     ordersChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: days,
-        datasets: [
-          {
-            label: 'Orders',
-            data: counts,
-            borderColor: CHART_COLORS.red,
-            backgroundColor: CHART_COLORS.gradient2,
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: CHART_COLORS.red,
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-          },
-        ],
+        datasets: [{
+          label: 'Orders',
+          data: counts,
+          borderColor: CHART_COLORS.red,
+          backgroundColor: gradient,
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: CHART_COLORS.accent,
+          pointBorderColor: '#1a1a1a',
+          pointBorderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          borderWidth: 2.5,
+        }],
       },
-      options: {
-        ...defaultChartOptions,
-        plugins: {
-          ...defaultChartOptions.plugins,
-          tooltip: {
-            ...defaultChartOptions.plugins.tooltip,
-            callbacks: {
-              label: (item) => `Orders: ${item.formattedValue}`,
-            },
-          },
-        },
-      },
+      options: defaultChartOptions,
     });
   };
 
@@ -237,83 +216,59 @@ const Analytics = (() => {
   const renderTopItemsChart = (kpis, items) => {
     const canvas = document.getElementById('topItemsChart');
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
+    if (topItemsChart) topItemsChart.destroy();
 
-    // Destroy existing chart
-    if (topItemsChart) {
-      topItemsChart.destroy();
-    }
-
-    // Get top 5 items by request count
     const topItems = Object.entries(kpis.itemRequestCounts)
-      .map(([itemId, count]) => ({
-        itemId,
-        count,
-        item: items.find(i => i.item_id === itemId),
-      }))
+      .map(([itemId, count]) => ({ itemId, count, item: items.find(i => i.item_id === itemId) }))
       .filter(i => i.item)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
     if (topItems.length === 0) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '14px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = "13px 'Plus Jakarta Sans', sans-serif";
       ctx.textAlign = 'center';
       ctx.fillText('No order data yet', canvas.width / 2, canvas.height / 2);
       return;
     }
 
-    const labels = topItems.map(i => i.item.title.substring(0, 20));
+    const labels = topItems.map(i => i.item.title.length > 18 ? i.item.title.substring(0, 18) + '...' : i.item.title);
     const data = topItems.map(i => i.count);
 
     topItemsChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Requests',
-            data: data,
-            backgroundColor: CHART_COLORS.gradient1,
-            borderColor: CHART_COLORS.red,
-            borderWidth: 1,
-          },
-        ],
+        labels,
+        datasets: [{
+          label: 'Requests',
+          data,
+          backgroundColor: 'rgba(225,29,72,0.7)',
+          borderColor: 'rgba(225,29,72,0.9)',
+          borderWidth: 1,
+          borderRadius: 8,
+          borderSkipped: false,
+        }],
       },
       options: {
         ...defaultChartOptions,
         indexAxis: 'y',
-        plugins: {
-          ...defaultChartOptions.plugins,
-          tooltip: {
-            ...defaultChartOptions.plugins.tooltip,
-            callbacks: {
-              label: (item) => `Requests: ${item.formattedValue}`,
-            },
-          },
-        },
       },
     });
   };
 
-  // Render fulfillment donut chart
+  // Render fulfillment donut
   const renderFulfillmentChart = (kpis) => {
     const canvas = document.getElementById('fulfillmentDonutChart');
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
-
-    // Destroy existing chart
-    if (fulfillmentChart) {
-      fulfillmentChart.destroy();
-    }
+    if (fulfillmentChart) fulfillmentChart.destroy();
 
     if (kpis.pickupCount === 0 && kpis.deliveryCount === 0) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '14px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = "13px 'Plus Jakarta Sans', sans-serif";
       ctx.textAlign = 'center';
       ctx.fillText('No orders yet', canvas.width / 2, canvas.height / 2);
       return;
@@ -323,50 +278,55 @@ const Analytics = (() => {
       type: 'doughnut',
       data: {
         labels: ['Pickup', 'Delivery'],
-        datasets: [
-          {
-            data: [kpis.pickupCount, kpis.deliveryCount],
-            backgroundColor: [CHART_COLORS.red, CHART_COLORS.redLight],
-            borderColor: 'rgba(15, 15, 15, 0.9)',
-            borderWidth: 2,
-          },
-        ],
+        datasets: [{
+          data: [kpis.pickupCount, kpis.deliveryCount],
+          backgroundColor: [CHART_COLORS.red, CHART_COLORS.redLight],
+          borderColor: 'rgba(10,10,11,0.95)',
+          borderWidth: 3,
+        }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
+        cutout: '65%',
         plugins: {
           legend: {
             display: true,
             position: 'bottom',
             labels: {
-              color: 'rgba(255, 255, 255, 0.8)',
-              padding: 15,
-              font: { size: 12 },
+              color: 'rgba(255,255,255,0.7)',
+              padding: 16,
+              font: { size: 12, family: "'Plus Jakarta Sans'" },
+              usePointStyle: true,
+              pointStyleWidth: 10,
             },
           },
-          tooltip: {
-            ...defaultChartOptions.plugins.tooltip,
-            callbacks: {
-              label: (item) => `${item.label}: ${item.formattedValue} orders`,
-            },
-          },
+          tooltip: defaultChartOptions.plugins.tooltip,
         },
       },
     });
   };
 
-  // Main render function
+  // Main render
   const render = (orders, items) => {
-    const kpis = calculateKPIs(orders, items);
+    let useOrders = orders;
+    let useItems = items;
+    let isDemo = false;
+
+    // Fallback to demo data if no real data
+    if (!orders || orders.length === 0) {
+      useOrders = DEMO_ORDERS;
+      useItems = items && items.length > 0 ? items : DEMO_ITEMS;
+      isDemo = true;
+    }
+
+    const kpis = calculateKPIs(useOrders, useItems);
+    kpis.isDemo = isDemo;
     renderKPIs(kpis);
-    renderOrdersChart(orders);
-    renderTopItemsChart(kpis, items);
+    renderOrdersChart(useOrders);
+    renderTopItemsChart(kpis, useItems);
     renderFulfillmentChart(kpis);
   };
 
-  return {
-    render,
-    calculateKPIs,
-  };
+  return { render, calculateKPIs };
 })();
