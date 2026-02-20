@@ -1073,6 +1073,13 @@ body.merchant-body {
   gap: 10px;
 }
 
+.logo-img {
+  height: 45px;
+  width: auto;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .logo-mark {
   width: 40px;
   height: 40px;
