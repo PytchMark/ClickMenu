@@ -1442,29 +1442,29 @@ menuSort.addEventListener("change", (event) => {
 });
 
 const boot = async () => {
-  // Start with login view visible, dashboard hidden
-  loginView.hidden = false;
-  dashboardView.hidden = true;
-  
-  // Initialize dashboard section (but don't show yet)
+  // Initialize dashboard section
   setSection("dashboard");
   
   // Check for existing token
   const token = localStorage.getItem("merchant_token");
-  if (!token) return;
+  
+  if (!token) {
+    // Show landing page for new visitors
+    showView('landing');
+    return;
+  }
   
   try {
     const profileData = await Api.merchant.me();
     if (!profileData?.profile) {
-      resetToLogin();
+      resetToLanding();
       return;
     }
     
     state.profile = profileData.profile;
     
-    // Hide login, show dashboard
-    loginView.hidden = true;
-    dashboardView.hidden = false;
+    // Show dashboard for authenticated users
+    showView('dashboard');
     
     // Restore last active section
     setSection(getStoredSection());
@@ -1473,10 +1473,117 @@ const boot = async () => {
     await loadDashboard(state.profile);
   } catch (error) {
     if (!handleAuthError(error)) {
-      UI.toast(error.message, "error");
+      // If auth fails, show landing
+      resetToLanding();
     }
   }
 };
+
+// ============ LANDING PAGE EVENT LISTENERS ============
+
+// Header buttons
+document.getElementById('showLoginBtn')?.addEventListener('click', () => showView('login'));
+document.getElementById('showSignupBtn')?.addEventListener('click', () => showView('signup'));
+
+// Hero buttons
+document.getElementById('heroSignupBtn')?.addEventListener('click', () => showView('signup'));
+document.getElementById('heroLoginBtn')?.addEventListener('click', () => showView('login'));
+
+// Back buttons
+document.getElementById('backToLandingFromLogin')?.addEventListener('click', () => showView('landing'));
+document.getElementById('backToLandingFromSignup')?.addEventListener('click', () => showView('landing'));
+
+// Login footer link to signup
+document.getElementById('switchToSignupFromLogin')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('signup');
+});
+
+// Pricing plan buttons (on landing page)
+document.querySelectorAll('.pricing-card .btn-plan').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const plan = btn.dataset.plan;
+    state.signupData.plan = plan;
+    showView('signup');
+    // Pre-select the plan in signup wizard
+    setTimeout(() => {
+      document.querySelectorAll('.signup-plan-card').forEach((card) => {
+        card.classList.toggle('selected', card.dataset.plan === plan);
+      });
+    }, 100);
+  });
+});
+
+// ============ SIGNUP WIZARD EVENT LISTENERS ============
+
+// Step 1 next button
+document.getElementById('signupNext1')?.addEventListener('click', () => {
+  if (validateSignupStep(1)) {
+    setSignupStep(2);
+  }
+});
+
+// Step 2 navigation
+document.getElementById('signupBack2')?.addEventListener('click', () => setSignupStep(1));
+document.getElementById('signupNext2')?.addEventListener('click', () => {
+  if (validateSignupStep(2)) {
+    setSignupStep(3);
+  }
+});
+
+// Step 3 navigation
+document.getElementById('signupBack3')?.addEventListener('click', () => setSignupStep(2));
+document.getElementById('signupSubmit')?.addEventListener('click', () => {
+  submitSignup();
+});
+
+// Plan selection in signup wizard
+document.querySelectorAll('.signup-plan-card').forEach((card) => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.signup-plan-card').forEach((c) => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.signupData.plan = card.dataset.plan;
+  });
+});
+
+// Go to dashboard after signup
+document.getElementById('goToDashboard')?.addEventListener('click', () => {
+  goToDashboardAfterSignup();
+});
+
+// Copy store ID button
+document.querySelectorAll('.copy-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const type = btn.dataset.copy;
+    let text = '';
+    if (type === 'storeId') {
+      text = document.getElementById('successStoreId').textContent;
+    }
+    if (text && text !== '—') {
+      navigator.clipboard.writeText(text).then(() => {
+        UI.toast('Copied to clipboard', 'success');
+      }).catch(() => {
+        UI.toast('Failed to copy', 'error');
+      });
+    }
+  });
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-question').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    
+    // Close all FAQ items
+    document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+    
+    // Toggle current item
+    if (!isOpen) {
+      item.classList.add('open');
+    }
+  });
+});
 
 clearItemForm();
 boot();
