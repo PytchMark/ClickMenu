@@ -996,7 +996,153 @@ const loadDashboard = async (profileOverride = null) => {
   renderItemsList();
   renderOrders();
   setProfileForm();
+  renderBillingPanel();
 };
+
+// ============ BILLING PANEL ============
+const PLAN_CONFIG = {
+  plan1: { name: 'Starter', price: 19, maxItems: 5, maxImages: 2, maxVideos: 0 },
+  plan2: { name: 'Growth', price: 36, maxItems: 15, maxImages: 5, maxVideos: 1 },
+  plan3: { name: 'Pro', price: 79, maxItems: 999, maxImages: 10, maxVideos: 3 },
+};
+
+const renderBillingPanel = () => {
+  const profile = state.profile || {};
+  const planTier = profile.plan_tier || 'plan1';
+  const plan = PLAN_CONFIG[planTier] || PLAN_CONFIG.plan1;
+  
+  // Current plan info
+  const billingPlanName = document.getElementById('billingPlanName');
+  const billingPlanPrice = document.getElementById('billingPlanPrice');
+  const billingItemLimit = document.getElementById('billingItemLimit');
+  const billingPlanStatus = document.getElementById('billingPlanStatus');
+  
+  if (billingPlanName) billingPlanName.textContent = plan.name;
+  if (billingPlanPrice) billingPlanPrice.textContent = `$${plan.price}/mo`;
+  if (billingItemLimit) billingItemLimit.textContent = plan.maxItems === 999 ? 'Unlimited' : `${plan.maxItems} items`;
+  if (billingPlanStatus) {
+    billingPlanStatus.textContent = profile.subscription_status || 'Active';
+    billingPlanStatus.className = 'plan-status';
+  }
+  
+  // Usage stats
+  const itemCount = state.items?.length || 0;
+  const usagePercent = Math.min(100, Math.round((itemCount / plan.maxItems) * 100));
+  
+  const usageItemsFill = document.getElementById('usageItemsFill');
+  const usageItemsCount = document.getElementById('usageItemsCount');
+  const usageItemsLimit = document.getElementById('usageItemsLimit');
+  const usageOrdersCount = document.getElementById('usageOrdersCount');
+  const usageRevenue = document.getElementById('usageRevenue');
+  
+  if (usageItemsFill) usageItemsFill.style.width = `${usagePercent}%`;
+  if (usageItemsCount) usageItemsCount.textContent = itemCount;
+  if (usageItemsLimit) usageItemsLimit.textContent = plan.maxItems === 999 ? '∞' : plan.maxItems;
+  
+  // Calculate this month's orders
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthOrders = (state.orders || []).filter(o => new Date(o.created_at) >= monthStart);
+  
+  if (usageOrdersCount) usageOrdersCount.textContent = monthOrders.length;
+  
+  // Estimate revenue (assuming average order value)
+  const avgOrderValue = 25; // Placeholder
+  const estimatedRevenue = monthOrders.length * avgOrderValue;
+  if (usageRevenue) usageRevenue.textContent = `$${estimatedRevenue.toLocaleString()}`;
+  
+  // Update plan comparison buttons
+  document.querySelectorAll('.plan-select-btn').forEach(btn => {
+    const btnPlan = btn.dataset.plan;
+    if (btnPlan === planTier) {
+      btn.textContent = 'Current Plan';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-ghost');
+      btn.disabled = true;
+    } else {
+      const isUpgrade = Object.keys(PLAN_CONFIG).indexOf(btnPlan) > Object.keys(PLAN_CONFIG).indexOf(planTier);
+      btn.textContent = isUpgrade ? 'Upgrade' : 'Downgrade';
+      btn.classList.toggle('btn-primary', isUpgrade);
+      btn.classList.toggle('btn-ghost', !isUpgrade);
+      btn.disabled = false;
+    }
+  });
+};
+
+const handlePlanUpgrade = async (newPlan) => {
+  try {
+    // In production, this would redirect to Stripe Checkout
+    const response = await fetch('/api/billing/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('merchant_token')}`,
+      },
+      body: JSON.stringify({
+        storeId: state.profile?.store_id,
+        planTier: newPlan,
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.url) {
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } else if (data.message) {
+      UI.toast(data.message, 'info');
+    } else {
+      UI.toast('Unable to start checkout. Please try again.', 'error');
+    }
+  } catch (error) {
+    UI.toast('Checkout failed. Please try again.', 'error');
+    console.error('Checkout error:', error);
+  }
+};
+
+// Plan upgrade button listeners
+document.querySelectorAll('.plan-select-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const plan = btn.dataset.plan;
+    if (plan && !btn.disabled) {
+      handlePlanUpgrade(plan);
+    }
+  });
+});
+
+document.getElementById('upgradePlanBtn')?.addEventListener('click', () => {
+  // Scroll to plan comparison
+  const plansSection = document.querySelector('.billing-plans');
+  if (plansSection) {
+    plansSection.scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+document.getElementById('manageBillingBtn')?.addEventListener('click', async () => {
+  try {
+    // In production, this would redirect to Stripe Customer Portal
+    const response = await fetch('/api/billing/create-portal-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('merchant_token')}`,
+      },
+      body: JSON.stringify({
+        storeId: state.profile?.store_id,
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      UI.toast(data.message || 'Billing portal not available yet.', 'info');
+    }
+  } catch (error) {
+    UI.toast('Unable to open billing portal.', 'error');
+  }
+});
 
 const loginBtn = document.getElementById("loginBtn");
 loginBtn.addEventListener("click", async () => {
