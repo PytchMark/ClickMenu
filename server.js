@@ -77,6 +77,15 @@ app.get("/admin", sendApp("admin"));
 
 app.get("/", (req, res) => res.redirect("/storefront"));
 
+// Brand config endpoint (env-var driven)
+app.get("/api/config", (req, res) => {
+  res.json({
+    ok: true,
+    brandName: process.env.PUBLIC_BRAND_NAME || "ClickMenuJA",
+    brandLogoUrl: process.env.PUBLIC_BRAND_LOGO_URL || "https://res.cloudinary.com/dd8pjjxsm/image/upload/v1771556041/IMG-20260219-WA0080_msvwo2.jpg",
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
