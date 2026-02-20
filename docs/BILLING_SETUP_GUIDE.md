@@ -1,8 +1,8 @@
-# ClickMenu Billing & Stripe Integration Guide
+# QuickMenuJA Billing & Stripe Integration Guide
 
 ## Overview
 
-ClickMenu now supports a 3-tier subscription system with graceful fallback when Stripe is not configured. The app will run and function normally without Stripe API keys, showing merchants a "payment setup coming next" message.
+QuickMenuJA now supports a 3-tier subscription system with graceful fallback when Stripe is not configured. The app will run and function normally without Stripe API keys, showing merchants a "payment setup coming next" message.
 
 ## Subscription Plans
 
@@ -125,22 +125,22 @@ STRIPE_PRICE_ID_PLAN3=price_...
 2. Click **Add product**
 3. Create three products:
 
-**Product 1: ClickMenu Starter**
-- Name: ClickMenu Starter
+**Product 1: QuickMenuJA Starter**
+- Name: QuickMenuJA Starter
 - Description: 14-day free trial, then $X/month
 - Pricing: Recurring subscription
 - Add **Price**: Choose your pricing (e.g., $19/month)
 - Trial period: 14 days
 - Copy the **Price ID** (starts with `price_`)
 
-**Product 2: ClickMenu Growth**
-- Name: ClickMenu Growth
+**Product 2: QuickMenuJA Growth**
+- Name: QuickMenuJA Growth
 - Pricing: $X/month (e.g., $49/month)
 - Trial: 17 days
 - Copy the Price ID
 
-**Product 3: ClickMenu Unlimited**
-- Name: ClickMenu Unlimited
+**Product 3: QuickMenuJA Unlimited**
+- Name: QuickMenuJA Unlimited
 - Pricing: $X/month (e.g., $99/month)
 - No trial (or custom)
 - Copy the Price ID

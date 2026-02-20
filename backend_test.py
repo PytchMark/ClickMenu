@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 import json
 
-class ClickMenuAPITester:
+class QuickMenuJAAPITester:
     def __init__(self, base_url="https://5dd12104-11ca-4032-9007-a9e4354e352f.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.tests_run = 0
@@ -128,10 +128,10 @@ class ClickMenuAPITester:
 
 def main():
     print("=" * 60)
-    print("🧪 ClickMenuJA Backend API Test Suite")
+    print("🧪 QuickMenuJA Backend API Test Suite")
     print("=" * 60)
     
-    tester = ClickMenuAPITester()
+    tester = QuickMenuJAAPITester()
     
     # Test core API endpoints
     print("\n📡 Testing Core API Endpoints...")

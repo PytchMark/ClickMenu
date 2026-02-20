@@ -1,4 +1,4 @@
-// ClickMenu Brand Config System
+// QuickMenuJA Brand Config System
 // Cloud Run: reads from /api/config endpoint (env vars)
 // GitHub Pages: falls back to defaults below
 const Config = (() => {
@@ -7,7 +7,7 @@ const Config = (() => {
   const MOCK_MODE = isGitHubPages;
 
   // Defaults (used by GitHub Pages or before config loads)
-  let brandName = 'ClickMenuJA';
+  let brandName = 'QuickMenuJA';
   let brandLogoUrl = 'https://res.cloudinary.com/dd8pjjxsm/image/upload/v1771556041/IMG-20260219-WA0080_msvwo2.jpg';
 
   const loadBrandConfig = async () => {

@@ -85,7 +85,7 @@ app.get("/", (req, res) => res.redirect("/storefront"));
 app.get("/api/config", (req, res) => {
   res.json({
     ok: true,
-    brandName: process.env.PUBLIC_BRAND_NAME || "ClickMenuJA",
+    brandName: process.env.PUBLIC_BRAND_NAME || "QuickMenuJA",
     brandLogoUrl: process.env.PUBLIC_BRAND_LOGO_URL || "https://res.cloudinary.com/dd8pjjxsm/image/upload/v1771556041/IMG-20260219-WA0080_msvwo2.jpg",
   });
 });
@@ -1028,7 +1028,7 @@ app.use((error, req, res, next) => {
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`ClickMenu server running on 0.0.0.0:${PORT}`);
+  console.log(`QuickMenuJA server running on 0.0.0.0:${PORT}`);
   if (!process.env.JWT_SECRET) {
     console.error(
       "JWT_SECRET is not set. Provide a strong JWT_SECRET in Cloud Run environment variables."

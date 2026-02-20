@@ -1,7 +1,7 @@
-# ClickMenuJA — Product Requirements Document
+# QuickMenuJA — Product Requirements Document
 
 ## Original Problem Statement
-Premium SaaS UI/UX upgrade for ClickMenuJA across:
+Premium SaaS UI/UX upgrade for QuickMenuJA across:
 1. Storefront / Merchant marketing page (white+red theme, floating glass navbar, animated hero)
 2. Merchant dashboard (sidebar nav, KPI analytics, chart rendering, loading/error states)
 3. Env-var driven branding (Cloud Run + GitHub Pages fallback)
