@@ -876,6 +876,7 @@
                 </div>
 
                 <div class="billing-content">
+                  <!-- Current Plan Summary -->
                   <div class="billing-plan-card">
                     <div class="current-plan">
                       <h3>Current Plan</h3>
@@ -899,6 +900,75 @@
                     <div class="plan-actions">
                       <button id="upgradePlanBtn" class="btn btn-primary"><i class="fas fa-arrow-up"></i> Upgrade Plan</button>
                       <button id="manageBillingBtn" class="btn btn-ghost"><i class="fas fa-cog"></i> Manage Billing</button>
+                    </div>
+                  </div>
+
+                  <!-- Usage Stats -->
+                  <div class="billing-usage glass-card">
+                    <h3><i class="fas fa-chart-pie"></i> Usage This Month</h3>
+                    <div class="usage-grid">
+                      <div class="usage-stat">
+                        <div class="usage-label">Menu Items</div>
+                        <div class="usage-bar">
+                          <div class="usage-fill" id="usageItemsFill" style="width: 0%"></div>
+                        </div>
+                        <div class="usage-count"><span id="usageItemsCount">0</span> / <span id="usageItemsLimit">5</span></div>
+                      </div>
+                      <div class="usage-stat">
+                        <div class="usage-label">Orders Received</div>
+                        <div class="usage-value" id="usageOrdersCount">0</div>
+                      </div>
+                      <div class="usage-stat">
+                        <div class="usage-label">Est. Revenue</div>
+                        <div class="usage-value" id="usageRevenue">$0</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Plan Comparison -->
+                  <div class="billing-plans glass-card">
+                    <h3><i class="fas fa-th-large"></i> Compare Plans</h3>
+                    <div class="plans-comparison">
+                      <div class="plan-option" data-plan="plan1">
+                        <div class="plan-option-header">
+                          <span class="plan-tier">Starter</span>
+                          <span class="plan-price">$19<small>/mo</small></span>
+                        </div>
+                        <ul class="plan-features">
+                          <li><i class="fas fa-check"></i> 5 menu items</li>
+                          <li><i class="fas fa-check"></i> 2 images per item</li>
+                          <li><i class="fas fa-check"></i> Basic analytics</li>
+                          <li><i class="fas fa-check"></i> WhatsApp integration</li>
+                        </ul>
+                        <button class="btn btn-ghost plan-select-btn" data-plan="plan1">Current Plan</button>
+                      </div>
+                      <div class="plan-option recommended" data-plan="plan2">
+                        <div class="plan-badge">Popular</div>
+                        <div class="plan-option-header">
+                          <span class="plan-tier">Growth</span>
+                          <span class="plan-price">$36<small>/mo</small></span>
+                        </div>
+                        <ul class="plan-features">
+                          <li><i class="fas fa-check"></i> 15 menu items</li>
+                          <li><i class="fas fa-check"></i> 5 images per item</li>
+                          <li><i class="fas fa-check"></i> 1 video per item</li>
+                          <li><i class="fas fa-check"></i> Priority support</li>
+                        </ul>
+                        <button class="btn btn-primary plan-select-btn" data-plan="plan2">Upgrade</button>
+                      </div>
+                      <div class="plan-option" data-plan="plan3">
+                        <div class="plan-option-header">
+                          <span class="plan-tier">Pro</span>
+                          <span class="plan-price">$79<small>/mo</small></span>
+                        </div>
+                        <ul class="plan-features">
+                          <li><i class="fas fa-check"></i> Unlimited items</li>
+                          <li><i class="fas fa-check"></i> 10 images per item</li>
+                          <li><i class="fas fa-check"></i> 3 videos per item</li>
+                          <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        </ul>
+                        <button class="btn btn-ghost plan-select-btn" data-plan="plan3">Upgrade</button>
+                      </div>
                     </div>
                   </div>
                 </div>
