@@ -993,8 +993,8 @@ app.use((error, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`ClickMenu server running on ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`ClickMenu server running on 0.0.0.0:${PORT}`);
   if (!process.env.JWT_SECRET) {
     console.error(
       "JWT_SECRET is not set. Provide a strong JWT_SECRET in Cloud Run environment variables."
