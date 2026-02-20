@@ -1,85 +1,70 @@
-# ClickMenuJa - Product Requirements Document
+# ClickMenuJA — Product Requirements Document
 
-## Overview
-ClickMenuJa is a SaaS web application for food merchants in Jamaica. It provides a storefront for customers, a merchant dashboard for store management, and an admin portal for platform operations.
+## Original Problem Statement
+Premium SaaS UI/UX upgrade for ClickMenuJA across:
+1. Storefront / Merchant marketing page (white+red theme, floating glass navbar, animated hero)
+2. Merchant dashboard (sidebar nav, KPI analytics, chart rendering, loading/error states)
+3. Env-var driven branding (Cloud Run + GitHub Pages fallback)
+4. Sample menu item injection for empty inventories
+5. README.md documentation
 
-## Tech Stack
-- **Frontend**: Vanilla HTML/CSS/JavaScript (no React)
-- **Backend**: Node.js with Express
-- **Database**: Supabase (PostgreSQL)
-- **Payments**: Stripe (subscription billing)
-- **Media**: Cloudinary (image/video uploads)
-- **Deployment**: Google Cloud Run
+## Architecture
+- **Backend**: Node.js + Express (server.js) on port 8080
+- **Database**: Supabase (mock mode when not configured)
+- **Frontend**: Vanilla HTML/CSS/JS (apps/merchant, apps/storefront, apps/admin)
+- **Assets**: public/assets/css/ + public/assets/js/
+- **Hosting**: Cloud Run (primary), GitHub Pages (static preview)
 
-## Core Features
+## User Personas
+- **Merchant**: Jamaican food business owner. Needs simple dashboard, menu management, order tracking.
+- **Customer**: End user browsing storefront, placing order requests via WhatsApp.
+- **Admin**: Platform admin managing stores and analytics.
 
-### 1. Storefront (`/storefront`)
-- Customer-facing menu view
-- Store search by ID
-- Cart/tray builder
-- Order request submission via WhatsApp
+## Core Requirements (Static)
+- Marketing page converts visitors to merchant signups
+- Dashboard provides real-time analytics and menu management
+- Brand config is externalized via env vars
+- Works in mock mode without Supabase for demos
 
-### 2. Merchant Portal (`/merchant`)
-- **Landing Page**: SaaS marketing funnel with pricing
-- **Signup Wizard**: 4-step onboarding (Store Info → Branding → Plan → Success)
-- **Dashboard**: KPIs, charts, quick actions
-- **Menu Manager**: CRUD with plan-based limits
-- **Orders Inbox**: Status management, WhatsApp integration
-- **Billing**: Plan comparison, usage stats, Stripe integration
-- **Profile**: Store customization
-- **Settings**: Help guides, session management
+## What's Been Implemented (2026-02-20)
+- [x] Floating glass navbar (translucent, pill-shaped, sticky, mobile hamburger)
+- [x] White + Red marketing theme (from dark to clean conversion-oriented)
+- [x] Animated gradient + grid hero background (CSS-only, prefers-reduced-motion safe)
+- [x] Plus Jakarta Sans typography (premium, non-generic)
+- [x] Section reveal animations (IntersectionObserver)
+- [x] Feature cards with hover lift and glow
+- [x] Pricing cards with "Most Popular" badge
+- [x] FAQ accordion
+- [x] Brand config system (/api/config + data-brand-* attributes)
+- [x] GitHub Pages fallback (public/config.js)
+- [x] KPI row: Orders 7d, Revenue Est., Orders Today, Menu Items, Best Seller, Worst Seller
+- [x] Chart.js analytics: Orders trend, Top items, Fulfillment split
+- [x] Demo mode fallback with labeled sample data
+- [x] Enhanced UI utilities (skeleton, error, empty state helpers)
+- [x] Sample menu item injection (Signature Jerk Chicken) on empty inventory
+- [x] CSP updated for Cloudinary images and Google Fonts
+- [x] README updated with QA checklist and brand config docs
+- [x] Testing agent validation (100% backend, 95%+ frontend)
 
-### 3. Admin Portal (`/admin`)
-- **Overview Dashboard**: KPIs, charts, attention items
-- **Merchant Management**: Search, filter, pagination, bulk actions
-- **Menu Moderation**: Cross-platform item review
-- **Order Management**: Status updates, filtering
-- **Analytics**: Platform-wide metrics
+## Prioritized Backlog
+### P0 (Critical)
+- None remaining
 
-## Pricing Plans
-| Plan | Price | Items | Images/Item | Videos/Item |
-|------|-------|-------|-------------|-------------|
-| Starter | $19/mo | 5 | 2 | 0 |
-| Growth | $36/mo | 15 | 5 | 1 |
-| Pro | $79/mo | Unlimited | 10 | 3 |
+### P1 (Important)
+- Storefront customer page UI upgrade (matching white+red theme)
+- Dashboard real data wiring (when Supabase is configured)
+- Mobile drawer for dashboard sidebar
 
-## What's Been Implemented
+### P2 (Nice to Have)
+- Dark mode toggle
+- Page transition animations (Framer-style)
+- Parallax scroll effects on hero
+- Notification center in dashboard
+- Export analytics to CSV
 
-### Phase 1: Merchant Landing Funnel ✅ (Feb 20, 2026)
-- New SaaS landing page with hero, features, pricing, FAQ
-- Multi-step signup wizard (4 steps)
-- View navigation between landing/login/signup/dashboard
-- ClickMenu logo branding throughout app
-
-### Phase 2: Merchant Portal Restructure ✅ (Feb 20, 2026)
-- Enhanced billing panel with usage stats and plan comparison
-- Plan-based menu item limits with warnings
-- Upgrade flow with Stripe Checkout placeholders
-- CSS improvements for billing and pill variants
-
-### Phase 3: Admin Portal Upgrades ✅ (Feb 20, 2026)
-- Enhanced overview dashboard with 4 KPI cards
-- Orders trend chart (7 days)
-- Merchant distribution pie chart
-- Attention items section (flagged, pending, inactive)
-- Improved ops pulse with icons
-
-## Backlog (P1)
-- [ ] Stripe webhook integration for subscription status
-- [ ] Storefront sticky header
-- [ ] Trust cues and micro-interactions
-- [ ] Dev mode with mock data
-
-## Backlog (P2)
-- [ ] Advanced analytics
-- [ ] Email notifications
-- [ ] Multi-language support
-- [ ] Mobile app wrapper
-
-## Environment Variables
-See `.env.example` and `README.md` for complete list of required Cloud Run environment variables.
-
-## Deployment
-```bash
-gcloud run deploy clickmenu --source . --region us-central1
-```
+## Next Tasks
+1. Storefront (customer-facing) page UI polish
+2. Signup wizard visual refinement
+3. Dashboard mobile sidebar drawer
+4. Charts with real Supabase data integration
+5. Performance audit (Lighthouse)
