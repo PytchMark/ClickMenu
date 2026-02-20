@@ -593,7 +593,7 @@ const renderAnalytics = () => {
 
 const loadOverview = async () => {
   try {
-    overviewCards.innerHTML = UI.skeleton(3);
+    overviewCards.innerHTML = UI.skeleton(4);
     opsPulse.innerHTML = UI.skeleton(2);
     overviewOrders.innerHTML = UI.skeleton(2);
     const [summaryData, ordersData] = await Promise.all([
@@ -605,6 +605,8 @@ const loadOverview = async () => {
     renderSummary();
     renderOpsPulse();
     renderOverviewOrders();
+    renderAdminCharts();
+    renderAdminAttention();
   } catch (error) {
     if (!handleAuthError(error)) {
       UI.toast(error.message, "error");
