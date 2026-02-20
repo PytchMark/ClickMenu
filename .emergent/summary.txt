@@ -1,0 +1,160 @@
+<analysis>**original_problem_statement:**
+The project is a production upgrade for an existing SaaS web application called ClickMenuJa. The application has a storefront, a merchant dashboard, and an admin portal, using Supabase for the database, Stripe for billing, and Cloudinary for media.
+
+The primary objectives are:
+1.  **Convert Merchant Area to SaaS Flow**: Create a merchant landing funnel, a multi-step signup wizard, and implement a new pricing structure.
+2.  **Merchant Authentication**: Implement a custom JWT-based authentication system using a passcode, not Supabase Auth.
+3.  **Restructure Merchant Portal**: Convert the single-page merchant area into a tabbed interface (Dashboard, Menu Manager, Orders, Profile, Billing, Settings).
+4.  **Production-Grade Merchant Dashboard**: The dashboard must show KPIs, charts (e.g., order trends, top items), and actionable insights.
+5.  **Enhanced Menu Manager**: Implement CRUD for menu items with support for images, videos, categories, and plan-based limits.
+6.  **Improved Orders Inbox**: Add status filters, search, and a detailed order drawer.
+7.  **Scalable Admin Portal**: Add an admin dashboard, merchant management features (search, pagination, pause/unpause), and order filtering.
+8.  **Storefront Polish**: Add a sticky header, How it Works section, trust cues, and micro-interactions.
+9.  **Stripe Integration**: Implement placeholders for Stripe Checkout and webhooks.
+10. **Database Updates**: Update the Supabase schema and document it.
+11. **Cloud Run Compatibility**: Ensure the app runs with environment variables and has a  file.
+12. **GitHub Workflow**: Provide a  mode with mock data for testing.
+13. **Premium Feel**: Add loading states, empty states, and micro-interactions throughout the application.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The project is an existing application with a vanilla HTML/CSS/JavaScript frontend and a backend (likely Node.js/Express, though not fully confirmed). The codebase includes separate sections for the public storefront, the merchant portal, and an admin area. The agent has explored the file structure and reviewed key files like , and the HTML, CSS, and JS files for the merchant and public-facing pages.
+
+**Last working item**:
+The agent was implementing the new Merchant Landing Funnel and Signup Wizard as per Phase 1 of its plan. This involved a major refactor of the merchant portal's JavaScript logic.
+- **Last item agent was working:** The agent generated a large  operation to completely rewrite . This change is intended to handle the new merchant landing page logic, the multi-step signup wizard, and fix the tabbed panel navigation.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** After applying the large JavaScript change, the agent should first use the  on the  route to verify the page renders without crashing. Following that, the  is required to test the functionality of the new landing page CTAs, the signup wizard flow, and the tabbed navigation in the merchant portal.
+- **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:** The major refactor of  has been generated but not yet applied. This is a high-risk, large-scale change that is critical for the new merchant flow.
+    -   **Priority**: P0
+    -   **Attempted fixes**: An agent generated a  command to overwrite the entire file.
+    -   **Next debug checklist**:
+        1.  Execute the pending  tool call on .
+        2.  After execution, take a screenshot of the  page to check for rendering errors.
+        3.  Inspect the browser's developer console for any JavaScript errors that would prevent the new logic from running.
+    -   **Why fix this issue and what will be achieved with the fix?** This file contains the core client-side logic for the entire merchant portal. Applying this fix is necessary to enable the new landing page, the signup wizard, and the corrected tab-based navigation. It is the cornerstone of the new SaaS onboarding flow.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on other issue:** None
+
+**In progress Task List**:
+-   **Task 1**: Implement Phase 1: Merchant Landing Funnel + Signup Wizard.
+    -   **Priority**: P0
+    -   **Where to resume**: The agent has already updated , , and . The immediate next step is to execute the prepared  operation on .
+    -   **What will be achieved with this?** This will complete the initial implementation of the merchant landing page and the structural framework for the new multi-step signup wizard.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+**Upcoming Tasks (P1):**
+- **Phase 2: Merchant Portal Restructure**:
+    - Fix panel visibility so only one tab's content shows at a time in .
+    - Add a Billing tab to the sidebar navigation in .
+    - Implement a production-grade dashboard with KPIs and charts ().
+    - Enforce plan-based limits in the Menu Manager ( and backend).
+    - Enhance the Orders Inbox with an improved drawer ().
+- **Phase 5: Stripe Integration Placeholders**:
+    - Add backend endpoints for  and a webhook handler in .
+    - Implement trial logic for the Starter plan.
+
+**Future Tasks (P2):**
+- **Phase 3: Admin Portal Upgrades**: Implement admin dashboard, merchant management (with pagination), and order management.
+- **Phase 4: Storefront Polish**: Add sticky header, trust cues, and micro-interactions to  and .
+- **Loading/Empty States**: Add loading indicators, empty state messages, and micro-interactions throughout the merchant portal and storefront.
+- **Phase 6: Database & Documentation**: Update the Supabase schema and update the  with deployment notes.
+- **Dev Mode**: Implement a  mode with mock data as requested in the problem statement to facilitate testing without real secrets.
+
+**Completed work in this session**
+-   **SaaS Plan Configuration**: Updated  with the new pricing and feature details for the Starter, Growth, and Pro plans.
+-   **Merchant Landing Page UI**: Rewrote  to create the new SaaS landing funnel structure, including a hero section, feature blocks, pricing table, and FAQ.
+-   **Merchant Landing Page Styling**: Appended new CSS rules to  to style the new landing page components.
+
+**Earlier issues found/mentioned but not fixed**
+None. The current work is focused on new feature development, not bug fixes from a previous session.
+
+**Known issue recurrence from previous fork**
+None. This is the first session on this project.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Frontend**: Vanilla HTML, CSS, JavaScript. No frameworks like React or Vue.
+-   **Backend**: Node.js with Express (inferred from  and ).
+-   **Database**: Supabase (PostgreSQL).
+-   **Authentication**: Custom JWT-based system (to be implemented).
+-   **Architecture**: Monolithic structure with frontend assets served from a  directory.
+
+**key DB schema**
+As specified in the problem statement (not yet verified in code):
+-   **profiles**: Merchant records, including .
+-   **menu_items**: Store's menu items.
+-   **order_requests**: Customer order requests.
+-   **subscriptions**: Merchant subscription status from Stripe.
+-   **audit_logs**: System audit trail.
+
+**changes in tech stack**
+None. The project continues with the existing stack of vanilla JS, Node.js, Supabase, Stripe, and Cloudinary.
+
+**All files of reference**
+-   : Updated to contain the new SaaS pricing plans.
+-   : Rewritten to serve as the new merchant landing/funnel page.
+-   : Updated with styles for the new landing page.
+-   : The target of a large, pending update for the portal's core logic.
+-   : The main backend application file (viewed for context).
+
+**Areas that need refactoring**:
+-   : Currently undergoing a major refactoring to separate concerns (landing page vs. authenticated portal), manage the signup wizard state, and properly handle the tabbed interface. The original file mixed all logic, which the current refactor aims to fix.
+
+**key api endpoints**
+None have been implemented or modified yet. The problem statement requires endpoints for:
+-   Merchant authentication (login with Store ID/Email + passcode).
+-   Stripe: , .
+-   Menu, Order, and Profile CRUD operations for the merchant portal.
+
+**Critical Info for New Agent**
+-   This is an **upgrade**, not a rebuild. You must work within the existing vanilla JS and Node.js structure. Avoid introducing new frameworks.
+-   A very large, high-risk  operation for  is pending. This is the immediate next step and is crucial for the new merchant onboarding flow. Be prepared to debug it extensively after application.
+-   The project is being implemented in phases. The current focus is **Phase 1: Merchant Landing Funnel + Signup Wizard**.
+-   The user has confirmed to use test keys for Stripe and Cloudinary, which will be added later during deployment to Cloud Run.
+
+**documents and test reports created in this job**
+None.
+
+**Last 10 User Messages and any pending HUMAN messages**
+- **User Message**: you are connected to the repo. And still here is the url if needed: https://github.com/PytchMark/ClickMenu.git
+- **User Message**: use test keys. we will add the real keys afterwards when pushing the build on google cloud run.
+- **User Message**: I have cloudinary keys and will add them when deploying via cloud run
+- **User Message**: I will add them in the cloud run env vars
+- **User Message**: Gmail
+- **User Message**: Yes
+- **Summary**: The user confirmed the agent should proceed with the project, use test/placeholder keys for integrations (Stripe, Cloudinary), and that they will handle secrets via Cloud Run environment variables later.
+
+**Project Health Check:**
+-   **Broken**: The merchant portal () is currently in a broken state due to the partial implementation of the new landing funnel. The JavaScript logic is about to be replaced, so the page is not functional.
+-   **Mocked**: No parts are explicitly mocked yet, but the plan is to use placeholder keys for Stripe and Cloudinary.
+
+**3rd Party Integrations**
+-   **Supabase**: Database and auth validation (though custom JWT auth is a new requirement).
+-   **Stripe**: Subscription billing.
+-   **Cloudinary**: Media storage.
+
+**Testing status**
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** []
+-   **Known regressions:** None identified yet.
+
+**Credentials to test flow:**
+None required at this stage.
+
+**What agent forgot to execute**
+- The agent has not yet executed the large  operation it prepared for . This is the immediate next action required to continue the task.
+- The agent has not implemented the  mode with mock data, which was a requirement in the GITHUB WORKFLOW section of the problem statement. This should be added to the backlog.</analysis>
