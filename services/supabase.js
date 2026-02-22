@@ -441,7 +441,7 @@ const merchantLogin = async ({ identifier, storeIdOrEmail, passcode, password })
     const profile = mockState.profiles.find((item) =>
       isEmail ? item.profile_email === lookup : item.store_id === lookup
     );
-    if (!profile || profile.password !== credential || profile.status !== "active") {
+    if (!profile || profile.password !== credential) {
       return null;
     }
     return profile;
@@ -451,7 +451,7 @@ const merchantLogin = async ({ identifier, storeIdOrEmail, passcode, password })
     ? await query.eq("profile_email", lookup).maybeSingle()
     : await query.eq("store_id", lookup).maybeSingle();
   if (error) throw error;
-  if (!data || data.password !== credential || data.status !== "active") {
+  if (!data || data.password !== credential) {
     return null;
   }
   return data;
