@@ -379,8 +379,9 @@ app.post("/api/merchant/login", async (req, res) => {
       return res.status(401).json({ ok: false, error: "Invalid credentials" });
     }
     console.info("Merchant profile found", { storeId: profile.store_id });
-    if (profile.status !== "active") {
-      console.warn("Merchant login blocked - status not active", {
+    const loginAllowedStatuses = new Set(["active", "pending_payment"]);
+    if (!loginAllowedStatuses.has(profile.status)) {
+      console.warn("Merchant login blocked - status not allowed", {
         identifier: lookup,
         status: profile.status,
       });
