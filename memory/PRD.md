@@ -1,70 +1,109 @@
-# QuickMenuJA — Product Requirements Document
+# QuickMenuJA - Product Requirements Document
 
 ## Original Problem Statement
-Premium SaaS UI/UX upgrade for QuickMenuJA across:
-1. Storefront / Merchant marketing page (white+red theme, floating glass navbar, animated hero)
-2. Merchant dashboard (sidebar nav, KPI analytics, chart rendering, loading/error states)
-3. Env-var driven branding (Cloud Run + GitHub Pages fallback)
-4. Sample menu item injection for empty inventories
-5. README.md documentation
+QuickMenuJA merchant portal needed production readiness with:
+- Premium UI/UX overhaul for merchant portal
+- Stripe integration fix (subscriptions)
+- Migration from Cloudinary to Supabase for image storage
+- Smooth, reliable menu item management via modal workflow
+- Live Menu feature for Growth+ plans
 
 ## Architecture
-- **Backend**: Node.js + Express (server.js) on port 8080
-- **Database**: Supabase (mock mode when not configured)
-- **Frontend**: Vanilla HTML/CSS/JS (apps/merchant, apps/storefront, apps/admin)
-- **Assets**: public/assets/css/ + public/assets/js/
-- **Hosting**: Cloud Run (primary), GitHub Pages (static preview)
+- **Frontend**: Vanilla HTML/CSS/JS (not React)
+- **Backend**: Node.js Express server on port 3000
+- **Proxy**: Python FastAPI on port 8001 (forwards /api/* to Node)
+- **Database**: MongoDB via Supabase (mock mode when not configured)
+- **Auth**: JWT tokens for merchant authentication
+- **Payments**: Stripe for subscriptions
 
 ## User Personas
-- **Merchant**: Jamaican food business owner. Needs simple dashboard, menu management, order tracking.
-- **Customer**: End user browsing storefront, placing order requests via WhatsApp.
-- **Admin**: Platform admin managing stores and analytics.
+1. **Merchant/Restaurant Owner**: Primary user managing their digital menu
+2. **Customer**: Views storefront menus and places orders
+3. **Admin**: Platform administrator (separate admin app)
 
-## Core Requirements (Static)
-- Marketing page converts visitors to merchant signups
-- Dashboard provides real-time analytics and menu management
-- Brand config is externalized via env vars
-- Works in mock mode without Supabase for demos
+## Core Requirements
+- Merchant signup with 14-day free trial (card required)
+- Menu item CRUD with modal-based workflow
+- Order inbox management
+- Dashboard analytics (KPIs, charts)
+- Profile management
+- Billing/subscription management
+- Live Menu feature (Pro/Growth plans only)
 
-## What's Been Implemented (2026-02-20)
-- [x] Floating glass navbar (translucent, pill-shaped, sticky, mobile hamburger)
-- [x] White + Red marketing theme (from dark to clean conversion-oriented)
-- [x] Animated gradient + grid hero background (CSS-only, prefers-reduced-motion safe)
-- [x] Plus Jakarta Sans typography (premium, non-generic)
-- [x] Section reveal animations (IntersectionObserver)
-- [x] Feature cards with hover lift and glow
-- [x] Pricing cards with "Most Popular" badge
-- [x] FAQ accordion
-- [x] Brand config system (/api/config + data-brand-* attributes)
-- [x] GitHub Pages fallback (public/config.js)
-- [x] KPI row: Orders 7d, Revenue Est., Orders Today, Menu Items, Best Seller, Worst Seller
-- [x] Chart.js analytics: Orders trend, Top items, Fulfillment split
-- [x] Demo mode fallback with labeled sample data
-- [x] Enhanced UI utilities (skeleton, error, empty state helpers)
-- [x] Sample menu item injection (Signature Jerk Chicken) on empty inventory
-- [x] CSP updated for Cloudinary images and Google Fonts
-- [x] README updated with QA checklist and brand config docs
-- [x] Testing agent validation (100% backend, 95%+ frontend)
+---
+
+## What's Been Implemented
+
+### Session 1 (Date: 2026-03-13)
+
+#### Production Readiness Fixes
+- [x] Fixed JavaScript null reference errors preventing navigation
+- [x] Updated CSP to allow CDN scripts (Chart.js, Stripe.js, FontAwesome)
+- [x] Fixed Stripe initialization with emergent test key
+- [x] Removed failing Cloudinary video background
+
+#### Premium UI/UX Overhaul
+- [x] Added Playfair Display + DM Sans font pairing
+- [x] Enhanced KPI cards with glassmorphism effects
+- [x] Premium modal styling with backdrop blur
+- [x] Sidebar with active state indicator bars
+- [x] Loading spinner animations
+- [x] Gold accent color for premium features
+
+#### Trial & Pricing Updates
+- [x] Changed from 30-day to 14-day free trial
+- [x] Removed "No credit card required" messaging
+- [x] Added "Live Menu & Daily Specials" to Growth/Pro plan features
+
+#### Live Menu Feature (New)
+- [x] Live Menu panel in dashboard sidebar (PRO badge)
+- [x] Plan gating for Growth+ subscribers
+- [x] Daily Specials section:
+  - Create/Edit/Delete specials modal
+  - Special pricing, quantity limits, expiration time
+  - Activate/pause functionality
+- [x] Time-Based Menus section:
+  - Enable/disable toggle
+  - Breakfast/Lunch/Dinner time slot configuration
+- [x] Quick Availability toggles for menu items
+- [x] Plan returned in merchant login response
+
+---
 
 ## Prioritized Backlog
-### P0 (Critical)
-- None remaining
 
-### P1 (Important)
-- Storefront customer page UI upgrade (matching white+red theme)
-- Dashboard real data wiring (when Supabase is configured)
-- Mobile drawer for dashboard sidebar
+### P0 (Critical for Launch)
+- [ ] Supabase production credentials configuration
+- [ ] Stripe products/prices creation in Stripe dashboard
+- [ ] Stripe webhook endpoint configuration
+
+### P1 (High Priority)
+- [ ] Daily specials persistence to database
+- [ ] Time-based menu enforcement on storefront
+- [ ] Live Menu display on public storefront
+- [ ] Card requirement enforcement at signup (Stripe checkout)
 
 ### P2 (Nice to Have)
-- Dark mode toggle
-- Page transition animations (Framer-style)
-- Parallax scroll effects on hero
-- Notification center in dashboard
-- Export analytics to CSV
+- [ ] Quick Stats email digest feature
+- [ ] Push notifications for order updates
+- [ ] Menu item bulk import/export
+- [ ] Multi-language support
+
+### P3 (Future)
+- [ ] Multi-branch support
+- [ ] Custom branding options
+- [ ] Advanced analytics dashboard
+- [ ] Mobile app for merchants
+
+---
 
 ## Next Tasks
-1. Storefront (customer-facing) page UI polish
-2. Signup wizard visual refinement
-3. Dashboard mobile sidebar drawer
-4. Charts with real Supabase data integration
-5. Performance audit (Lighthouse)
+1. Configure Supabase credentials in deployment environment
+2. Set up Stripe products and webhook
+3. Persist daily specials to database
+4. Display specials on customer storefront
+5. Enforce time-based menus on storefront
+
+## Technical Debt
+- Remove remaining Cloudinary references once Supabase storage is fully configured
+- Clean up mock data from supabase.js service

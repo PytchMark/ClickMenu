@@ -2019,9 +2019,6 @@ function initLiveMenuPanel() {
   const timeBasedMenuToggle = document.getElementById('timeBasedMenuToggle');
   const timeMenuConfig = document.getElementById('timeMenuConfig');
   
-  console.log('initLiveMenuPanel called, state.profile:', state.profile);
-  console.log('hasLiveMenuAccess:', hasLiveMenuAccess());
-  
   if (!hasLiveMenuAccess()) {
     if (planGate) planGate.hidden = false;
     if (addSpecialBtn) addSpecialBtn.disabled = true;
