@@ -39,10 +39,14 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
-        "img-src": ["'self'", "https://res.cloudinary.com", "data:", "https:", process.env.SUPABASE_URL].filter(Boolean),
-        "media-src": ["'self'", "https://res.cloudinary.com", "data:", process.env.SUPABASE_URL].filter(Boolean),
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://js.stripe.com"],
+        "img-src": ["'self'", "https://res.cloudinary.com", "data:", "https:", "blob:", process.env.SUPABASE_URL].filter(Boolean),
+        "media-src": ["'self'", "https://res.cloudinary.com", "data:", "blob:", process.env.SUPABASE_URL].filter(Boolean),
         "font-src": ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+        "connect-src": ["'self'", "https:", "wss:", process.env.SUPABASE_URL].filter(Boolean),
+        "frame-src": ["'self'", "https://js.stripe.com"],
       },
     },
   })

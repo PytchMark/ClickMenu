@@ -91,7 +91,7 @@ const state = {
   },
 };
 
-menuSort.dataset.auto = "true";
+if (menuSort) menuSort.dataset.auto = "true";
 
 const isAuthError = (error) =>
   error && ["Invalid token", "Missing token", "Forbidden"].includes(error.message);
@@ -872,8 +872,10 @@ const setProfileForm = () => {
   document.getElementById("ownerEmail").value = state.profile.owner_email || "";
   document.getElementById("instagramHandle").value = state.profile.instagram || "";
   document.getElementById("tiktokHandle").value = state.profile.tiktok || "";
-  document.getElementById("pickupEnabled").checked = state.profile.pickup_enabled ?? true;
-  document.getElementById("deliveryEnabled").checked = state.profile.delivery_enabled ?? true;
+  const pickupEl = document.getElementById("pickupEnabled");
+  const deliveryEl = document.getElementById("deliveryEnabled");
+  if (pickupEl) pickupEl.checked = state.profile.pickup_enabled ?? true;
+  if (deliveryEl) deliveryEl.checked = state.profile.delivery_enabled ?? true;
   renderProfileCompletion();
   renderStorefrontPreview();
 };
@@ -896,16 +898,19 @@ const getProfileCompletion = (profile = {}) => {
 
 const renderProfileCompletion = () => {
   const completion = getProfileCompletion(state.profile || {});
-  completionValue.textContent = `${completion.percent}%`;
-  completionBar.style.width = `${completion.percent}%`;
-  completionChecklist.innerHTML = completion.missing.length
-    ? completion.missing
-        .map((item) => `<div class="checklist-item">Missing ${item}</div>`)
-        .join("")
-    : `<div class="checklist-item complete">All essential fields complete.</div>`;
+  if (completionValue) completionValue.textContent = `${completion.percent}%`;
+  if (completionBar) completionBar.style.width = `${completion.percent}%`;
+  if (completionChecklist) {
+    completionChecklist.innerHTML = completion.missing.length
+      ? completion.missing
+          .map((item) => `<div class="checklist-item">Missing ${item}</div>`)
+          .join("")
+      : `<div class="checklist-item complete">All essential fields complete.</div>`;
+  }
 };
 
 const renderMediaPreview = (imageUrl, videoUrl) => {
+  if (!mediaPreview) return;
   mediaPreview.innerHTML = "";
   if (imageUrl) {
     const img = document.createElement("img");
@@ -930,6 +935,7 @@ const updateLabelSelection = (labels = []) => {
 const setAvailabilityFromStatus = (status) => {
   const availableToggle = document.getElementById("itemAvailable");
   const limitedToggle = document.getElementById("itemLimited");
+  if (!availableToggle || !limitedToggle) return;
 
   if (status === "limited") {
     availableToggle.checked = true;
@@ -952,15 +958,25 @@ const getStatusFromAvailability = () => {
 };
 
 const clearItemForm = () => {
-  document.getElementById("itemId").value = "";
-  document.getElementById("itemTitle").value = "";
-  document.getElementById("itemDescription").value = "";
-  document.getElementById("itemCategory").value = "";
-  document.getElementById("itemPrice").value = "";
-  document.getElementById("itemFeatured").checked = false;
-  document.getElementById("itemImageUrl").value = "";
-  document.getElementById("itemVideoUrl").value = "";
-  document.getElementById("customLabel").value = "";
+  const itemId = document.getElementById("itemId");
+  const itemTitle = document.getElementById("itemTitle");
+  const itemDescription = document.getElementById("itemDescription");
+  const itemCategory = document.getElementById("itemCategory");
+  const itemPrice = document.getElementById("itemPrice");
+  const itemFeatured = document.getElementById("itemFeatured");
+  const itemImageUrl = document.getElementById("itemImageUrl");
+  const itemVideoUrl = document.getElementById("itemVideoUrl");
+  const customLabel = document.getElementById("customLabel");
+  
+  if (itemId) itemId.value = "";
+  if (itemTitle) itemTitle.value = "";
+  if (itemDescription) itemDescription.value = "";
+  if (itemCategory) itemCategory.value = "";
+  if (itemPrice) itemPrice.value = "";
+  if (itemFeatured) itemFeatured.checked = false;
+  if (itemImageUrl) itemImageUrl.value = "";
+  if (itemVideoUrl) itemVideoUrl.value = "";
+  if (customLabel) customLabel.value = "";
   updateLabelSelection([]);
   setAvailabilityFromStatus("available");
   renderMediaPreview();
@@ -1167,7 +1183,7 @@ document.getElementById('manageBillingBtn')?.addEventListener('click', async () 
 });
 
 const loginBtn = document.getElementById("loginBtn");
-loginBtn.addEventListener("click", async () => {
+loginBtn?.addEventListener("click", async () => {
   try {
     setInlineError();
     setLoginDebug();
@@ -1214,11 +1230,11 @@ const logoutBtn = document.getElementById("logoutBtn");
 const settingsRefreshBtn = document.getElementById("settingsRefreshBtn");
 const settingsLogoutBtn = document.getElementById("settingsLogoutBtn");
 
-logoutBtn.addEventListener("click", () => {
+logoutBtn?.addEventListener("click", () => {
   resetToLanding();
 });
 
-document.getElementById("refreshBtn").addEventListener("click", async () => {
+document.getElementById("refreshBtn")?.addEventListener("click", async () => {
   try {
     await loadDashboard(state.profile);
     UI.toast("Dashboard refreshed", "success");
@@ -1229,7 +1245,7 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
   }
 });
 
-settingsRefreshBtn.addEventListener("click", async () => {
+settingsRefreshBtn?.addEventListener("click", async () => {
   try {
     await loadDashboard(state.profile);
     UI.toast("Dashboard refreshed", "success");
@@ -1240,7 +1256,7 @@ settingsRefreshBtn.addEventListener("click", async () => {
   }
 });
 
-settingsLogoutBtn.addEventListener("click", () => {
+settingsLogoutBtn?.addEventListener("click", () => {
   resetToLanding();
 });
 
@@ -1251,7 +1267,7 @@ document.querySelectorAll(".sidebar-link").forEach((link) => {
   });
 });
 
-itemsList.addEventListener("click", (event) => {
+itemsList?.addEventListener("click", (event) => {
   const editId = event.target.dataset.edit;
   const toggleId = event.target.dataset.toggle;
   const archiveId = event.target.dataset.archive;
@@ -1325,7 +1341,7 @@ const getSelectedLabels = () => {
 };
 
 const saveItemBtn = document.getElementById("saveItemBtn");
-saveItemBtn.addEventListener("click", async () => {
+saveItemBtn?.addEventListener("click", async () => {
   const payload = {
     item_id: document.getElementById("itemId").value.trim(),
     title: document.getElementById("itemTitle").value.trim(),
@@ -1393,11 +1409,11 @@ saveItemBtn.addEventListener("click", async () => {
   }
 });
 
-document.getElementById("resetItemBtn").addEventListener("click", () => {
+document.getElementById("resetItemBtn")?.addEventListener("click", () => {
   clearItemForm();
 });
 
-document.getElementById("hideItemBtn").addEventListener("click", async () => {
+document.getElementById("hideItemBtn")?.addEventListener("click", async () => {
   const itemId = document.getElementById("itemId").value.trim();
   if (!itemId) {
     UI.toast("Select an item to archive", "error");
@@ -1471,8 +1487,8 @@ const handleUpload = async () => {
   }
 };
 
-uploadBtn.addEventListener("click", handleUpload);
-uploadInput.addEventListener("change", () => {
+uploadBtn?.addEventListener("click", handleUpload);
+uploadInput?.addEventListener("change", () => {
   if (uploadInput.files?.length) {
     handleUpload();
   }
@@ -1552,7 +1568,7 @@ const updateActiveOrderStatus = async (status) => {
   }
 };
 
-ordersList.addEventListener("click", (event) => {
+ordersList?.addEventListener("click", (event) => {
   const openId = event.target.dataset.open;
   if (!openId) return;
   const order = state.orders.find((entry) => entry.request_id === openId);
@@ -1561,12 +1577,12 @@ ordersList.addEventListener("click", (event) => {
   }
 });
 
-closeOrderDrawer.addEventListener("click", closeDrawer);
-orderBackdrop.addEventListener("click", closeDrawer);
+closeOrderDrawer?.addEventListener("click", closeDrawer);
+orderBackdrop?.addEventListener("click", closeDrawer);
 
-markContactedBtn.addEventListener("click", () => updateActiveOrderStatus("confirmed"));
-markReadyBtn.addEventListener("click", () => updateActiveOrderStatus("ready"));
-markClosedBtn.addEventListener("click", () => updateActiveOrderStatus("completed"));
+markContactedBtn?.addEventListener("click", () => updateActiveOrderStatus("confirmed"));
+markReadyBtn?.addEventListener("click", () => updateActiveOrderStatus("ready"));
+markClosedBtn?.addEventListener("click", () => updateActiveOrderStatus("completed"));
 
 document
   .getElementById("saveProfileBtn")
@@ -1611,16 +1627,16 @@ document
     }
   });
 
-document.getElementById("menuSearch").addEventListener("input", renderItemsList);
+document.getElementById("menuSearch")?.addEventListener("input", renderItemsList);
 
 ["menuCategoryFilter", "menuAvailabilityFilter", "menuSort"].forEach((id) => {
   document.getElementById(id).addEventListener("change", renderItemsList);
 });
 
-orderSearch.addEventListener("input", renderOrders);
-orderStatusFilter.addEventListener("change", renderOrders);
+orderSearch?.addEventListener("input", renderOrders);
+orderStatusFilter?.addEventListener("change", renderOrders);
 
-menuSort.addEventListener("change", (event) => {
+menuSort?.addEventListener("change", (event) => {
   event.target.dataset.auto = "false";
 });
 

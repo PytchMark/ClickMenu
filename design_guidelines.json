@@ -1,0 +1,197 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "QuickMenuJA",
+      "tone": "Premium, Culinary, Efficient, Caribbean-Luxe",
+      "keywords": ["Gourmet", "Seamless", "Vibrant", "Professional"]
+    },
+    "typography": {
+      "fonts": {
+        "display": {
+          "family": "Playfair Display",
+          "fallback": "serif",
+          "weights": ["400", "600", "700"],
+          "usage": "Headings (H1-H3), Hero Text, Menu Item Names"
+        },
+        "body": {
+          "family": "DM Sans",
+          "fallback": "sans-serif",
+          "weights": ["400", "500", "700"],
+          "usage": "UI Elements, Paragraphs, Data Tables, Buttons"
+        },
+        "mono": {
+          "family": "JetBrains Mono",
+          "fallback": "monospace",
+          "weights": ["400"],
+          "usage": "Order IDs, API Keys, Technical Data"
+        }
+      },
+      "scale": {
+        "h1": "text-5xl md:text-6xl tracking-tight leading-tight",
+        "h2": "text-3xl md:text-4xl tracking-tight",
+        "h3": "text-2xl font-semibold tracking-wide",
+        "body": "text-base leading-relaxed text-muted-foreground",
+        "small": "text-sm font-medium tracking-wide uppercase text-muted-foreground"
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#e11d48",
+          "foreground": "#ffffff",
+          "50": "#fff1f2",
+          "100": "#ffe4e6",
+          "200": "#fecdd3",
+          "300": "#fda4af",
+          "400": "#fb7185",
+          "500": "#f43f5e",
+          "600": "#e11d48",
+          "700": "#be123c",
+          "800": "#9f1239",
+          "900": "#881337"
+        },
+        "secondary": {
+          "DEFAULT": "#d4af37",
+          "foreground": "#000000",
+          "gold": "#d4af37",
+          "amber": "#fbbf24"
+        },
+        "background": {
+          "DEFAULT": "#09090b",
+          "paper": "#18181b",
+          "subtle": "#27272a"
+        },
+        "foreground": {
+          "DEFAULT": "#fafafa",
+          "muted": "#a1a1aa"
+        },
+        "accent": {
+          "DEFAULT": "#27272a",
+          "highlight": "#e11d48"
+        },
+        "border": "#27272a",
+        "input": "#27272a",
+        "ring": "#e11d48"
+      },
+      "gradients": {
+        "hero": "bg-gradient-to-br from-rose-900/20 via-black to-black",
+        "card": "bg-gradient-to-b from-white/5 to-white/0",
+        "button": "bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600"
+      }
+    },
+    "visual_enhancers": {
+      "glassmorphism": {
+        "default": "backdrop-blur-xl bg-black/40 border border-white/10",
+        "heavy": "backdrop-blur-2xl bg-black/60 border border-white/5"
+      },
+      "shadows": {
+        "card": "shadow-[0_8px_30px_rgb(0,0,0,0.12)]",
+        "glow": "shadow-[0_0_20px_rgba(225,29,72,0.3)]"
+      },
+      "radius": {
+        "card": "rounded-xl",
+        "button": "rounded-full",
+        "input": "rounded-lg"
+      },
+      "textures": {
+        "noise": "bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
+      }
+    },
+    "layout_strategies": {
+      "dashboard": {
+        "type": "Bento Grid",
+        "structure": "Sidebar (Fixed Left) + Header (Sticky Top) + Main Content (Scrollable)",
+        "grid_cols": "grid-cols-1 md:grid-cols-4 lg:grid-cols-12",
+        "gap": "gap-6"
+      },
+      "landing_page": {
+        "type": "Parallax Sections",
+        "hero": "Full screen height, text left, 3D/Image right",
+        "features": "Alternating Zig-Zag layout"
+      }
+    },
+    "components": {
+      "Button": {
+        "base": "inline-flex items-center justify-center rounded-full text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+        "variants": {
+          "default": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(225,29,72,0.3)] hover:scale-[1.02] active:scale-[0.98]",
+          "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-white/20",
+          "ghost": "hover:bg-accent hover:text-accent-foreground",
+          "link": "text-primary underline-offset-4 hover:underline"
+        }
+      },
+      "Card": {
+        "base": "rounded-xl border border-white/10 bg-black/40 text-card-foreground shadow-sm backdrop-blur-md transition-all hover:border-white/20",
+        "header": "flex flex-col space-y-1.5 p-6",
+        "content": "p-6 pt-0",
+        "footer": "flex items-center p-6 pt-0"
+      },
+      "Input": {
+        "base": "flex h-12 w-full rounded-lg border border-input bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+      },
+      "Dialog": {
+        "overlay": "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm",
+        "content": "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-black/90 p-6 shadow-lg duration-200 sm:rounded-xl"
+      }
+    },
+    "assets": {
+      "icons": {
+        "library": "lucide-react",
+        "style": "Stroke 1.5px, Rounded joins",
+        "usage": "Use specific icons for actions (e.g., 'Utensils' for Menu, 'LayoutDashboard' for Dashboard)"
+      },
+      "images": {
+        "hero_bg": {
+            "url": "https://images.unsplash.com/photo-1709396759771-07c3644794c8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwzfHxjaGVmJTIwdXNpbmclMjB0YWJsZXQlMjBpbiUyMG1vZGVybiUyMGRhcmslMjBraXRjaGVufGVufDB8fHx8MTc3MzQzOTU3OHww&ixlib=rb-4.1.0&q=85",
+            "alt": "Chef using tablet in dark kitchen",
+            "usage": "Hero section background with overlay"
+        },
+        "food_showcase_1": {
+            "url": "https://images.unsplash.com/photo-1614706250649-b5ccfc837688?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwzfHxnb3VybWV0JTIwamFtYWljYW4lMjBmb29kJTIwcGxhdGluZyUyMGZpbmUlMjBkaW5pbmd8ZW58MHx8fHwxNzczNDM5NTc3fDA&ixlib=rb-4.1.0&q=85",
+            "alt": "Gourmet plating",
+            "usage": "Feature section - Menu Management"
+        },
+        "food_showcase_2": {
+            "url": "https://images.unsplash.com/photo-1737140789642-9788a3388494?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwamFtYWljYW4lMjBmb29kJTIwcGxhdGluZyUyMGZpbmUlMjBkaW5pbmd8ZW58MHx8fHwxNzczNDM5NTc3fDA&ixlib=rb-4.1.0&q=85",
+            "alt": "Table setting",
+            "usage": "Feature section - Order Tracking"
+        }
+      }
+    },
+    "motion": {
+      "variants": {
+        "fadeIn": {
+          "initial": { "opacity": 0, "y": 20 },
+          "animate": { "opacity": 1, "y": 0 },
+          "transition": { "duration": 0.5, "ease": "easeOut" }
+        },
+        "staggerContainer": {
+          "animate": { "transition": { "staggerChildren": 0.1 } }
+        },
+        "hoverScale": {
+          "whileHover": { "scale": 1.02 },
+          "whileTap": { "scale": 0.98 }
+        }
+      }
+    },
+    "universal_guidelines": [
+      "Dark Mode Default: The app should default to the dark theme defined in colors.",
+      "No Gradients on Text: Keep text solid for readability.",
+      "Use 'sonner' for toasts.",
+      "Use 'lucide-react' for icons.",
+      "Interactive elements must have hover states (change color/scale).",
+      "Forms: Use 'react-hook-form' with 'zod' validation.",
+      "Charts: Use 'recharts' with custom tooltips matching the glassmorphism style.",
+      "Tables: Use '@tanstack/react-table' headless with custom Shadcn UI styling.",
+      "Data-TestID: All interactive elements must have 'data-testid' attributes."
+    ],
+    "instructions_to_main_agent": [
+      "1. SETUP: Initialize a new React project if not present, or create the necessary structure in /app/frontend.",
+      "2. INSTALL: Install Tailwind CSS, Framer Motion, Lucide React, React Hook Form, Zod, Sonner, Recharts, and Shadcn UI components (Button, Card, Input, Dialog, Table, DropdownMenu, etc).",
+      "3. THEME: Configure tailwind.config.js with the colors and fonts defined above.",
+      "4. BUILD: Implement the Landing Page first, then the Dashboard Shell, then the specific functional pages (Menu, Orders).",
+      "5. REUSE: Create a 'PageHeader' component for consistent titles/breadcrumbs.",
+      "6. INTEGRATION: Mock API calls initially, but structure services to connect to the Python backend later."
+    ]
+  }
+}
