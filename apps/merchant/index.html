@@ -78,8 +78,8 @@
               </button>
             </div>
             <div class="hero-trust">
-              <div class="trust-item"><i class="fas fa-check-circle"></i> 30-day free trial</div>
-              <div class="trust-item"><i class="fas fa-check-circle"></i> No credit card required</div>
+              <div class="trust-item"><i class="fas fa-check-circle"></i> 14-day free trial</div>
+              <div class="trust-item"><i class="fas fa-check-circle"></i> Full feature access</div>
               <div class="trust-item"><i class="fas fa-check-circle"></i> Setup in 5 minutes</div>
             </div>
           </div>
@@ -210,7 +210,7 @@
                   <span class="price-amount">19</span>
                   <span class="price-period">/mo</span>
                 </div>
-                <div class="plan-trial">30-day free trial</div>
+                <div class="plan-trial">14-day free trial</div>
               </div>
               <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Max 5 menu items</li>
@@ -239,6 +239,7 @@
                 <li><i class="fas fa-check"></i> Up to 2 videos per item</li>
                 <li><i class="fas fa-check"></i> Advanced stats</li>
                 <li><i class="fas fa-check"></i> Delivery settings</li>
+                <li><i class="fas fa-star text-gold"></i> <strong>Live Menu</strong> & Daily Specials</li>
                 <li><i class="fas fa-check"></i> Priority support</li>
               </ul>
               <button class="btn btn-plan btn-primary" data-plan="plan2" data-testid="select-plan2-btn">Get Started</button>
@@ -258,9 +259,11 @@
                 <li><i class="fas fa-check"></i> Unlimited menu items</li>
                 <li><i class="fas fa-check"></i> Unlimited media</li>
                 <li><i class="fas fa-check"></i> Full analytics suite</li>
-                <li><i class="fas fa-check"></i> Priority support</li>
+                <li><i class="fas fa-star text-gold"></i> <strong>Live Menu</strong> & Daily Specials</li>
+                <li><i class="fas fa-star text-gold"></i> Time-based menus</li>
                 <li><i class="fas fa-check"></i> Multi-branch (coming soon)</li>
                 <li><i class="fas fa-check"></i> Custom branding</li>
+                <li><i class="fas fa-check"></i> Priority support</li>
               </ul>
               <button class="btn btn-plan" data-plan="plan3" data-testid="select-plan3-btn">Get Started</button>
             </div>
@@ -315,7 +318,7 @@
                 <i class="fas fa-chevron-down"></i>
               </button>
               <div class="faq-answer">
-                <p>The Starter plan includes a 30-day free trial with full access to all Starter features. No credit card required to start.</p>
+                <p>The Starter plan includes a 14-day free trial with full access to all Starter features.</p>
               </div>
             </div>
             <div class="faq-item">
@@ -548,7 +551,7 @@
                 <div class="plan-header">
                   <h3>Starter</h3>
                   <div class="plan-price">$19<span>/mo</span></div>
-                  <div class="plan-trial-badge">30-day free trial</div>
+                  <div class="plan-trial-badge">14-day free trial</div>
                 </div>
                 <ul>
                   <li><i class="fas fa-check"></i> Max 5 items</li>
@@ -651,6 +654,10 @@
               </button>
               <button class="sidebar-link" type="button" data-section="menu">
                 <i class="fas fa-utensils"></i> Menu Manager
+              </button>
+              <button class="sidebar-link" type="button" data-section="livemenu">
+                <i class="fas fa-broadcast-tower"></i> Live Menu
+                <span class="sidebar-badge pro">PRO</span>
               </button>
               <button class="sidebar-link" type="button" data-section="orders">
                 <i class="fas fa-inbox"></i> Orders Inbox
@@ -790,6 +797,95 @@
                   </div>
                 </div>
 
+              </section>
+
+              <!-- Live Menu Panel (Pro/Business only) -->
+              <section id="liveMenuPanel" class="panel-section glass-card" data-panel="livemenu" hidden>
+                <div class="panel-header">
+                  <div>
+                    <h2><i class="fas fa-broadcast-tower"></i> Live Menu</h2>
+                    <p class="muted">Manage daily specials, time-based menus, and real-time availability.</p>
+                  </div>
+                  <div id="liveMenuPlanGate" class="plan-gate-badge" hidden>
+                    <i class="fas fa-lock"></i> Growth+ Plan Required
+                  </div>
+                </div>
+
+                <!-- Daily Specials Section -->
+                <div class="live-menu-section">
+                  <div class="section-subheader">
+                    <h3><i class="fas fa-star"></i> Daily Specials</h3>
+                    <button id="addSpecialBtn" class="btn btn-sm btn-primary" data-testid="add-special-btn">
+                      <i class="fas fa-plus"></i> Add Special
+                    </button>
+                  </div>
+                  <p class="helper">Create limited-time offers with special pricing, quantity limits, and expiration times.</p>
+                  
+                  <div id="dailySpecialsList" class="specials-grid">
+                    <!-- Specials will be rendered here -->
+                  </div>
+                </div>
+
+                <!-- Time-Based Menu Section -->
+                <div class="live-menu-section">
+                  <div class="section-subheader">
+                    <h3><i class="fas fa-clock"></i> Time-Based Menus</h3>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="timeBasedMenuToggle" data-testid="time-menu-toggle" />
+                      <span class="toggle-slider"></span>
+                      <span class="toggle-label">Enable</span>
+                    </label>
+                  </div>
+                  <p class="helper">Automatically show different menu items based on time of day.</p>
+                  
+                  <div id="timeMenuConfig" class="time-menu-config" hidden>
+                    <div class="time-slot">
+                      <label class="field">
+                        <span><i class="fas fa-sun"></i> Breakfast</span>
+                        <div class="time-range">
+                          <input type="time" id="breakfastStart" value="06:00" />
+                          <span>to</span>
+                          <input type="time" id="breakfastEnd" value="11:00" />
+                        </div>
+                      </label>
+                    </div>
+                    <div class="time-slot">
+                      <label class="field">
+                        <span><i class="fas fa-utensils"></i> Lunch</span>
+                        <div class="time-range">
+                          <input type="time" id="lunchStart" value="11:00" />
+                          <span>to</span>
+                          <input type="time" id="lunchEnd" value="15:00" />
+                        </div>
+                      </label>
+                    </div>
+                    <div class="time-slot">
+                      <label class="field">
+                        <span><i class="fas fa-moon"></i> Dinner</span>
+                        <div class="time-range">
+                          <input type="time" id="dinnerStart" value="15:00" />
+                          <span>to</span>
+                          <input type="time" id="dinnerEnd" value="22:00" />
+                        </div>
+                      </label>
+                    </div>
+                    <button id="saveTimeMenuBtn" class="btn btn-primary btn-sm" data-testid="save-time-menu-btn">
+                      <i class="fas fa-save"></i> Save Time Settings
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Availability Section -->
+                <div class="live-menu-section">
+                  <div class="section-subheader">
+                    <h3><i class="fas fa-toggle-on"></i> Quick Availability</h3>
+                  </div>
+                  <p class="helper">Instantly mark items as sold out or limited. Changes reflect on your storefront immediately.</p>
+                  
+                  <div id="quickAvailabilityList" class="quick-availability-grid">
+                    <!-- Items will be rendered here -->
+                  </div>
+                </div>
               </section>
 
               <!-- Orders Panel -->
@@ -1164,6 +1260,74 @@
           <div style="flex:1"></div>
           <button id="cancelModalBtn" class="btn btn-ghost" type="button">Cancel</button>
           <button id="saveItemBtn" class="btn btn-primary" type="button">Save Item</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Special Modal -->
+    <div id="specialModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" id="specialModalBackdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="specialModalTitle">Create Daily Special</h2>
+          <button id="closeSpecialModalBtn" class="btn btn-ghost btn-icon"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="form-grid">
+            <label class="field field-full">
+              Select Menu Item
+              <select id="specialItemSelect" data-testid="special-item-select">
+                <option value="">Choose an item...</option>
+              </select>
+            </label>
+
+            <div class="field-row">
+              <label class="field">
+                Special Price ($)
+                <input id="specialPrice" type="number" min="0" step="0.01" placeholder="Discounted price" data-testid="special-price" />
+              </label>
+              <label class="field">
+                Quantity Limit
+                <input id="specialQuantity" type="number" min="1" placeholder="e.g. 20 (optional)" data-testid="special-quantity" />
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field">
+                <span><i class="fas fa-calendar"></i> Start Date</span>
+                <input id="specialStartDate" type="date" data-testid="special-start-date" />
+              </label>
+              <label class="field">
+                <span><i class="fas fa-clock"></i> Expiration Time</span>
+                <input id="specialExpireTime" type="time" placeholder="e.g. 15:00" data-testid="special-expire-time" />
+              </label>
+            </div>
+
+            <label class="field field-full">
+              Special Note (optional)
+              <input id="specialNote" type="text" placeholder="e.g. 'Today only!' or 'Chef's special'" data-testid="special-note" />
+            </label>
+
+            <div class="field field-full">
+              <label class="toggle-switch">
+                <input type="checkbox" id="specialActive" checked data-testid="special-active" />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Activate immediately</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="deleteSpecialBtn" class="btn btn-danger btn-ghost" type="button" hidden data-testid="delete-special-btn">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+          <div style="flex:1"></div>
+          <button id="cancelSpecialModalBtn" class="btn btn-ghost" type="button">Cancel</button>
+          <button id="saveSpecialBtn" class="btn btn-primary" type="button" data-testid="save-special-btn">
+            <i class="fas fa-star"></i> Create Special
+          </button>
         </div>
       </div>
     </div>

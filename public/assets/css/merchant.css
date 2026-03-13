@@ -2488,3 +2488,346 @@ body.merchant-body {
 .radio-card input {
   accent-color: var(--accent);
 }
+
+/* Gold accent for premium features */
+.text-gold { color: #d4af37; }
+
+/* ============================================================
+   LIVE MENU FEATURE STYLES
+   ============================================================ */
+
+/* Sidebar PRO badge */
+.sidebar-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-left: auto;
+}
+
+.sidebar-badge.pro {
+  background: linear-gradient(135deg, #d4af37 0%, #f5d77a 100%);
+  color: #1a1a1a;
+}
+
+/* Plan gate badge */
+.plan-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: var(--radius-pill);
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Live Menu Sections */
+.live-menu-section {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.live-menu-section:last-child {
+  border-bottom: none;
+}
+
+.section-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.section-subheader h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-subheader h3 i {
+  color: var(--accent);
+}
+
+/* Daily Specials Grid */
+.specials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.special-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.special-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.special-card.active {
+  border-color: var(--success);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, transparent 100%);
+}
+
+.special-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.special-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.special-badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.special-badge.live {
+  background: var(--success);
+  color: #fff;
+}
+
+.special-badge.scheduled {
+  background: var(--warning);
+  color: #1a1a1a;
+}
+
+.special-badge.expired {
+  background: var(--muted);
+  color: var(--bg);
+}
+
+.special-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.special-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.special-pricing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.special-original-price {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.special-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.special-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* Time Menu Config */
+.time-menu-config {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--glass);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.time-slot .field {
+  display: grid;
+  gap: 8px;
+}
+
+.time-slot .field span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.time-slot .field span i {
+  color: var(--accent);
+  width: 18px;
+}
+
+.time-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-range input[type="time"] {
+  padding: 10px 14px;
+  background: rgba(5, 5, 5, 0.7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+
+.time-range input[type="time"]:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 44px;
+  height: 24px;
+  background: var(--glass-heavy);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: var(--muted);
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: all 0.25s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--accent);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  background: #fff;
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Quick Availability Grid */
+.quick-availability-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.availability-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.availability-item:hover {
+  border-color: var(--border-strong);
+}
+
+.availability-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.availability-item-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.availability-item-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.availability-status-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.availability-status-btn.available {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.availability-status-btn.limited {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
+.availability-status-btn.sold-out {
+  background: rgba(225, 29, 72, 0.15);
+  color: var(--accent);
+}
+
+/* Empty state */
+.live-menu-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+
+.live-menu-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Plan gate badge hidden state */
+.plan-gate-badge[hidden] { display: none !important; }

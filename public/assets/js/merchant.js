@@ -59,6 +59,7 @@ const markReadyBtn = document.getElementById("markReadyBtn");
 const markClosedBtn = document.getElementById("markClosedBtn");
 
 const billingPanel = document.getElementById("billingPanel");
+const liveMenuPanel = document.getElementById("liveMenuPanel");
 
 const state = {
   profile: null,
@@ -337,6 +338,7 @@ const panelMap = {
   orders: ordersPanel,
   profile: profilePanel,
   billing: billingPanel,
+  livemenu: liveMenuPanel,
   settings: settingsPanel,
 };
 
@@ -365,6 +367,15 @@ const setSection = (section) => {
   
   state.activeSection = section;
   localStorage.setItem(SECTION_STORAGE_KEY, section);
+  
+  // Initialize Live Menu panel when navigating to it
+  if (section === 'livemenu') {
+    setTimeout(() => {
+      if (typeof initLiveMenuPanel === 'function') {
+        initLiveMenuPanel();
+      }
+    }, 100);
+  }
 };
 
 const getStoredSection = () => {
@@ -1979,3 +1990,321 @@ if (typeof Api !== 'undefined' && Api.merchant) {
       return result;
     };
 }
+
+
+// ============ LIVE MENU FEATURE ============
+
+// Live Menu State
+const liveMenuState = {
+  specials: [],
+  timeMenuEnabled: false,
+  timeSlots: {
+    breakfast: { start: '06:00', end: '11:00' },
+    lunch: { start: '11:00', end: '15:00' },
+    dinner: { start: '15:00', end: '22:00' }
+  },
+  editingSpecialId: null
+};
+
+// Check if user has Pro/Growth plan access
+function hasLiveMenuAccess() {
+  const plan = state.profile?.plan || 'free';
+  return ['pro', 'business', 'growth', 'plan2', 'plan3'].includes(plan.toLowerCase());
+}
+
+// Initialize Live Menu Panel
+function initLiveMenuPanel() {
+  const planGate = document.getElementById('liveMenuPlanGate');
+  const addSpecialBtn = document.getElementById('addSpecialBtn');
+  const timeBasedMenuToggle = document.getElementById('timeBasedMenuToggle');
+  const timeMenuConfig = document.getElementById('timeMenuConfig');
+  
+  console.log('initLiveMenuPanel called, state.profile:', state.profile);
+  console.log('hasLiveMenuAccess:', hasLiveMenuAccess());
+  
+  if (!hasLiveMenuAccess()) {
+    if (planGate) planGate.hidden = false;
+    if (addSpecialBtn) addSpecialBtn.disabled = true;
+    if (timeBasedMenuToggle) timeBasedMenuToggle.disabled = true;
+  } else {
+    if (planGate) planGate.hidden = true;
+    if (addSpecialBtn) addSpecialBtn.disabled = false;
+    if (timeBasedMenuToggle) timeBasedMenuToggle.disabled = false;
+  }
+  
+  renderDailySpecials();
+  renderQuickAvailability();
+  
+  // Time menu toggle
+  if (timeBasedMenuToggle) {
+    timeBasedMenuToggle.addEventListener('change', () => {
+      liveMenuState.timeMenuEnabled = timeBasedMenuToggle.checked;
+      if (timeMenuConfig) timeMenuConfig.hidden = !timeBasedMenuToggle.checked;
+    });
+  }
+}
+
+// Render Daily Specials
+const renderDailySpecials = () => {
+  const container = document.getElementById('dailySpecialsList');
+  if (!container) return;
+  
+  if (liveMenuState.specials.length === 0) {
+    container.innerHTML = `
+      <div class="live-menu-empty">
+        <i class="fas fa-star"></i>
+        <p>No daily specials yet. Create your first special to attract customers!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = liveMenuState.specials.map(special => {
+    const item = state.items.find(i => i.item_id === special.itemId);
+    const now = new Date();
+    const expireDate = special.expireTime ? new Date(`${special.startDate}T${special.expireTime}`) : null;
+    const isExpired = expireDate && expireDate < now;
+    const isActive = special.active && !isExpired;
+    const status = isExpired ? 'expired' : (isActive ? 'live' : 'scheduled');
+    
+    return `
+      <div class="special-card ${isActive ? 'active' : ''}" data-special-id="${special.id}">
+        <div class="special-header">
+          <span class="special-title">${item?.title || 'Unknown Item'}</span>
+          <span class="special-badge ${status}">${status.toUpperCase()}</span>
+        </div>
+        <div class="special-meta">
+          ${special.quantity ? `<span><i class="fas fa-box"></i> ${special.quantityRemaining || special.quantity} left</span>` : ''}
+          ${special.expireTime ? `<span><i class="fas fa-clock"></i> Until ${special.expireTime}</span>` : ''}
+          ${special.note ? `<span><i class="fas fa-comment"></i> ${special.note}</span>` : ''}
+        </div>
+        <div class="special-pricing">
+          ${item?.price ? `<span class="special-original-price">$${(item.price / 100).toFixed(2)}</span>` : ''}
+          <span class="special-price">$${(special.price / 100).toFixed(2)}</span>
+        </div>
+        <div class="special-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editSpecial('${special.id}')">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleSpecialActive('${special.id}')">
+            <i class="fas fa-${isActive ? 'pause' : 'play'}"></i> ${isActive ? 'Pause' : 'Activate'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+// Render Quick Availability toggles
+const renderQuickAvailability = () => {
+  const container = document.getElementById('quickAvailabilityList');
+  if (!container) return;
+  
+  if (!state.items || state.items.length === 0) {
+    container.innerHTML = `
+      <div class="live-menu-empty">
+        <i class="fas fa-utensils"></i>
+        <p>Add menu items first to manage their availability.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = state.items.slice(0, 12).map(item => {
+    const status = item.status || 'available';
+    return `
+      <div class="availability-item" data-item-id="${item.item_id}">
+        <div class="availability-item-info">
+          <img class="availability-item-thumb" src="${item.image_url || 'https://via.placeholder.com/40'}" alt="${item.title}" />
+          <span class="availability-item-name">${item.title}</span>
+        </div>
+        <button class="availability-status-btn ${status}" onclick="cycleAvailability('${item.item_id}')" data-testid="availability-${item.item_id}">
+          ${status === 'available' ? 'Available' : status === 'limited' ? 'Limited' : 'Sold Out'}
+        </button>
+      </div>
+    `;
+  }).join('');
+};
+
+// Cycle availability status
+window.cycleAvailability = async (itemId) => {
+  const item = state.items.find(i => i.item_id === itemId);
+  if (!item) return;
+  
+  const statusCycle = { available: 'limited', limited: 'sold_out', sold_out: 'available' };
+  const newStatus = statusCycle[item.status || 'available'];
+  
+  try {
+    await Api.merchant.updateItem({ ...item, status: newStatus });
+    item.status = newStatus;
+    renderQuickAvailability();
+    renderItemsList();
+    UI.toast(`${item.title} marked as ${newStatus.replace('_', ' ')}`, 'success');
+  } catch (error) {
+    UI.toast('Failed to update availability', 'error');
+  }
+};
+
+// Special Modal Functions
+const specialModal = document.getElementById('specialModal');
+const specialModalBackdrop = document.getElementById('specialModalBackdrop');
+
+const openSpecialModal = (editId = null) => {
+  if (!hasLiveMenuAccess()) {
+    UI.toast('Upgrade to Growth or Pro plan to create daily specials', 'info');
+    return;
+  }
+  
+  liveMenuState.editingSpecialId = editId;
+  const modalTitle = document.getElementById('specialModalTitle');
+  const saveBtn = document.getElementById('saveSpecialBtn');
+  const deleteBtn = document.getElementById('deleteSpecialBtn');
+  const itemSelect = document.getElementById('specialItemSelect');
+  
+  // Populate item select
+  if (itemSelect) {
+    itemSelect.innerHTML = '<option value="">Choose an item...</option>' + 
+      state.items.map(item => `<option value="${item.item_id}">${item.title} - $${(item.price / 100).toFixed(2)}</option>`).join('');
+  }
+  
+  if (editId) {
+    const special = liveMenuState.specials.find(s => s.id === editId);
+    if (special) {
+      if (modalTitle) modalTitle.textContent = 'Edit Daily Special';
+      if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+      if (deleteBtn) deleteBtn.hidden = false;
+      
+      // Fill form
+      if (itemSelect) itemSelect.value = special.itemId;
+      const priceInput = document.getElementById('specialPrice');
+      const qtyInput = document.getElementById('specialQuantity');
+      const startInput = document.getElementById('specialStartDate');
+      const expireInput = document.getElementById('specialExpireTime');
+      const noteInput = document.getElementById('specialNote');
+      const activeInput = document.getElementById('specialActive');
+      
+      if (priceInput) priceInput.value = (special.price / 100).toFixed(2);
+      if (qtyInput) qtyInput.value = special.quantity || '';
+      if (startInput) startInput.value = special.startDate || new Date().toISOString().split('T')[0];
+      if (expireInput) expireInput.value = special.expireTime || '';
+      if (noteInput) noteInput.value = special.note || '';
+      if (activeInput) activeInput.checked = special.active;
+    }
+  } else {
+    if (modalTitle) modalTitle.textContent = 'Create Daily Special';
+    if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-star"></i> Create Special';
+    if (deleteBtn) deleteBtn.hidden = true;
+    
+    // Reset form
+    const startInput = document.getElementById('specialStartDate');
+    if (startInput) startInput.value = new Date().toISOString().split('T')[0];
+  }
+  
+  if (specialModal) specialModal.classList.add('show');
+};
+
+const closeSpecialModal = () => {
+  if (specialModal) specialModal.classList.remove('show');
+  liveMenuState.editingSpecialId = null;
+  
+  // Reset form
+  ['specialItemSelect', 'specialPrice', 'specialQuantity', 'specialExpireTime', 'specialNote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const activeInput = document.getElementById('specialActive');
+  if (activeInput) activeInput.checked = true;
+};
+
+const saveSpecial = () => {
+  const itemId = document.getElementById('specialItemSelect')?.value;
+  const price = parseFloat(document.getElementById('specialPrice')?.value) * 100;
+  const quantity = parseInt(document.getElementById('specialQuantity')?.value) || null;
+  const startDate = document.getElementById('specialStartDate')?.value;
+  const expireTime = document.getElementById('specialExpireTime')?.value;
+  const note = document.getElementById('specialNote')?.value?.trim();
+  const active = document.getElementById('specialActive')?.checked;
+  
+  if (!itemId) {
+    UI.toast('Please select a menu item', 'error');
+    return;
+  }
+  
+  if (!price || price <= 0) {
+    UI.toast('Please enter a valid special price', 'error');
+    return;
+  }
+  
+  const special = {
+    id: liveMenuState.editingSpecialId || `special-${Date.now()}`,
+    itemId,
+    price,
+    quantity,
+    quantityRemaining: quantity,
+    startDate: startDate || new Date().toISOString().split('T')[0],
+    expireTime,
+    note,
+    active,
+    createdAt: new Date().toISOString()
+  };
+  
+  if (liveMenuState.editingSpecialId) {
+    const index = liveMenuState.specials.findIndex(s => s.id === liveMenuState.editingSpecialId);
+    if (index >= 0) {
+      liveMenuState.specials[index] = { ...liveMenuState.specials[index], ...special };
+    }
+    UI.toast('Special updated!', 'success');
+  } else {
+    liveMenuState.specials.push(special);
+    UI.toast('Daily special created!', 'success');
+  }
+  
+  closeSpecialModal();
+  renderDailySpecials();
+};
+
+window.editSpecial = (id) => openSpecialModal(id);
+
+window.toggleSpecialActive = (id) => {
+  const special = liveMenuState.specials.find(s => s.id === id);
+  if (special) {
+    special.active = !special.active;
+    renderDailySpecials();
+    UI.toast(special.active ? 'Special activated' : 'Special paused', 'info');
+  }
+};
+
+const deleteSpecial = () => {
+  if (!liveMenuState.editingSpecialId) return;
+  
+  liveMenuState.specials = liveMenuState.specials.filter(s => s.id !== liveMenuState.editingSpecialId);
+  closeSpecialModal();
+  renderDailySpecials();
+  UI.toast('Special deleted', 'success');
+};
+
+// Event Listeners for Live Menu
+document.getElementById('addSpecialBtn')?.addEventListener('click', () => openSpecialModal());
+document.getElementById('closeSpecialModalBtn')?.addEventListener('click', closeSpecialModal);
+document.getElementById('cancelSpecialModalBtn')?.addEventListener('click', closeSpecialModal);
+document.getElementById('saveSpecialBtn')?.addEventListener('click', saveSpecial);
+document.getElementById('deleteSpecialBtn')?.addEventListener('click', deleteSpecial);
+specialModalBackdrop?.addEventListener('click', closeSpecialModal);
+
+document.getElementById('saveTimeMenuBtn')?.addEventListener('click', () => {
+  liveMenuState.timeSlots = {
+    breakfast: {
+      start: document.getElementById('breakfastStart')?.value || '06:00',
+      end: document.getElementById('breakfastEnd')?.value || '11:00'
+    },
+    lunch: {
+      start: document.getElementById('lunchStart')?.value || '11:00',
+      end: document.getElementById('lunchEnd')?.value || '15:00'
+    },
+    dinner: {
+      start: document.getElementById('dinnerStart')?.value || '15:00',
+      end: document.getElementById('dinnerEnd')?.value || '22:00'
+    }
+  };
+  UI.toast('Time-based menu settings saved!', 'success');
+});

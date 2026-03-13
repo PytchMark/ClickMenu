@@ -401,6 +401,7 @@ app.post("/api/merchant/login", async (req, res) => {
       logo_url: profile.logo_url,
       status: profile.status,
       profile_email: profile.profile_email,
+      plan: profile.plan || 'free',
     };
     return res.json({ ok: true, token, merchant, profile: merchant });
   } catch (error) {
