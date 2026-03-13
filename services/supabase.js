@@ -1,7 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
 const { summarizeOrders } = require("./analytics");
-const { uploadFiles } = require("./cloudinary");
 
 const hasSupabase = () => !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -851,7 +850,7 @@ const getAdminOrders = async ({
     orders: orders.map((order) => ({
       ...order,
       store_whatsapp: storeWhatsapps[order.store_id] || null,
-    })),
+      })),
     total: count || 0,
   };
 };
@@ -1132,8 +1131,46 @@ const getAdminAnalytics = async () => {
   return { totals: orderCounts, topMerchants, topItems, deadMerchants };
 };
 
-const uploadMedia = async ({ storeId, itemId, files }) =>
-  uploadFiles({ storeId, itemId, files });
+const uploadFileToSupabase = async ({ storeId, itemId, file }) => {
+  if (!hasSupabase()) throw new Error("Supabase not configured");
+  
+  const fileExt = file.originalname.split('.').pop();
+  const fileName = `${itemId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+  const filePath = `${storeId}/${fileName}`;
+
+  const { data, error } = await supabase.storage
+    .from('menu-items')
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true
+    });
+
+  if (error) throw error;
+  
+  const { data: publicUrlData } = supabase.storage
+    .from('menu-items')
+    .getPublicUrl(filePath);
+    
+  return publicUrlData.publicUrl;
+};
+
+const uploadMedia = async ({ storeId, itemId, files }) => {
+  if (!files || files.length === 0) return [];
+  if (!hasSupabase()) {
+    // Return mock URLs
+    return files.map(
+      (file) =>
+        `https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=80&sig=${encodeURIComponent(
+          file.originalname
+        )}`
+    );
+  }
+  
+  const uploads = await Promise.all(
+    files.map((file) => uploadFileToSupabase({ storeId, itemId, file }))
+  );
+  return uploads;
+};
 
 // Subscription management functions
 const updateSubscriptionInfo = async (storeId, updates) => {

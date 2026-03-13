@@ -1271,7 +1271,7 @@ itemsList.addEventListener("click", (event) => {
     document.getElementById("customLabel").value = "";
     updateLabelSelection(item.labels || []);
     setAvailabilityFromStatus(item.status || "available");
-    renderMediaPreview(item.image_url, item.video_url);
+    renderMediaPreview(item.image_url, item.video_url); if (typeof showItemModal === "function") showItemModal("Edit Item");
     return;
   }
   if (toggleId) {
@@ -1420,7 +1420,7 @@ document.getElementById("hideItemBtn").addEventListener("click", async () => {
 });
 
 const uploadInput = document.getElementById("uploadInput");
-const uploadBtn = document.getElementById("uploadBtn");
+const uploadBtn = document.getElementById("uploadBtn") || document.createElement("button");
 
 const handleUpload = async () => {
   const files = Array.from(uploadInput.files || []);
@@ -1823,4 +1823,143 @@ if (!reduceMotion) {
         : '';
     }
   }, { passive: true });
+}
+
+// ============ NEW MODAL & DRAG-DROP LOGIC ============
+
+const itemModal = document.getElementById('itemModal');
+const openAddItemModalBtn = document.getElementById('openAddItemModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
+const modalTitle = document.getElementById('modalTitle');
+const mediaDropzone = document.getElementById('mediaDropzone');
+const previewImage = document.getElementById('previewImage');
+const dropzonePreview = document.getElementById('dropzonePreview');
+const removeMediaBtn = document.getElementById('removeMediaBtn');
+
+function showItemModal(title = 'Add New Item') {
+  if (modalTitle) modalTitle.textContent = title;
+  if (itemModal) {
+    itemModal.classList.add('show');
+    itemModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function hideItemModal() {
+  if (itemModal) {
+    itemModal.classList.remove('show');
+    itemModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+}
+
+if (openAddItemModalBtn) {
+  openAddItemModalBtn.addEventListener('click', () => {
+    if (typeof clearItemForm === 'function') clearItemForm();
+    showItemModal('Add New Item');
+  });
+}
+
+if (closeModalBtn) closeModalBtn.addEventListener('click', hideItemModal);
+if (cancelModalBtn) cancelModalBtn.addEventListener('click', hideItemModal);
+
+const modalBackdrop = document.getElementById('modalBackdrop');
+if (modalBackdrop) {
+  modalBackdrop.addEventListener('click', hideItemModal);
+}
+
+// Override renderMediaPreview
+window.renderMediaPreview = (imageUrl, videoUrl) => {
+  if (imageUrl || videoUrl) {
+    if (previewImage) previewImage.src = imageUrl || '';
+    if (dropzonePreview) dropzonePreview.hidden = false;
+    if (document.getElementById('dropzonePrompt')) document.getElementById('dropzonePrompt').hidden = true;
+  } else {
+    if (dropzonePreview) dropzonePreview.hidden = true;
+    if (document.getElementById('dropzonePrompt')) document.getElementById('dropzonePrompt').hidden = false;
+    if (previewImage) previewImage.src = '';
+  }
+};
+
+// Drag & Drop
+if (mediaDropzone) {
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    mediaDropzone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    mediaDropzone.addEventListener(eventName, () => mediaDropzone.classList.add('drag-over'), false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    mediaDropzone.addEventListener(eventName, () => mediaDropzone.classList.remove('drag-over'), false);
+  });
+
+  mediaDropzone.addEventListener('drop', handleDrop, false);
+  mediaDropzone.addEventListener('click', () => {
+    const input = document.getElementById('uploadInput');
+    if (input) input.click();
+  });
+}
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  handleFiles(files);
+}
+
+async function handleFiles(files) {
+  if (!files || files.length === 0) return;
+  
+  const file = files[0];
+  const formData = new FormData();
+  formData.append("files", file);
+  formData.append("itemId", document.getElementById("itemId")?.value.trim() || "temp");
+  
+  try {
+    if (mediaDropzone) mediaDropzone.style.opacity = '0.5';
+    
+    // We use the existing Api object
+    if (typeof Api !== 'undefined' && Api.merchant && Api.merchant.uploadMedia) {
+        const data = await Api.merchant.uploadMedia(formData);
+        const url = data.urls?.[0];
+        
+        if (url) {
+          const imgInput = document.getElementById("itemImageUrl");
+          if (imgInput) imgInput.value = url;
+          renderMediaPreview(url);
+          if (typeof UI !== 'undefined') UI.toast("Image uploaded!", "success");
+        }
+    }
+  } catch (error) {
+    if (typeof UI !== 'undefined') UI.toast("Upload failed", "error");
+    console.error(error);
+  } finally {
+    if (mediaDropzone) mediaDropzone.style.opacity = '1';
+  }
+}
+
+if (removeMediaBtn) {
+  removeMediaBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const imgInput = document.getElementById("itemImageUrl");
+    if (imgInput) imgInput.value = "";
+    renderMediaPreview();
+  });
+}
+
+// Proxy saveItem to close modal
+if (typeof Api !== 'undefined' && Api.merchant) {
+    const originalSaveItem = Api.merchant.saveItem;
+    Api.merchant.saveItem = async function(payload) {
+      const result = await originalSaveItem.call(this, payload);
+      hideItemModal();
+      return result;
+    };
 }
