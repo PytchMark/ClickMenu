@@ -99,6 +99,7 @@ app.get("/api/health", (req, res) => {
     ok: true,
     mockMode: !supabase.hasSupabase(),
     supabaseConfigured: supabase.hasSupabase(),
+    stripeConfigured: stripe.hasStripe(),
   });
 });
 

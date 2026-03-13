@@ -267,6 +267,16 @@ body.merchant-body {
   z-index: 0;
 }
 
+.hero-gradient-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 30%, rgba(225,29,72,0.12), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 75% 70%, rgba(212,175,55,0.08), transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* Animated gradient + noise + grid hero background */
 .landing-hero::before {
   content: '';
