@@ -1,109 +1,145 @@
-# QuickMenuJA - Product Requirements Document
+# Quick Menu JA - Product Requirements Document
 
 ## Original Problem Statement
-QuickMenuJA merchant portal needed production readiness with:
-- Premium UI/UX overhaul for merchant portal
-- Stripe integration fix (subscriptions)
-- Migration from Cloudinary to Supabase for image storage
-- Smooth, reliable menu item management via modal workflow
-- Live Menu feature for Growth+ plans
+Digital menu platform for Jamaican restaurants with:
+- Professional merchant portal with "luxe" UI design
+- QR code generation for menus
+- WhatsApp ordering integration
+- Customer reviews and ratings
+- Live Menu feature for daily specials
+- Supabase integration for database
+- Marketing landing page
 
 ## Architecture
-- **Frontend**: Vanilla HTML/CSS/JS (not React)
-- **Backend**: Node.js Express server on port 3000
-- **Proxy**: Python FastAPI on port 8001 (forwards /api/* to Node)
-- **Database**: MongoDB via Supabase (mock mode when not configured)
-- **Auth**: JWT tokens for merchant authentication
-- **Payments**: Stripe for subscriptions
+- **Backend**: Node.js/Express (server.js)
+- **Frontend**: Vanilla JavaScript SPA (merchant.html, merchant.js)
+- **Database**: Supabase (PostgreSQL)
+- **Proxy**: Python/FastAPI (backend/server.py)
+- **Storage**: Supabase Storage (migrating from Cloudinary)
 
 ## User Personas
-1. **Merchant/Restaurant Owner**: Primary user managing their digital menu
-2. **Customer**: Views storefront menus and places orders
-3. **Admin**: Platform administrator (separate admin app)
+1. **Merchants**: Restaurant owners who manage menus, view orders, track reviews
+2. **Customers**: End users who view menus, place orders, leave reviews
+3. **Admins**: Platform administrators managing stores
 
-## Core Requirements
-- Merchant signup with 14-day free trial (card required)
-- Menu item CRUD with modal-based workflow
-- Order inbox management
-- Dashboard analytics (KPIs, charts)
-- Profile management
-- Billing/subscription management
-- Live Menu feature (Pro/Growth plans only)
-
----
+## Core Requirements (Static)
+- Merchant authentication and profile management
+- Menu item CRUD operations
+- QR code generation for storefronts
+- WhatsApp-based ordering
+- Customer reviews and ratings
+- Daily specials (Live Menu - PRO feature)
+- Billing and subscription management
 
 ## What's Been Implemented
 
-### Session 1 (Date: 2026-03-13)
+### Session: March 14, 2026
+1. **Supabase Integration** (P0) ✅
+   - Connected to production Supabase database
+   - Mock mode disabled, real data persistence enabled
+   - Created setup script with test data seeding
 
-#### Production Readiness Fixes
-- [x] Fixed JavaScript null reference errors preventing navigation
-- [x] Updated CSP to allow CDN scripts (Chart.js, Stripe.js, FontAwesome)
-- [x] Fixed Stripe initialization with emergent test key
-- [x] Removed failing Cloudinary video background
+2. **QR Code Generator** ✅
+   - Backend: GET /api/merchant/qr-code endpoint
+   - Frontend: Generate and download buttons in Profile section
+   - Uses 'qrcode' npm package
 
-#### Premium UI/UX Overhaul
-- [x] Added Playfair Display + DM Sans font pairing
-- [x] Enhanced KPI cards with glassmorphism effects
-- [x] Premium modal styling with backdrop blur
-- [x] Sidebar with active state indicator bars
-- [x] Loading spinner animations
-- [x] Gold accent color for premium features
+3. **Review System** ✅
+   - Backend: GET/POST /api/public/store/:storeId/reviews
+   - Backend: GET /api/merchant/reviews
+   - Frontend: Rating stats display, review list, distribution chart
+   - Note: Reviews use mock data (reviews table not in Supabase yet)
 
-#### Trial & Pricing Updates
-- [x] Changed from 30-day to 14-day free trial
-- [x] Removed "No credit card required" messaging
-- [x] Added "Live Menu & Daily Specials" to Growth/Pro plan features
+4. **Review Request Feature** ✅
+   - WhatsApp integration for requesting reviews from customers
+   - Input for customer phone number
+   - Auto-generates message with review link
 
-#### Live Menu Feature (New)
-- [x] Live Menu panel in dashboard sidebar (PRO badge)
-- [x] Plan gating for Growth+ subscribers
-- [x] Daily Specials section:
-  - Create/Edit/Delete specials modal
-  - Special pricing, quantity limits, expiration time
-  - Activate/pause functionality
-- [x] Time-Based Menus section:
-  - Enable/disable toggle
-  - Breakfast/Lunch/Dinner time slot configuration
-- [x] Quick Availability toggles for menu items
-- [x] Plan returned in merchant login response
+5. **Marketing Landing Page** ✅
+   - Created /apps/marketing/index.html
+   - Routes: /marketing, /about
+   - Premium dark theme, features grid, pricing section
 
----
+### Previous Sessions
+- UI/UX overhaul with luxe dark theme
+- Login flow fixes
+- Live Menu feature (PRO gated)
+- Storefront preview drawer
+- 14-day trial period update
+
+## API Endpoints
+
+### Public
+- GET /api/public/store/:storeId - Get store profile
+- GET /api/public/store/:storeId/menu - Get menu items
+- GET /api/public/store/:storeId/reviews - Get store reviews
+- POST /api/public/store/:storeId/reviews - Submit review
+- POST /api/public/store/:storeId/orders - Create order
+
+### Merchant (Auth Required)
+- POST /api/merchant/login - Authenticate
+- GET /api/merchant/me - Get profile
+- POST /api/merchant/profile - Update profile
+- GET /api/merchant/qr-code - Generate QR code
+- GET /api/merchant/reviews - Get store reviews
+- GET /api/merchant/menu - Get menu items
+- POST /api/merchant/menu - Create/update item
+
+## Database Schema (Supabase)
+- `profiles` - Merchant store profiles
+- `menu_items` - Menu items with prices, images
+- `order_requests` - Customer orders
+- `daily_specials` - Live menu specials
+- `reviews` - Customer ratings (TO BE CREATED)
 
 ## Prioritized Backlog
 
-### P0 (Critical for Launch)
-- [ ] Supabase production credentials configuration
-- [ ] Stripe products/prices creation in Stripe dashboard
-- [ ] Stripe webhook endpoint configuration
+### P0 (Critical)
+- [x] Supabase Integration
+- [ ] Create `reviews` table in Supabase
 
-### P1 (High Priority)
-- [ ] Daily specials persistence to database
-- [ ] Time-based menu enforcement on storefront
-- [ ] Live Menu display on public storefront
-- [ ] Card requirement enforcement at signup (Stripe checkout)
+### P1 (Important)
+- [x] Marketing Landing Page
+- [ ] Remove remaining Cloudinary URLs
+- [ ] Stripe payment integration (test key available)
 
 ### P2 (Nice to Have)
-- [ ] Quick Stats email digest feature
-- [ ] Push notifications for order updates
-- [ ] Menu item bulk import/export
-- [ ] Multi-language support
+- [ ] Refactor merchant.js (2000+ lines) into modules
+- [ ] Review response feature for merchants
+- [ ] Email notifications for orders
+- [ ] Multi-location support
 
-### P3 (Future)
-- [ ] Multi-branch support
-- [ ] Custom branding options
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app for merchants
+## Test Credentials
+- **Store ID**: TASTE1
+- **Password**: demo123
 
----
+## Environment Variables
+```
+SUPABASE_URL=https://wrypjwdtauposrjogmnk.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=[configured]
+JWT_SECRET=[configured]
+```
 
 ## Next Tasks
-1. Configure Supabase credentials in deployment environment
-2. Set up Stripe products and webhook
-3. Persist daily specials to database
-4. Display specials on customer storefront
-5. Enforce time-based menus on storefront
+1. Create `reviews` table in Supabase Dashboard:
+```sql
+CREATE TABLE reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  store_id TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  customer_name TEXT DEFAULT 'Anonymous',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_reviews_store_id ON reviews(store_id);
+```
 
-## Technical Debt
-- Remove remaining Cloudinary references once Supabase storage is fully configured
-- Clean up mock data from supabase.js service
+2. Replace Cloudinary image URLs with Supabase Storage
+3. Complete Stripe subscription flow
+
+## Files of Reference
+- `/app/server.js` - Main backend
+- `/app/services/supabase.js` - Database service
+- `/app/public/assets/js/merchant.js` - Frontend logic
+- `/app/apps/merchant/index.html` - Dashboard HTML
+- `/app/apps/marketing/index.html` - Landing page
