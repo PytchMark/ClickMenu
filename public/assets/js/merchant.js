@@ -376,6 +376,15 @@ const setSection = (section) => {
       }
     }, 100);
   }
+  
+  // Load reviews when navigating to profile section
+  if (section === 'profile') {
+    setTimeout(() => {
+      if (typeof loadReviews === 'function') {
+        loadReviews();
+      }
+    }, 100);
+  }
 };
 
 const getStoredSection = () => {
@@ -920,6 +929,155 @@ const renderProfileCompletion = () => {
   }
 };
 
+// ============ QR CODE FUNCTIONS ============
+let currentQrDataUrl = null;
+
+const generateQrCode = async () => {
+  const generateBtn = document.getElementById('generateQrBtn');
+  const downloadBtn = document.getElementById('downloadQrBtn');
+  const qrContainer = document.getElementById('qrCodeContainer');
+  
+  if (!generateBtn || !qrContainer) return;
+  
+  try {
+    UI.setLoading(generateBtn, true);
+    
+    const response = await Api.merchant.getQrCode();
+    
+    if (response.ok && response.qrCode) {
+      currentQrDataUrl = response.qrCode;
+      qrContainer.innerHTML = `<img src="${response.qrCode}" alt="Menu QR Code" />`;
+      if (downloadBtn) downloadBtn.disabled = false;
+      UI.toast('QR Code generated!', 'success');
+    } else {
+      throw new Error(response.error || 'Failed to generate QR code');
+    }
+  } catch (error) {
+    if (!handleAuthError(error)) {
+      UI.toast(error.message || 'Failed to generate QR code', 'error');
+    }
+  } finally {
+    UI.setLoading(generateBtn, false);
+  }
+};
+
+const downloadQrCode = () => {
+  if (!currentQrDataUrl) {
+    UI.toast('Please generate a QR code first', 'error');
+    return;
+  }
+  
+  const link = document.createElement('a');
+  link.href = currentQrDataUrl;
+  link.download = `menu-qr-${state.profile?.store_id || 'store'}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  UI.toast('QR Code downloaded!', 'success');
+};
+
+// Event listeners for QR code
+document.getElementById('generateQrBtn')?.addEventListener('click', generateQrCode);
+document.getElementById('downloadQrBtn')?.addEventListener('click', downloadQrCode);
+
+// ============ REVIEWS FUNCTIONS ============
+const loadReviews = async () => {
+  if (!state.profile?.store_id) return;
+  
+  try {
+    const response = await Api.merchant.getReviews();
+    
+    if (response.ok) {
+      renderReviewsStats(response.stats);
+      renderReviewsList(response.reviews);
+    }
+  } catch (error) {
+    console.error('Failed to load reviews:', error);
+  }
+};
+
+const renderReviewsStats = (stats) => {
+  if (!stats) return;
+  
+  const avgRatingEl = document.getElementById('avgRating');
+  const avgStarsEl = document.getElementById('avgStars');
+  const totalReviewsEl = document.getElementById('totalReviews');
+  const distributionEl = document.getElementById('ratingDistribution');
+  
+  if (avgRatingEl) avgRatingEl.textContent = stats.averageRating.toFixed(1);
+  if (totalReviewsEl) totalReviewsEl.textContent = `${stats.totalReviews} review${stats.totalReviews !== 1 ? 's' : ''}`;
+  
+  // Render stars
+  if (avgStarsEl) {
+    const fullStars = Math.floor(stats.averageRating);
+    const hasHalf = stats.averageRating % 1 >= 0.5;
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        starsHtml += '<i class="fas fa-star"></i>';
+      } else if (i === fullStars + 1 && hasHalf) {
+        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+      } else {
+        starsHtml += '<i class="far fa-star"></i>';
+      }
+    }
+    avgStarsEl.innerHTML = starsHtml;
+  }
+  
+  // Render distribution
+  if (distributionEl && stats.distribution) {
+    const total = stats.totalReviews || 1;
+    let html = '';
+    for (let i = 5; i >= 1; i--) {
+      const count = stats.distribution[i] || 0;
+      const percent = Math.round((count / total) * 100);
+      html += `
+        <div class="rating-bar">
+          <span class="rating-bar-label">${i} <i class="fas fa-star"></i></span>
+          <div class="rating-bar-track">
+            <div class="rating-bar-fill" style="width: ${percent}%"></div>
+          </div>
+          <span class="rating-bar-count">${count}</span>
+        </div>
+      `;
+    }
+    distributionEl.innerHTML = html;
+  }
+};
+
+const renderReviewsList = (reviews) => {
+  const listEl = document.getElementById('reviewsList');
+  if (!listEl) return;
+  
+  if (!reviews || reviews.length === 0) {
+    listEl.innerHTML = '<p class="empty-state">No reviews yet. Share your menu link to get customer feedback!</p>';
+    return;
+  }
+  
+  listEl.innerHTML = reviews.map(review => {
+    const starsHtml = Array(5).fill(0).map((_, i) => 
+      `<i class="${i < review.rating ? 'fas' : 'far'} fa-star"></i>`
+    ).join('');
+    
+    const date = new Date(review.created_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+    
+    return `
+      <div class="review-card">
+        <div class="review-header">
+          <span class="review-author">${review.customer_name || 'Anonymous'}</span>
+          <div class="review-stars">${starsHtml}</div>
+        </div>
+        ${review.comment ? `<p class="review-comment">${review.comment}</p>` : ''}
+        <div class="review-date">${date}</div>
+      </div>
+    `;
+  }).join('');
+};
+
 const renderMediaPreview = (imageUrl, videoUrl) => {
   if (!mediaPreview) return;
   mediaPreview.innerHTML = "";
@@ -1046,6 +1204,9 @@ const loadDashboard = async (profileOverride = null) => {
   renderOrders();
   setProfileForm();
   renderBillingPanel();
+  
+  // Load reviews in background
+  loadReviews().catch(err => console.warn('Failed to load reviews:', err));
 };
 
 // ============ BILLING PANEL ============

@@ -6,7 +6,7 @@ from datetime import datetime
 import json
 
 class QuickMenuJAAPITester:
-    def __init__(self, base_url="https://menu-builder-pro-2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://luxe-dashboard-test.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
@@ -125,6 +125,130 @@ class QuickMenuJAAPITester:
             "/public/assets/js/config.js",
             200
         )
+        
+    def test_merchant_login(self):
+        """Test merchant login with TASTE1/demo123"""
+        login_data = {
+            "identifier": "TASTE1",
+            "passcode": "demo123"
+        }
+        success, response = self.run_test(
+            "Merchant Login (TASTE1/demo123)",
+            "POST",
+            "/api/merchant/login",
+            200,
+            login_data
+        )
+        
+        if success and response.get('ok') and response.get('token'):
+            self.merchant_token = response['token']
+            print(f"   🔑 Login successful, token acquired")
+            return True, response
+        else:
+            print(f"   ❌ Login failed or missing token")
+            return False, {}
+            
+    def test_qr_code_endpoint(self):
+        """Test QR Code generation endpoint"""
+        if not hasattr(self, 'merchant_token'):
+            print("   ❌ No merchant token available, skipping test")
+            return False, {}
+            
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.merchant_token}'
+        }
+        
+        success, response = self.run_test(
+            "QR Code Generation",
+            "GET",
+            "/api/merchant/qr-code",
+            200,
+            headers=headers
+        )
+        
+        if success:
+            if response.get('ok') and response.get('qrCode'):
+                print(f"   ✅ QR Code data received")
+                if response.get('storefrontUrl'):
+                    print(f"   📱 Storefront URL: {response['storefrontUrl']}")
+                return True, response
+            else:
+                print(f"   ❌ QR Code response missing required fields")
+                return False, {}
+        return False, {}
+        
+    def test_reviews_get_endpoint(self):
+        """Test get reviews endpoint for a store"""
+        store_id = "TASTE1"
+        success, response = self.run_test(
+            f"Get Store Reviews ({store_id})",
+            "GET",
+            f"/api/public/store/{store_id}/reviews",
+            200
+        )
+        
+        if success and response.get('ok'):
+            print(f"   ✅ Reviews endpoint accessible")
+            reviews = response.get('reviews', [])
+            stats = response.get('stats', {})
+            print(f"   📊 Found {len(reviews)} reviews")
+            print(f"   ⭐ Average rating: {stats.get('averageRating', 0)}")
+            return True, response
+        return False, {}
+        
+    def test_reviews_post_endpoint(self):
+        """Test creating a new review"""
+        store_id = "TASTE1"
+        review_data = {
+            "rating": 5,
+            "comment": "Amazing food! Test review from automated test.",
+            "customerName": "Test Customer"
+        }
+        
+        success, response = self.run_test(
+            f"Submit Review ({store_id})",
+            "POST",
+            f"/api/public/store/{store_id}/reviews",
+            200,
+            review_data
+        )
+        
+        if success and response.get('ok'):
+            review = response.get('review', {})
+            print(f"   ✅ Review created successfully")
+            print(f"   ⭐ Rating: {review.get('rating')}")
+            print(f"   👤 Customer: {review.get('customer_name')}")
+            return True, response
+        return False, {}
+        
+    def test_merchant_reviews_endpoint(self):
+        """Test merchant reviews endpoint"""
+        if not hasattr(self, 'merchant_token'):
+            print("   ❌ No merchant token available, skipping test")
+            return False, {}
+            
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.merchant_token}'
+        }
+        
+        success, response = self.run_test(
+            "Merchant Reviews Dashboard",
+            "GET",
+            "/api/merchant/reviews",
+            200,
+            headers=headers
+        )
+        
+        if success and response.get('ok'):
+            reviews = response.get('reviews', [])
+            stats = response.get('stats', {})
+            print(f"   ✅ Merchant can access reviews")
+            print(f"   📊 Reviews count: {len(reviews)}")
+            print(f"   ⭐ Average rating: {stats.get('averageRating', 0)}")
+            return True, response
+        return False, {}
 
 def main():
     print("=" * 60)
@@ -143,6 +267,20 @@ def main():
     tester.test_merchant_page_load()
     tester.test_public_css_load()
     tester.test_config_js_load()
+    
+    # Test authentication and protected endpoints
+    print("\n🔐 Testing Authentication & Protected Endpoints...")
+    tester.test_merchant_login()
+    
+    # Test QR Code functionality
+    print("\n📱 Testing QR Code Functionality...")
+    tester.test_qr_code_endpoint()
+    
+    # Test Reviews functionality
+    print("\n⭐ Testing Reviews Functionality...")
+    tester.test_reviews_get_endpoint()
+    tester.test_reviews_post_endpoint()
+    tester.test_merchant_reviews_endpoint()
     
     # Print summary
     print(f"\n{'='*60}")

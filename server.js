@@ -563,6 +563,78 @@ app.post("/api/merchant/profile", requireMerchant, async (req, res) => {
   }
 });
 
+// QR Code Generator endpoint
+const QRCode = require('qrcode');
+
+app.get("/api/merchant/qr-code", requireMerchant, async (req, res) => {
+  try {
+    const storeId = req.user.storeId;
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const storefrontUrl = `${origin}/storefront?storeId=${encodeURIComponent(storeId)}`;
+    
+    // Generate QR code as data URL
+    const qrDataUrl = await QRCode.toDataURL(storefrontUrl, {
+      width: 400,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    });
+    
+    return res.json({ 
+      ok: true, 
+      qrCode: qrDataUrl,
+      storefrontUrl: storefrontUrl,
+      storeId: storeId
+    });
+  } catch (error) {
+    console.error('QR Code generation error:', error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// Reviews endpoints
+app.get("/api/public/store/:storeId/reviews", async (req, res) => {
+  try {
+    const reviews = await supabase.getStoreReviews(req.params.storeId);
+    const stats = await supabase.getStoreReviewStats(req.params.storeId);
+    return res.json({ ok: true, reviews, stats });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/api/public/store/:storeId/reviews", async (req, res) => {
+  try {
+    const { rating, comment, customerName } = req.body;
+    
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ ok: false, error: "Rating must be between 1 and 5" });
+    }
+    
+    const review = await supabase.createReview(req.params.storeId, {
+      rating: Number(rating),
+      comment: comment || null,
+      customer_name: customerName || 'Anonymous'
+    });
+    
+    return res.json({ ok: true, review });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/api/merchant/reviews", requireMerchant, async (req, res) => {
+  try {
+    const reviews = await supabase.getStoreReviews(req.user.storeId);
+    const stats = await supabase.getStoreReviewStats(req.user.storeId);
+    return res.json({ ok: true, reviews, stats });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 // Stripe & Subscription endpoints
 app.post("/api/billing/create-checkout-session", async (req, res) => {
   try {

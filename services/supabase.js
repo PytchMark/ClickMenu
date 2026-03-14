@@ -1395,6 +1395,109 @@ const activateMerchantPlan = async (storeId, updates) => {
   return data;
 };
 
+// Reviews mock state
+if (!mockState.reviews) {
+  mockState.reviews = [
+    {
+      id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      rating: 5,
+      comment: "Amazing jerk chicken! Best in Kingston.",
+      customer_name: "Marcus J.",
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "TASTE1",
+      rating: 4,
+      comment: "Great food, quick service.",
+      customer_name: "Sarah W.",
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      store_id: "SPICE2",
+      rating: 5,
+      comment: "The BBQ ribs are incredible!",
+      customer_name: "Devon T.",
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+}
+
+const getStoreReviews = async (storeId) => {
+  if (!hasSupabase()) {
+    return mockState.reviews
+      .filter(review => review.store_id === storeId)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("store_id", storeId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+const getStoreReviewStats = async (storeId) => {
+  if (!hasSupabase()) {
+    const reviews = mockState.reviews.filter(r => r.store_id === storeId);
+    if (reviews.length === 0) {
+      return { averageRating: 0, totalReviews: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
+    }
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    reviews.forEach(r => distribution[r.rating]++);
+    return {
+      averageRating: Math.round((sum / reviews.length) * 10) / 10,
+      totalReviews: reviews.length,
+      distribution
+    };
+  }
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("store_id", storeId);
+  if (error) throw error;
+  const reviews = data || [];
+  if (reviews.length === 0) {
+    return { averageRating: 0, totalReviews: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
+  }
+  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach(r => distribution[r.rating]++);
+  return {
+    averageRating: Math.round((sum / reviews.length) * 10) / 10,
+    totalReviews: reviews.length,
+    distribution
+  };
+};
+
+const createReview = async (storeId, payload) => {
+  const review = {
+    id: crypto.randomUUID(),
+    store_id: storeId,
+    rating: payload.rating,
+    comment: payload.comment || null,
+    customer_name: payload.customer_name || 'Anonymous',
+    created_at: new Date().toISOString(),
+  };
+  
+  if (!hasSupabase()) {
+    mockState.reviews.unshift(review);
+    return review;
+  }
+  
+  const { data, error } = await supabase
+    .from("reviews")
+    .insert(review)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+};
+
 module.exports = {
   hasSupabase,
   getStoreProfile,
@@ -1429,4 +1532,7 @@ module.exports = {
   checkStoreIdAvailable,
   createMerchantProfile,
   activateMerchantPlan,
+  getStoreReviews,
+  getStoreReviewStats,
+  createReview,
 };

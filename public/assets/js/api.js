@@ -190,6 +190,16 @@ const Api = (() => {
         }
         return data || { ok: true };
       },
+      getQrCode: () =>
+        request(
+          "/api/merchant/qr-code",
+          withAuth(getToken("merchant_token"))({ method: "GET" })
+        ),
+      getReviews: () =>
+        request(
+          "/api/merchant/reviews",
+          withAuth(getToken("merchant_token"))({ method: "GET" })
+        ),
     },
     admin: {
       login: (payload) =>
