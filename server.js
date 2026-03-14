@@ -78,6 +78,8 @@ const sendApp = (folder) => (req, res) => {
 
 app.get("/storefront", sendApp("storefront"));
 app.get("/merchant", sendApp("merchant"));
+app.get("/marketing", sendApp("marketing"));
+app.get("/about", sendApp("marketing"));
 app.get("/marketing/merchant", sendApp("merchant"));
 app.get("/merchant-signup", sendApp("signup"));
 app.get("/signup", sendApp("signup"));

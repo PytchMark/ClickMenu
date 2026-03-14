@@ -1078,6 +1078,48 @@ const renderReviewsList = (reviews) => {
   }).join('');
 };
 
+// ============ REVIEW REQUEST FEATURE ============
+const sendReviewRequest = () => {
+  const phoneInput = document.getElementById('reviewRequestPhone');
+  const sendBtn = document.getElementById('sendReviewRequestBtn');
+  
+  if (!phoneInput || !sendBtn) return;
+  
+  let phone = phoneInput.value.trim().replace(/\D/g, '');
+  
+  if (!phone || phone.length < 10) {
+    UI.toast('Please enter a valid phone number', 'error');
+    return;
+  }
+  
+  // Ensure country code (default to Jamaica +1876)
+  if (phone.length === 7) {
+    phone = '1876' + phone;
+  } else if (phone.length === 10 && !phone.startsWith('1')) {
+    phone = '1' + phone;
+  }
+  
+  const storeId = state.profile?.store_id;
+  const storeName = state.profile?.name || 'Our Restaurant';
+  const origin = window.location.origin;
+  const reviewUrl = `${origin}/storefront?storeId=${encodeURIComponent(storeId)}&review=true`;
+  
+  const message = `Hi! Thank you for visiting ${storeName}. We'd love to hear about your experience! Please take a moment to leave us a review: ${reviewUrl}`;
+  
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  
+  window.open(whatsappUrl, '_blank');
+  
+  UI.toast('Opening WhatsApp...', 'success');
+  phoneInput.value = '';
+};
+
+// Event listener for review request
+document.getElementById('sendReviewRequestBtn')?.addEventListener('click', sendReviewRequest);
+document.getElementById('reviewRequestPhone')?.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendReviewRequest();
+});
+
 const renderMediaPreview = (imageUrl, videoUrl) => {
   if (!mediaPreview) return;
   mediaPreview.innerHTML = "";

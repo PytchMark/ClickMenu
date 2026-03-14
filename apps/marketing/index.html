@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickMenuJA — Digital Menus for Jamaica's Best Restaurants</title>
+  <meta name="description" content="Turn your menu into instant orders. QR codes, WhatsApp ordering, customer reviews - everything you need to grow your restaurant business." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface-elevated: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: rgba(255,255,255,0.6);
+      --accent: #dc2626;
+      --accent-glow: rgba(220, 38, 38, 0.3);
+      --gold: #f59e0b;
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --radius: 12px;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    
+    /* Texture overlay */
+    .texture {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 30%, var(--accent-glow) 0%, transparent 40%);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    
+    .nav-logo img {
+      height: 40px;
+      width: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+    
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-ghost:hover {
+      background: var(--surface-elevated);
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 32px 80px;
+      position: relative;
+    }
+    
+    .hero-content {
+      max-width: 900px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    
+    .hero-badge i {
+      color: var(--gold);
+    }
+    
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--text) 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, #ef4444 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    
+    .hero-trust {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .hero-trust span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    
+    .hero-trust i {
+      color: var(--accent);
+    }
+    
+    /* Features Section */
+    .features {
+      padding: 100px 32px;
+      background: var(--surface);
+      position: relative;
+    }
+    
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 60px;
+    }
+    
+    .section-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+    }
+    
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .section-header p {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .feature-card {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--accent) 0%, #ef4444 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      margin-bottom: 20px;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .feature-card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    /* Pricing Section */
+    .pricing {
+      padding: 100px 32px;
+      background: var(--bg);
+    }
+    
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .pricing-card.featured {
+      border-color: var(--accent);
+      transform: scale(1.02);
+    }
+    
+    .pricing-card.featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 16px;
+      border-radius: 50px;
+    }
+    
+    .pricing-card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-card .price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-card .price span {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
+    
+    .pricing-card .desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+    
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    
+    .pricing-features li i {
+      color: var(--accent);
+      font-size: 0.85rem;
+    }
+    
+    /* CTA Section */
+    .cta {
+      padding: 100px 32px;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
+      text-align: center;
+    }
+    
+    .cta h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .cta p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 500px;
+      margin: 0 auto 32px;
+    }
+    
+    /* Footer */
+    .footer {
+      padding: 48px 32px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    
+    .footer p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+      
+      .section-header h2 {
+        font-size: 1.75rem;
+      }
+      
+      .pricing-card.featured {
+        transform: scale(1);
+      }
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .hero-content, .feature-card, .pricing-card {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .feature-card:nth-child(2) { animation-delay: 0.1s; }
+    .feature-card:nth-child(3) { animation-delay: 0.2s; }
+    .feature-card:nth-child(4) { animation-delay: 0.3s; }
+    .feature-card:nth-child(5) { animation-delay: 0.4s; }
+    .feature-card:nth-child(6) { animation-delay: 0.5s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=100&q=80" alt="QuickMenuJA" />
+      QuickMenuJA
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/merchant" class="btn btn-ghost">Merchant Login</a>
+      <a href="/signup" class="btn btn-primary" data-testid="signup-btn">Get Started</a>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-fire"></i>
+        Jamaica's #1 Digital Menu Platform
+      </div>
+      <h1>Turn Your Menu Into <span>Instant Orders</span></h1>
+      <p class="hero-subtitle">
+        Create stunning digital menus, generate QR codes, accept WhatsApp orders, and grow your restaurant with customer reviews. Setup in 5 minutes.
+      </p>
+      <div class="hero-cta">
+        <a href="/signup" class="btn btn-primary" data-testid="hero-cta-btn">
+          <i class="fas fa-rocket"></i> Start Free 14-Day Trial
+        </a>
+        <a href="#features" class="btn btn-ghost">
+          <i class="fas fa-play"></i> See How It Works
+        </a>
+      </div>
+      <div class="hero-trust">
+        <span><i class="fas fa-check-circle"></i> No credit card required</span>
+        <span><i class="fas fa-check-circle"></i> Cancel anytime</span>
+        <span><i class="fas fa-check-circle"></i> Instant setup</span>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <div class="section-label">Features</div>
+      <h2>Everything You Need to Grow</h2>
+      <p>Powerful tools designed for Jamaican food businesses</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-qrcode"></i></div>
+        <h3>QR Code Menus</h3>
+        <p>Generate beautiful QR codes instantly. Print them for tables, counters, or window displays. Customers scan and order directly.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fab fa-whatsapp"></i></div>
+        <h3>WhatsApp Ordering</h3>
+        <p>Receive order requests directly to your WhatsApp. No expensive payment processing or complicated integrations needed.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-star"></i></div>
+        <h3>Customer Reviews</h3>
+        <p>Build trust with star ratings and reviews. Send review requests via WhatsApp and showcase your best feedback.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-clock"></i></div>
+        <h3>Live Menu Updates</h3>
+        <p>Daily specials? Sold out items? Update your menu in real-time. Changes appear instantly for all customers.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+        <h3>Order Analytics</h3>
+        <p>Track your most popular items, peak ordering times, and customer trends. Make data-driven decisions.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+        <h3>Mobile-First Design</h3>
+        <p>Your menu looks stunning on any device. Optimized for the way Jamaicans browse - on their phones.</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Pricing Section -->
+  <section class="pricing" id="pricing">
+    <div class="section-header">
+      <div class="section-label">Pricing</div>
+      <h2>Simple, Transparent Pricing</h2>
+      <p>Start free, upgrade when you're ready</p>
+    </div>
+    
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="price">Free</div>
+        <p class="desc">Perfect for getting started</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Up to 6 menu items</li>
+          <li><i class="fas fa-check"></i> QR code generation</li>
+          <li><i class="fas fa-check"></i> WhatsApp orders</li>
+          <li><i class="fas fa-check"></i> Basic analytics</li>
+          <li><i class="fas fa-check"></i> Customer reviews</li>
+        </ul>
+        <a href="/signup" class="btn btn-ghost" style="width: 100%; justify-content: center;">Start Free</a>
+      </div>
+      
+      <div class="pricing-card featured">
+        <h3>Professional</h3>
+        <div class="price">$19 <span>/month</span></div>
+        <p class="desc">For growing businesses</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Up to 25 menu items</li>
+          <li><i class="fas fa-check"></i> Live Menu feature</li>
+          <li><i class="fas fa-check"></i> Daily specials</li>
+          <li><i class="fas fa-check"></i> Priority support</li>
+          <li><i class="fas fa-check"></i> Review request tools</li>
+          <li><i class="fas fa-check"></i> Advanced analytics</li>
+        </ul>
+        <a href="/signup" class="btn btn-primary" style="width: 100%; justify-content: center;">Start 14-Day Trial</a>
+      </div>
+      
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="price">$49 <span>/month</span></div>
+        <p class="desc">For large operations</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Unlimited menu items</li>
+          <li><i class="fas fa-check"></i> Multiple locations</li>
+          <li><i class="fas fa-check"></i> Custom branding</li>
+          <li><i class="fas fa-check"></i> API access</li>
+          <li><i class="fas fa-check"></i> Dedicated support</li>
+          <li><i class="fas fa-check"></i> White-label option</li>
+        </ul>
+        <a href="/signup" class="btn btn-ghost" style="width: 100%; justify-content: center;">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- CTA Section -->
+  <section class="cta">
+    <h2>Ready to Grow Your Business?</h2>
+    <p>Join hundreds of Jamaican restaurants already using QuickMenuJA to increase orders and delight customers.</p>
+    <a href="/signup" class="btn btn-primary" data-testid="cta-signup-btn">
+      <i class="fas fa-rocket"></i> Get Started Free
+    </a>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 QuickMenuJA. Powered by <a href="#">Pytch Marketing</a>. Made with love in Jamaica.</p>
+  </footer>
+</body>
+</html>
