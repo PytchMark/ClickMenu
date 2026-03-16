@@ -1144,6 +1144,17 @@ const updateLabelSelection = (labels = []) => {
 };
 
 const setAvailabilityFromStatus = (status) => {
+  const availabilityInputs = Array.from(
+    document.querySelectorAll('input[name="availability"]')
+  );
+  if (availabilityInputs.length > 0) {
+    availabilityInputs.forEach((input) => {
+      input.checked = input.value === (status || "available");
+    });
+    return;
+  }
+
+  // Legacy fallback for older checkbox-based availability UI.
   const availableToggle = document.getElementById("itemAvailable");
   const limitedToggle = document.getElementById("itemLimited");
   if (!availableToggle || !limitedToggle) return;
@@ -1161,8 +1172,18 @@ const setAvailabilityFromStatus = (status) => {
 };
 
 const getStatusFromAvailability = () => {
-  const available = document.getElementById("itemAvailable").checked;
-  const limited = document.getElementById("itemLimited").checked;
+  const selectedRadio = document.querySelector(
+    'input[name="availability"]:checked'
+  );
+  if (selectedRadio?.value) return selectedRadio.value;
+
+  // Legacy fallback for older checkbox-based availability UI.
+  const availableToggle = document.getElementById("itemAvailable");
+  const limitedToggle = document.getElementById("itemLimited");
+  if (!availableToggle || !limitedToggle) return "available";
+
+  const available = availableToggle.checked;
+  const limited = limitedToggle.checked;
   if (!available) return "sold_out";
   if (limited) return "limited";
   return "available";
@@ -2075,6 +2096,12 @@ function showItemModal(title = 'Add New Item') {
     document.body.style.overflow = 'hidden';
   }
 }
+
+// Backwards-compatible hook used by empty-state CTA.
+window.showCreateItemModal = () => {
+  if (typeof clearItemForm === 'function') clearItemForm();
+  showItemModal('Add New Item');
+};
 
 function hideItemModal() {
   if (itemModal) {
