@@ -6,28 +6,37 @@ from datetime import datetime
 import json
 
 class QuickMenuJAAPITester:
-    def __init__(self, base_url="https://luxe-dashboard-test.preview.emergentagent.com"):
+    def __init__(self, base_url="https://menu-items-debug.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
+        self.auth_token = None
         
-    def run_test(self, name, method, endpoint, expected_status=200, data=None, headers=None):
+    def run_test(self, name, method, endpoint, expected_status=200, data=None, headers=None, use_auth=False):
         """Run a single API test"""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         self.tests_run += 1
         
         if headers is None:
             headers = {'Content-Type': 'application/json'}
+        
+        # Add auth token if requested and available
+        if use_auth and self.auth_token:
+            headers['Authorization'] = f'Bearer {self.auth_token}'
             
         print(f"\n🔍 Testing {name}...")
         print(f"   URL: {url}")
+        if use_auth:
+            print(f"   Auth: {'Yes' if self.auth_token else 'No token available'}")
         
         try:
             if method.upper() == 'GET':
                 response = requests.get(url, headers=headers, timeout=10)
             elif method.upper() == 'POST':
                 response = requests.post(url, json=data, headers=headers, timeout=10)
+            elif method.upper() == 'PATCH':
+                response = requests.patch(url, json=data, headers=headers, timeout=10)
             else:
                 print(f"❌ Unsupported method: {method}")
                 return False, {}
@@ -45,8 +54,12 @@ class QuickMenuJAAPITester:
                         print(f"   Response keys: {list(response_data.keys())}")
                         if 'ok' in response_data:
                             print(f"   OK status: {response_data.get('ok')}")
+                        return success, response_data
+                    else:
+                        return success, response_data
                 except:
                     print(f"   Response (first 100 chars): {response.text[:100]}")
+                    return success, response.text
                     
                 self.test_results.append({
                     'test': name,
@@ -249,6 +262,93 @@ class QuickMenuJAAPITester:
             print(f"   ⭐ Average rating: {stats.get('averageRating', 0)}")
             return True, response
         return False, {}
+        
+    def test_menu_management(self):
+        """Test full menu management workflow"""
+        # Test 1: Get existing menu items
+        success, data = self.run_test(
+            "Get Menu Items",
+            "GET",
+            "/api/merchant/items",
+            use_auth=True
+        )
+        
+        existing_items = []
+        if success and data.get('items'):
+            existing_items = data['items']
+            print(f"   📋 Found {len(existing_items)} existing items")
+            for item in existing_items[:3]:
+                print(f"   - {item.get('title', 'Unknown')} (${item.get('price', 0)})")
+        
+        # Test 2: Create a new menu item
+        current_time = datetime.now().strftime("%H%M%S")
+        new_item = {
+            "item_id": f"TEST-{current_time}",
+            "title": "Test Jerk Chicken Special",
+            "description": "Spicy jerk chicken with rice and peas - Test automation item",
+            "category": "Lunch",
+            "price": 18.99,
+            "status": "available",
+            "featured": True,
+            "labels": ["Test", "Automation", "New"]
+        }
+        
+        success, data = self.run_test(
+            "Create New Menu Item",
+            "POST",
+            "/api/merchant/items",
+            data=new_item,
+            use_auth=True
+        )
+        
+        created_item_id = None
+        if success and data.get('item'):
+            created_item = data['item']
+            created_item_id = created_item.get('item_id')
+            print(f"   ✅ Created item: {created_item.get('title')} (ID: {created_item_id})")
+            print(f"   💰 Price: ${created_item.get('price')}")
+            
+            # Test 3: Update the created item
+            update_data = {
+                "price": 19.99,
+                "status": "limited",
+                "description": "Updated description - Spicy jerk chicken (LIMITED AVAILABILITY)"
+            }
+            
+            success, update_response = self.run_test(
+                "Update Menu Item",
+                "PATCH", 
+                f"/api/merchant/items/{created_item_id}",
+                data=update_data,
+                use_auth=True
+            )
+            
+            if success and update_response.get('item'):
+                updated_item = update_response['item']
+                print(f"   ✅ Updated item price: ${updated_item.get('price')}")
+                print(f"   📦 Updated status: {updated_item.get('status')}")
+        
+        # Test 4: Verify the item appears in the list
+        success, final_data = self.run_test(
+            "Verify Updated Menu List",
+            "GET",
+            "/api/merchant/items",
+            use_auth=True
+        )
+        
+        if success and final_data.get('items'):
+            final_items = final_data['items']
+            print(f"   📋 Final count: {len(final_items)} items")
+            
+            if created_item_id:
+                test_item = next((item for item in final_items if item.get('item_id') == created_item_id), None)
+                if test_item:
+                    print(f"   ✅ Test item verified in list:")
+                    print(f"      Title: {test_item.get('title')}")
+                    print(f"      Price: ${test_item.get('price')}")
+                    print(f"      Status: {test_item.get('status')}")
+                else:
+                    print(f"   ⚠️ Test item with ID {created_item_id} not found in final list")
 
 def main():
     print("=" * 60)
@@ -270,7 +370,15 @@ def main():
     
     # Test authentication and protected endpoints
     print("\n🔐 Testing Authentication & Protected Endpoints...")
-    tester.test_merchant_login()
+    login_success, login_data = tester.test_merchant_login()
+    
+    if login_success and 'token' in login_data:
+        tester.auth_token = login_data['token']
+        print(f"   🔑 Auth token set: {tester.auth_token[:20]}...")
+        
+        # Test menu management functionality
+        print("\n🍽️ Testing Menu Management...")
+        tester.test_menu_management()
     
     # Test QR Code functionality
     print("\n📱 Testing QR Code Functionality...")
