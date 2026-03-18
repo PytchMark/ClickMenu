@@ -137,7 +137,7 @@ app.get("/api/public/store/:storeId/menu", async (req, res) => {
     if (profile.status && profile.status !== "active") {
       return res.status(403).json({ ok: false, error: "Store is not active" });
     }
-    const items = await supabase.getMenuItems(req.params.storeId, req.query.all === "1");
+    const items = await supabase.getMenuItems(profile.store_id, req.query.all === "1");
     return res.json({ ok: true, items });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
@@ -184,7 +184,17 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
       typeof req.body.total === "number"
         ? req.body.total
         : items.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 0), 0);
-    const order = await supabase.createOrderRequest(req.params.storeId, {
+    const profile = await supabase.getStoreProfile(req.params.storeId);
+    if (!profile) {
+      return res.status(404).json({ ok: false, error: "Store not found" });
+    }
+    if (profile.authorized === false) {
+      return res.status(403).json({ ok: false, error: "Store not authorized" });
+    }
+    if (profile.status && profile.status !== "active") {
+      return res.status(403).json({ ok: false, error: "Store is not active" });
+    }
+    const order = await supabase.createOrderRequest(profile.store_id, {
       customer_name: customerName,
       customer_phone: customerPhone,
       customer_email: customerEmail,
@@ -198,7 +208,6 @@ app.post("/api/public/store/:storeId/orders", async (req, res) => {
       preferred_time: preferredTime,
       source: "storefront",
     });
-    const profile = await supabase.getStoreProfile(req.params.storeId);
     const formatMoney = (value) =>
       new Intl.NumberFormat("en-JM", {
         style: "currency",

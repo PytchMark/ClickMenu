@@ -328,16 +328,75 @@ const buildStoreMetrics = (stores, orders = []) => {
   return grouped;
 };
 
-const getStoreProfile = async (storeId) => {
+const normalizeStoreLookupValue = (value) => (value || "").trim();
+
+const escapeIlike = (value) => value.replace(/[%,()]/g, (char) => `\\${char}`);
+
+const resolveRequestedStores = async (storeLookups = []) => {
+  const normalizedLookups = Array.from(
+    new Set(storeLookups.map(normalizeStoreLookupValue).filter(Boolean))
+  ).slice(0, 3);
+  if (!normalizedLookups.length) return [];
+
+  const normalizedNeedles = normalizedLookups.map((value) => value.toLowerCase());
+  const rankProfiles = (profiles) => {
+    const activeProfiles = profiles.filter((profile) => profile.status === "active" && profile.authorized);
+    const matched = [];
+    normalizedNeedles.forEach((needle) => {
+      const exactMatches = activeProfiles.filter((profile) => {
+        const storeId = (profile.store_id || "").toLowerCase();
+        const name = (profile.name || "").toLowerCase();
+        return storeId === needle || name === needle;
+      });
+      const partialMatches = activeProfiles.filter((profile) => {
+        if (exactMatches.some((match) => match.store_id === profile.store_id)) return false;
+        const storeId = (profile.store_id || "").toLowerCase();
+        const name = (profile.name || "").toLowerCase();
+        return storeId.includes(needle) || name.includes(needle);
+      });
+      [...exactMatches, ...partialMatches].forEach((profile) => {
+        if (!matched.some((entry) => entry.store_id === profile.store_id)) {
+          matched.push(profile);
+        }
+      });
+    });
+    return matched.slice(0, 3);
+  };
+
   if (!hasSupabase()) {
-    return mockState.profiles.find((profile) => profile.store_id === storeId) || null;
+    return rankProfiles(mockState.profiles);
+  }
+
+  const clauses = normalizedLookups.flatMap((lookup) => {
+    const escaped = escapeIlike(lookup);
+    return [`store_id.ilike.%${escaped}%`, `name.ilike.%${escaped}%`];
+  });
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("store_id,name,status,whatsapp,logo_url,about,hours,authorized")
+    .or(clauses.join(","))
+    .limit(25);
+  if (error) throw error;
+  return rankProfiles(data || []);
+};
+
+const getStoreProfile = async (storeId) => {
+  const lookup = normalizeStoreLookupValue(storeId);
+  if (!lookup) return null;
+  if (!hasSupabase()) {
+    return (
+      mockState.profiles.find(
+        (profile) => (profile.store_id || "").toLowerCase() === lookup.toLowerCase()
+      ) || null
+    );
   }
   const { data, error } = await supabase
     .from("profiles")
     .select(
       "store_id,name,status,whatsapp,logo_url,profile_email,cuisine_type,business_address,parish,owner_name,owner_phone,owner_email,hours,about,instagram,tiktok,pickup_enabled,delivery_enabled,authorized"
     )
-    .eq("store_id", storeId)
+    .ilike("store_id", lookup)
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -361,15 +420,12 @@ const getMenuItems = async (storeId, includeAll = false) => {
 };
 
 const getCombinedMenu = async (storeIds) => {
-  const uniqueIds = Array.from(new Set(storeIds.filter(Boolean))).slice(0, 3);
+  const stores = await resolveRequestedStores(storeIds);
+  const activeStoreIds = stores.map((store) => store.store_id);
+  if (!activeStoreIds.length) {
+    return { stores: [], items: [] };
+  }
   if (!hasSupabase()) {
-    const stores = mockState.profiles.filter(
-      (profile) =>
-        uniqueIds.includes(profile.store_id) &&
-        profile.status === "active" &&
-        profile.authorized
-    );
-    const activeStoreIds = stores.map((store) => store.store_id);
     const items = mockState.menu_items.filter(
       (item) =>
         activeStoreIds.includes(item.store_id) &&
@@ -377,24 +433,13 @@ const getCombinedMenu = async (storeIds) => {
     );
     return { stores, items: items.map(normalizeMenuItem) };
   }
-  const { data: stores, error: storesError } = await supabase
-    .from("profiles")
-    .select("store_id,name,status,whatsapp,logo_url,about,hours,authorized")
-    .in("store_id", uniqueIds);
-  if (storesError) throw storesError;
-  const activeStoreIds = (stores || [])
-    .filter((store) => store.status === "active" && store.authorized)
-    .map((store) => store.store_id);
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
     .select("*")
     .in("store_id", activeStoreIds)
     .in("status", ["available", "limited"]);
   if (itemsError) throw itemsError;
-  const activeStores = (stores || []).filter(
-    (store) => store.status === "active" && store.authorized
-  );
-  return { stores: activeStores, items: (items || []).map(normalizeMenuItem) };
+  return { stores, items: (items || []).map(normalizeMenuItem) };
 };
 
 const createOrderRequest = async (storeId, payload) => {
