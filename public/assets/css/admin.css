@@ -721,7 +721,12 @@ textarea:focus {
 }
 
 .chart-panel {
-  min-height: 280px;
+  height: 320px;
+  position: relative;
+}
+
+.chart-panel canvas {
+  max-height: 250px !important;
 }
 
 .chart-panel h3 {

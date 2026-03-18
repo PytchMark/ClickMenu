@@ -244,7 +244,8 @@ const renderAdminCharts = () => {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: 2.5,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -297,7 +298,8 @@ const renderAdminCharts = () => {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: 1.5,
         plugins: {
           legend: {
             position: 'bottom',
