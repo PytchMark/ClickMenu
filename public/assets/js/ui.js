@@ -1,21 +1,26 @@
 // UI Utility — Premium SaaS
 const UI = (() => {
-  const toastContainer = (() => {
-    let el = document.querySelector('.toast-container');
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'toast-container';
-      document.body.appendChild(el);
+  let _toastContainer = null;
+  
+  const getToastContainer = () => {
+    if (_toastContainer) return _toastContainer;
+    _toastContainer = document.querySelector('.toast-container');
+    if (!_toastContainer && document.body) {
+      _toastContainer = document.createElement('div');
+      _toastContainer.className = 'toast-container';
+      document.body.appendChild(_toastContainer);
     }
-    return el;
-  })();
+    return _toastContainer;
+  };
 
   const toast = (msg, type = 'info') => {
+    const container = getToastContainer();
+    if (!container) return;
     const t = document.createElement('div');
     t.className = `toast toast-${type}`;
     const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
     t.innerHTML = `<i class="fas ${icon}" style="margin-right:8px;"></i>${msg}`;
-    toastContainer.appendChild(t);
+    container.appendChild(t);
     setTimeout(() => {
       t.classList.add('toast-hide');
       setTimeout(() => t.remove(), 300);
@@ -33,10 +38,13 @@ const UI = (() => {
     }
   };
 
-  const skeleton = (container, count = 3) => {
-    if (!container) return;
-    container.innerHTML = Array.from({ length: count }, () =>
-      '<div class="skeleton-row"></div>'
+  const skeleton = (count = 3) => {
+    return Array.from({ length: count }, () =>
+      `<div class="skeleton-card">
+        <div class="skeleton-thumb"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      </div>`
     ).join('');
   };
 
