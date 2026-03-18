@@ -227,3 +227,58 @@ ORDER BY total_requests DESC;
 -- ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE menu_items ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE order_requests ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- SEED DATA: Test Merchant Profile
+-- ============================================================
+INSERT INTO profiles (
+  store_id,
+  name,
+  status,
+  whatsapp,
+  profile_email,
+  password,
+  cuisine_type,
+  parish,
+  about,
+  owner_name,
+  authorized,
+  plan_tier,
+  max_items,
+  max_images_per_item
+) VALUES (
+  'TASTE1',
+  'Kingston Taste Kitchen',
+  'active',
+  '+1876555001',
+  'hello@kingstontaste.com',
+  'demo123',
+  'Jamaican',
+  'Kingston',
+  'Authentic Jamaican cuisine made with love. Serving the best jerk chicken, curry goat, and ackee & saltfish in Kingston.',
+  'Marcus Thompson',
+  true,
+  'plan2',
+  25,
+  5
+) ON CONFLICT (store_id) DO NOTHING;
+
+-- ============================================================
+-- SEED DATA: Sample Menu Items
+-- ============================================================
+INSERT INTO menu_items (store_id, item_id, title, description, category, price, status, featured, labels) VALUES
+  ('TASTE1', 'ITEM-001', 'Jerk Chicken Paradise', 'Tender chicken marinated in our secret jerk spice blend, slow-grilled over pimento wood. Served with rice & peas and festival.', 'Lunch', 1900, 'available', true, '["Popular", "Signature"]'::jsonb),
+  ('TASTE1', 'ITEM-002', 'Curry Goat Supreme', 'Slow-cooked goat in rich Caribbean curry with potatoes and herbs. A true Jamaican classic.', 'Dinner', 2300, 'available', true, '["Top Pick", "Featured"]'::jsonb),
+  ('TASTE1', 'ITEM-003', 'Ackee & Saltfish Perfection', 'Jamaica''s national dish - creamy ackee sautéed with salted codfish, onions, tomatoes, and scotch bonnet peppers.', 'Breakfast', 1700, 'available', false, '["Traditional"]'::jsonb),
+  ('TASTE1', 'ITEM-004', 'Oxtail Stew', 'Fall-off-the-bone oxtail braised in rich gravy with butter beans. Grandma''s recipe perfected.', 'Dinner', 2800, 'available', true, '["Top Pick", "Signature"]'::jsonb),
+  ('TASTE1', 'ITEM-005', 'Escovitch Fish', 'Crispy fried snapper topped with tangy pickled vegetables - peppers, onions, and carrots.', 'Lunch', 2200, 'available', false, '["Spicy"]'::jsonb)
+ON CONFLICT (store_id, item_id) DO NOTHING;
+
+-- ============================================================
+-- SEED DATA: Sample Reviews
+-- ============================================================
+INSERT INTO reviews (store_id, rating, comment, customer_name) VALUES
+  ('TASTE1', 5, 'Best jerk chicken in Kingston! The flavors are incredible.', 'Sarah M.'),
+  ('TASTE1', 5, 'Curry goat was amazing, just like my grandmother used to make.', 'David R.'),
+  ('TASTE1', 4, 'Great food, fast service. Will definitely order again!', 'Michelle P.')
+ON CONFLICT DO NOTHING;
