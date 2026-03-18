@@ -1218,113 +1218,212 @@
         </div>
         <div id="orderBackdrop" class="order-backdrop" aria-hidden="true"></div>
       </section>
-    <!-- Add/Edit Item Modal -->
-    <div id="itemModal" class="modal" aria-hidden="true">
+    <!-- Add/Edit Item Modal - Premium Design -->
+    <div id="itemModal" class="modal" aria-hidden="true" data-testid="item-modal">
       <div class="modal-backdrop" id="modalBackdrop"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="modalTitle">Add New Item</h2>
-          <button id="closeModalBtn" class="btn btn-ghost btn-icon"><i class="fas fa-times"></i></button>
+      <div class="modal-content modal-content-lg">
+        <!-- Modal Header with Accent Bar -->
+        <div class="modal-header modal-header-premium">
+          <div class="modal-header-content">
+            <div class="modal-icon">
+              <i class="fas fa-utensils"></i>
+            </div>
+            <div>
+              <h2 id="modalTitle">Add New Item</h2>
+              <p class="modal-subtitle">Create a delicious new menu item</p>
+            </div>
+          </div>
+          <button id="closeModalBtn" class="btn btn-ghost btn-icon" data-testid="close-modal-btn">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="field-row">
-              <label class="field">
-                Item ID
-                <input id="itemId" type="text" placeholder="ITEM-001" />
-              </label>
-              <label class="field">
-                Price
-                <input id="itemPrice" type="number" min="0" step="0.01" placeholder="0.00" />
-              </label>
-            </div>
-
-            <label class="field field-full">
-              Item Title
-              <input id="itemTitle" type="text" placeholder="e.g. Jerk Chicken" />
-            </label>
-
-            <label class="field field-full">
-              Description
-              <textarea id="itemDescription" rows="3" placeholder="Describe the taste, ingredients, and portion size..."></textarea>
-            </label>
-
-            <div class="field-row">
-              <label class="field">
-                Category
-                <select id="itemCategory">
-                  <option value="">Select Category</option>
-                  <option>Breakfast</option>
-                  <option>Lunch</option>
-                  <option>Dinner</option>
-                  <option>Drinks</option>
-                  <option>Snacks</option>
-                  <option>Dessert</option>
-                </select>
-              </label>
-              <div class="field" style="justify-content: flex-end;">
-                <label class="field checkbox">
-                  <input id="itemFeatured" type="checkbox" />
-                  Featured Item
-                </label>
+        <div class="modal-body modal-body-split">
+          <!-- Left Column: Image Preview -->
+          <div class="modal-preview-column">
+            <div class="item-preview-card" data-testid="item-preview-card">
+              <div class="preview-image-container" id="previewContainer">
+                <div class="preview-placeholder" id="previewPlaceholder">
+                  <i class="fas fa-image"></i>
+                  <span>Image Preview</span>
+                </div>
+                <img id="previewImage" src="" alt="Preview" class="preview-image" hidden />
+                <div class="preview-badge" id="previewBadge" hidden>
+                  <i class="fas fa-star"></i> Featured
+                </div>
+              </div>
+              <div class="preview-details">
+                <h3 id="previewTitle" class="preview-item-title">Item Name</h3>
+                <p id="previewDescription" class="preview-item-desc">Item description will appear here...</p>
+                <div class="preview-meta">
+                  <span id="previewCategory" class="preview-category">Category</span>
+                  <span id="previewPrice" class="preview-price">$0.00</span>
+                </div>
+                <div id="previewLabels" class="preview-labels"></div>
               </div>
             </div>
-
-            <!-- Media Upload Area -->
-            <div class="field field-full">
-              <span class="field-label">Item Image</span>
-              <div class="media-dropzone" id="mediaDropzone">
-                <div class="dropzone-prompt" id="dropzonePrompt">
+            
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="mediaDropzone" data-testid="media-dropzone">
+              <input id="uploadInput" type="file" accept="image/*" hidden />
+              <div class="upload-zone-content" id="dropzonePrompt">
+                <div class="upload-icon-wrapper">
                   <i class="fas fa-cloud-upload-alt"></i>
-                  <p>Drag & drop image here or click to browse</p>
                 </div>
-                <div class="dropzone-preview" id="dropzonePreview" hidden>
-                  <img id="previewImage" src="" alt="Preview" />
-                  <button id="removeMediaBtn" class="btn btn-danger btn-sm btn-icon"><i class="fas fa-trash"></i></button>
+                <p class="upload-text">Drag & drop your image here</p>
+                <p class="upload-hint">or click to browse files</p>
+                <span class="upload-formats">PNG, JPG up to 5MB</span>
+              </div>
+              <div class="upload-zone-preview" id="dropzonePreview" hidden>
+                <button id="removeMediaBtn" class="btn btn-remove-media" data-testid="remove-media-btn">
+                  <i class="fas fa-trash"></i> Remove Image
+                </button>
+              </div>
+            </div>
+            <input id="itemImageUrl" type="hidden" />
+            <input id="itemVideoUrl" type="hidden" />
+          </div>
+          
+          <!-- Right Column: Form Fields -->
+          <div class="modal-form-column">
+            <div class="form-section">
+              <h4 class="form-section-title">
+                <i class="fas fa-info-circle"></i> Basic Information
+              </h4>
+              
+              <div class="form-row">
+                <div class="form-field">
+                  <label class="form-label" for="itemId">Item ID</label>
+                  <input id="itemId" type="text" class="form-input" placeholder="e.g. JRK-001" data-testid="item-id-input" />
+                  <span class="form-hint">Unique identifier for this item</span>
                 </div>
-                <input id="uploadInput" type="file" accept="image/*" hidden />
-                <input id="itemImageUrl" type="hidden" />
-                <input id="itemVideoUrl" type="hidden" />
+                <div class="form-field">
+                  <label class="form-label" for="itemPrice">Price (JMD)</label>
+                  <div class="input-with-prefix">
+                    <span class="input-prefix">$</span>
+                    <input id="itemPrice" type="number" class="form-input" min="0" step="0.01" placeholder="0.00" data-testid="item-price-input" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="itemTitle">Item Title</label>
+                <input id="itemTitle" type="text" class="form-input form-input-lg" placeholder="e.g. Jerk Chicken Platter" data-testid="item-title-input" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="itemDescription">Description</label>
+                <textarea id="itemDescription" class="form-textarea" rows="3" placeholder="Describe the taste, ingredients, and portion size..." data-testid="item-description-input"></textarea>
+                <span class="form-hint">Help customers know what to expect</span>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label class="form-label" for="itemCategory">Category</label>
+                  <select id="itemCategory" class="form-select" data-testid="item-category-select">
+                    <option value="">Select Category</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Sides">Sides</option>
+                    <option value="Specials">Specials</option>
+                  </select>
+                </div>
+                <div class="form-field form-field-center">
+                  <label class="featured-toggle" data-testid="featured-toggle">
+                    <input id="itemFeatured" type="checkbox" />
+                    <span class="featured-toggle-track">
+                      <span class="featured-toggle-thumb"></span>
+                    </span>
+                    <span class="featured-toggle-label">
+                      <i class="fas fa-star"></i> Featured Item
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="field field-full">
-              <span class="field-label">Availability</span>
-              <div class="toggle-row">
-                <label class="radio-card">
+            <div class="form-section">
+              <h4 class="form-section-title">
+                <i class="fas fa-toggle-on"></i> Availability
+              </h4>
+              <div class="availability-cards">
+                <label class="availability-card" data-testid="availability-available">
                   <input type="radio" name="availability" value="available" checked />
-                  <span>Available</span>
+                  <div class="availability-card-content">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Available</span>
+                  </div>
                 </label>
-                <label class="radio-card">
+                <label class="availability-card availability-limited" data-testid="availability-limited">
                   <input type="radio" name="availability" value="limited" />
-                  <span>Limited</span>
+                  <div class="availability-card-content">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Limited</span>
+                  </div>
                 </label>
-                <label class="radio-card">
+                <label class="availability-card availability-sold-out" data-testid="availability-sold-out">
                   <input type="radio" name="availability" value="sold_out" />
-                  <span>Sold Out</span>
+                  <div class="availability-card-content">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Sold Out</span>
+                  </div>
                 </label>
               </div>
             </div>
             
-            <div class="field field-full">
-               <span class="field-label">Labels</span>
-               <div class="label-grid">
-                  <label><input class="label-checkbox" type="checkbox" value="Top Pick" /> Top Pick</label>
-                  <label><input class="label-checkbox" type="checkbox" value="New" /> New</label>
-                  <label><input class="label-checkbox" type="checkbox" value="Spicy" /> Spicy</label>
-                  <label><input class="label-checkbox" type="checkbox" value="Vegan" /> Vegan</label>
-               </div>
-               <input id="customLabel" type="text" placeholder="Add custom label..." style="margin-top: 8px;" />
+            <div class="form-section">
+              <h4 class="form-section-title">
+                <i class="fas fa-tags"></i> Labels
+              </h4>
+              <div class="labels-grid">
+                <label class="label-chip" data-testid="label-top-pick">
+                  <input class="label-checkbox" type="checkbox" value="Top Pick" />
+                  <span><i class="fas fa-fire"></i> Top Pick</span>
+                </label>
+                <label class="label-chip" data-testid="label-new">
+                  <input class="label-checkbox" type="checkbox" value="New" />
+                  <span><i class="fas fa-sparkles"></i> New</span>
+                </label>
+                <label class="label-chip" data-testid="label-spicy">
+                  <input class="label-checkbox" type="checkbox" value="Spicy" />
+                  <span><i class="fas fa-pepper-hot"></i> Spicy</span>
+                </label>
+                <label class="label-chip" data-testid="label-vegan">
+                  <input class="label-checkbox" type="checkbox" value="Vegan" />
+                  <span><i class="fas fa-leaf"></i> Vegan</span>
+                </label>
+                <label class="label-chip" data-testid="label-popular">
+                  <input class="label-checkbox" type="checkbox" value="Popular" />
+                  <span><i class="fas fa-heart"></i> Popular</span>
+                </label>
+                <label class="label-chip" data-testid="label-signature">
+                  <input class="label-checkbox" type="checkbox" value="Signature" />
+                  <span><i class="fas fa-award"></i> Signature</span>
+                </label>
+              </div>
+              <div class="custom-label-input">
+                <input id="customLabel" type="text" class="form-input" placeholder="Add custom label..." data-testid="custom-label-input" />
+                <button type="button" class="btn btn-sm btn-ghost" id="addCustomLabelBtn">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button id="hideItemBtn" class="btn btn-danger btn-ghost" type="button" hidden>Archive</button>
-          <div style="flex:1"></div>
-          <button id="cancelModalBtn" class="btn btn-ghost" type="button">Cancel</button>
-          <button id="saveItemBtn" class="btn btn-primary" type="button">Save Item</button>
+        <div class="modal-footer modal-footer-premium">
+          <button id="hideItemBtn" class="btn btn-danger-ghost" type="button" hidden data-testid="archive-item-btn">
+            <i class="fas fa-archive"></i> Archive
+          </button>
+          <div class="modal-footer-spacer"></div>
+          <button id="cancelModalBtn" class="btn btn-ghost" type="button" data-testid="cancel-modal-btn">Cancel</button>
+          <button id="saveItemBtn" class="btn btn-primary btn-save" type="button" data-testid="save-item-btn">
+            <i class="fas fa-save"></i> Save Item
+          </button>
         </div>
       </div>
     </div>

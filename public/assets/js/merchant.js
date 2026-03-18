@@ -2088,13 +2088,27 @@ const previewImage = document.getElementById('previewImage');
 const dropzonePreview = document.getElementById('dropzonePreview');
 const removeMediaBtn = document.getElementById('removeMediaBtn');
 
+// Store pending file for upload on save
+window.pendingImageFile = null;
+window.pendingImagePreview = null;
+
 function showItemModal(title = 'Add New Item') {
   if (modalTitle) modalTitle.textContent = title;
+  // Update modal subtitle
+  const modalSubtitle = document.querySelector('.modal-subtitle');
+  if (modalSubtitle) {
+    modalSubtitle.textContent = title === 'Add New Item' ? 'Create a delicious new menu item' : 'Update your menu item details';
+  }
   if (itemModal) {
     itemModal.classList.add('show');
     itemModal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
   }
+  // Reset pending file
+  window.pendingImageFile = null;
+  window.pendingImagePreview = null;
+  // Initialize live preview
+  updateLivePreview();
 }
 
 // Backwards-compatible hook used by empty-state CTA.
@@ -2109,6 +2123,9 @@ function hideItemModal() {
     itemModal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   }
+  // Clear pending file
+  window.pendingImageFile = null;
+  window.pendingImagePreview = null;
 }
 
 if (openAddItemModalBtn) {
@@ -2126,16 +2143,87 @@ if (modalBackdrop) {
   modalBackdrop.addEventListener('click', hideItemModal);
 }
 
-// Override renderMediaPreview
+// Live Preview Elements
+const previewTitle = document.getElementById('previewTitle');
+const previewDescription = document.getElementById('previewDescription');
+const previewCategory = document.getElementById('previewCategory');
+const previewPrice = document.getElementById('previewPrice');
+const previewBadge = document.getElementById('previewBadge');
+const previewLabels = document.getElementById('previewLabels');
+const previewPlaceholder = document.getElementById('previewPlaceholder');
+
+// Update live preview as user types
+function updateLivePreview() {
+  const title = document.getElementById('itemTitle')?.value || 'Item Name';
+  const description = document.getElementById('itemDescription')?.value || 'Item description will appear here...';
+  const category = document.getElementById('itemCategory')?.value || 'Category';
+  const price = document.getElementById('itemPrice')?.value || '0.00';
+  const featured = document.getElementById('itemFeatured')?.checked;
+  
+  if (previewTitle) previewTitle.textContent = title || 'Item Name';
+  if (previewDescription) previewDescription.textContent = description || 'Item description will appear here...';
+  if (previewCategory) previewCategory.textContent = category || 'Category';
+  if (previewPrice) previewPrice.textContent = `$${parseFloat(price || 0).toFixed(2)}`;
+  if (previewBadge) previewBadge.hidden = !featured;
+  
+  // Update labels preview
+  if (previewLabels) {
+    const selectedLabels = [];
+    document.querySelectorAll('.label-checkbox:checked').forEach(cb => {
+      selectedLabels.push(cb.value);
+    });
+    previewLabels.innerHTML = selectedLabels.map(label => 
+      `<span class="badge badge-${label.toLowerCase().replace(' ', '-')}">${label}</span>`
+    ).join('');
+  }
+}
+
+// Add live preview listeners
+['itemTitle', 'itemDescription', 'itemCategory', 'itemPrice'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', updateLivePreview);
+    el.addEventListener('change', updateLivePreview);
+  }
+});
+
+const featuredCheckbox = document.getElementById('itemFeatured');
+if (featuredCheckbox) {
+  featuredCheckbox.addEventListener('change', updateLivePreview);
+}
+
+document.querySelectorAll('.label-checkbox').forEach(cb => {
+  cb.addEventListener('change', updateLivePreview);
+});
+
+// Override renderMediaPreview to support both URL and local preview
 window.renderMediaPreview = (imageUrl, videoUrl) => {
-  if (imageUrl || videoUrl) {
-    if (previewImage) previewImage.src = imageUrl || '';
-    if (dropzonePreview) dropzonePreview.hidden = false;
-    if (document.getElementById('dropzonePrompt')) document.getElementById('dropzonePrompt').hidden = true;
+  const cardPreviewImage = previewImage; // Preview card image
+  const uploadZonePreview = dropzonePreview;
+  const uploadZonePrompt = document.getElementById('dropzonePrompt');
+  
+  if (imageUrl || videoUrl || window.pendingImagePreview) {
+    const src = window.pendingImagePreview || imageUrl || '';
+    
+    // Update preview card image
+    if (cardPreviewImage) {
+      cardPreviewImage.src = src;
+      cardPreviewImage.hidden = false;
+    }
+    if (previewPlaceholder) previewPlaceholder.hidden = true;
+    
+    // Update upload zone
+    if (uploadZonePreview) uploadZonePreview.hidden = false;
+    if (uploadZonePrompt) uploadZonePrompt.hidden = true;
   } else {
-    if (dropzonePreview) dropzonePreview.hidden = true;
-    if (document.getElementById('dropzonePrompt')) document.getElementById('dropzonePrompt').hidden = false;
-    if (previewImage) previewImage.src = '';
+    // Hide previews
+    if (cardPreviewImage) {
+      cardPreviewImage.src = '';
+      cardPreviewImage.hidden = true;
+    }
+    if (previewPlaceholder) previewPlaceholder.hidden = false;
+    if (uploadZonePreview) uploadZonePreview.hidden = true;
+    if (uploadZonePrompt) uploadZonePrompt.hidden = false;
   }
 };
 
@@ -2171,50 +2259,91 @@ function handleDrop(e) {
   handleFiles(files);
 }
 
-async function handleFiles(files) {
+// Preview file locally without uploading
+function handleFiles(files) {
   if (!files || files.length === 0) return;
   
   const file = files[0];
-  const formData = new FormData();
-  formData.append("files", file);
-  formData.append("itemId", document.getElementById("itemId")?.value.trim() || "temp");
   
-  try {
-    if (mediaDropzone) mediaDropzone.style.opacity = '0.5';
-    
-    // We use the existing Api object
-    if (typeof Api !== 'undefined' && Api.merchant && Api.merchant.uploadMedia) {
-        const data = await Api.merchant.uploadMedia(formData);
-        const url = data.urls?.[0];
-        
-        if (url) {
-          const imgInput = document.getElementById("itemImageUrl");
-          if (imgInput) imgInput.value = url;
-          renderMediaPreview(url);
-          if (typeof UI !== 'undefined') UI.toast("Image uploaded!", "success");
-        }
-    }
-  } catch (error) {
-    if (typeof UI !== 'undefined') UI.toast("Upload failed", "error");
-    console.error(error);
-  } finally {
-    if (mediaDropzone) mediaDropzone.style.opacity = '1';
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    if (typeof UI !== 'undefined') UI.toast("Please select an image file", "error");
+    return;
   }
+  
+  // Validate file size (5MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    if (typeof UI !== 'undefined') UI.toast("Image must be under 5MB", "error");
+    return;
+  }
+  
+  // Store pending file for upload on save
+  window.pendingImageFile = file;
+  
+  // Create local preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    window.pendingImagePreview = e.target.result;
+    renderMediaPreview(null, null);
+    if (typeof UI !== 'undefined') UI.toast("Image ready for upload", "success");
+  };
+  reader.readAsDataURL(file);
+}
+
+// Handle file input change
+const uploadInputEl = document.getElementById('uploadInput');
+if (uploadInputEl) {
+  uploadInputEl.addEventListener('change', (e) => {
+    if (e.target.files?.length) {
+      handleFiles(e.target.files);
+    }
+  });
 }
 
 if (removeMediaBtn) {
   removeMediaBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    // Clear pending file
+    window.pendingImageFile = null;
+    window.pendingImagePreview = null;
+    // Clear existing URL
     const imgInput = document.getElementById("itemImageUrl");
     if (imgInput) imgInput.value = "";
+    // Clear file input
+    const uploadInput = document.getElementById('uploadInput');
+    if (uploadInput) uploadInput.value = '';
+    // Update preview
     renderMediaPreview();
   });
 }
 
-// Proxy saveItem to close modal
+// Proxy saveItem to close modal and upload image first if pending
 if (typeof Api !== 'undefined' && Api.merchant) {
     const originalSaveItem = Api.merchant.saveItem;
     Api.merchant.saveItem = async function(payload) {
+      // If there's a pending image file, upload it first
+      if (window.pendingImageFile) {
+        const formData = new FormData();
+        formData.append("files", window.pendingImageFile);
+        formData.append("itemId", payload.item_id || "temp");
+        
+        try {
+          if (typeof UI !== 'undefined') UI.toast("Uploading image...", "info");
+          const data = await Api.merchant.uploadMedia(formData);
+          const url = data.urls?.[0];
+          if (url) {
+            payload.image_url = url;
+          }
+        } catch (error) {
+          if (typeof UI !== 'undefined') UI.toast("Image upload failed: " + error.message, "error");
+          throw error;
+        }
+        
+        // Clear pending file
+        window.pendingImageFile = null;
+        window.pendingImagePreview = null;
+      }
+      
       const result = await originalSaveItem.call(this, payload);
       hideItemModal();
       return result;
