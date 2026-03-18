@@ -1,47 +1,67 @@
 # QuickMenuJA - Product Requirements Document
 
 ## Original Problem Statement
-User reported that the merchant section doesn't seem to be adding menu items successfully.
+1. Menu items not adding successfully due to Supabase schema issues
+2. Add Item modal UI/UX needed improvement to match platform design
+3. Need image preview before uploading - only upload when saving
 
 ## Architecture
 - **Frontend**: Static HTML/JS/CSS served via Node.js Express proxy on port 3000
 - **Backend**: Python FastAPI (port 8001) proxying to Node.js Express server (port 8080)
-- **Database**: Supabase (running in mock mode with in-memory data)
-- **Services**: Stripe (disabled), Cloudinary, QR Code generation
+- **Database**: Supabase (user needs to run new schema)
+- **Services**: Stripe (disabled), Cloudinary for images, QR Code generation
 
-## Root Cause Analysis
-The Node.js backend server wasn't running because:
-1. npm dependencies in `/app` directory were not installed
-2. Frontend `package.json` had wrong start script pointing to `cd .. && node server.js` instead of `node serve.js`
+## What's Been Implemented (March 2026)
 
-## Fix Applied (March 2026)
-1. Installed npm dependencies in `/app` directory: `npm install`
-2. Fixed `/app/frontend/package.json` to use `node serve.js` instead of `cd .. && node server.js`
-3. Started Node.js server on port 8080
-4. Restarted frontend and backend services via supervisor
+### Session 1: Bug Fix - Menu Items Not Saving
+- Installed npm dependencies in `/app` directory
+- Fixed `/app/frontend/package.json` start script
+- Restarted services to enable Node.js backend
 
-## What's Been Implemented
-- Merchant login and authentication via JWT
-- Menu Manager with CRUD operations for menu items
-- Dashboard with analytics and KPIs
-- Order management system
-- Profile management
-- Billing panel with plan tiers
-- QR Code generation for storefronts
-- Reviews system
+### Session 2: UI/UX Improvements & Schema Fix
+1. **New Supabase Schema v2** (`/app/supabase_schema_v2.sql`)
+   - Clean schema with proper foreign keys
+   - Tables: profiles, menu_items, order_requests, reviews, daily_specials, audit_events
+   - Proper indexes for performance
+   - Instructions for storage bucket setup
 
-## Test Results (Iteration 6)
-- Backend: 100% passing
-- Frontend: 100% passing  
-- Integration: 100% passing
+2. **Redesigned Add Item Modal**
+   - Split layout: Preview card (left) + Form fields (right)
+   - Premium header with icon and subtitle
+   - Organized form sections with icons
+   - Modern featured toggle with gold highlight
+   - Availability cards (Available/Limited/Sold Out) with color coding
+   - Label chips (Top Pick, New, Spicy, Vegan, Popular, Signature)
+   - Professional dark theme matching platform design
 
-## Next Action Items
-- None - bug fix complete
+3. **Live Preview Feature**
+   - Real-time preview card updates as user types
+   - Shows title, description, category, price
+   - Featured badge toggles with checkbox
+   - Labels appear in preview when selected
+
+4. **Image Preview Before Upload**
+   - Images shown locally before saving
+   - File validation (image type, 5MB max)
+   - Upload only happens when "Save Item" is clicked
+   - Clear feedback: "Image ready for upload" toast
+
+## Test Results (Iteration 7)
+- Backend: 100% (6/6 API endpoints)
+- Frontend: 95% (1 minor automated testing issue)
+
+## Supabase Setup Instructions
+1. Go to Supabase Dashboard > SQL Editor
+2. Run the contents of `/app/supabase_schema_v2.sql`
+3. Create storage bucket named "menu-items" (public access)
+4. Update `/app/.env` with your Supabase credentials
 
 ## Prioritized Backlog
-- P0: None
-- P1: None  
+- P0: None (all critical features implemented)
+- P1: 
+  - Connect real Supabase database (provide credentials)
+  - Enable Stripe for payment processing
 - P2: 
-  - Implement real Supabase integration (currently mock mode)
-  - Configure Stripe for payment processing
-  - Add image upload to Cloudinary
+  - Add video upload support
+  - Implement bulk menu item import
+  - Add menu item analytics
