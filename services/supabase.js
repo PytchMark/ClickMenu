@@ -1386,6 +1386,7 @@ const createMerchantProfile = async (payload) => {
   }
 
   const record = {
+    id: crypto.randomUUID(),
     store_id: storeId,
     name: payload.name,
     whatsapp: payload.whatsapp,

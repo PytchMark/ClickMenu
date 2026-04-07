@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 
 class SupabaseIntegrationTester:
-    def __init__(self, base_url="https://menu-items-debug.preview.emergentagent.com"):
+    def __init__(self, base_url="https://profile-builder-264.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
